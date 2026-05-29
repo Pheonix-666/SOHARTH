@@ -7,38 +7,40 @@
 
 :root {
   /* Color Tokens */
-  --background:             #141313;
-  --surface:                #141313;
-  --surface-dim:            #141313;
-  --surface-container-low:  #1c1b1b;
-  --surface-container:      #201f1f;
+  --background: #141313;
+  --surface: #141313;
+  --surface-dim: #141313;
+  --surface-container-low: #1c1b1b;
+  --surface-container: #201f1f;
   --surface-container-high: #2b2a29;
-  --surface-bright:         #3a3938;
-  --on-background:          #e5e2e0;
-  --on-surface:             #e5e2e0;
-  --on-surface-variant:     #c8c7be;
-  --primary:                #ffffff;
-  --on-primary:             #31302d;
-  --outline:                #929189;
-  --outline-variant:        #474741;
-  --error:                  #ffb4ab;
+  --surface-bright: #3a3938;
+  --on-background: #e5e2e0;
+  --on-surface: #e5e2e0;
+  --on-surface-variant: #c8c7be;
+  --primary: #ffffff;
+  --on-primary: #31302d;
+  --outline: #929189;
+  --outline-variant: #474741;
+  --error: #ffb4ab;
 
   /* Typography */
-  --font-display:  var(--font-caslon),  'Georgia', serif;
-  --font-body:     var(--font-manrope), 'Helvetica Neue', sans-serif;
+  --font-display: var(--font-caslon), 'Georgia', serif;
+  --font-body: var(--font-manrope), 'Helvetica Neue', sans-serif;
 
   /* Spacing */
-  --margin-desktop:  64px;
-  --margin-mobile:   20px;
-  --section-gap:     120px;
-  --gutter:          24px;
-  --container-max:   1440px;
+  --margin-desktop: 64px;
+  --margin-mobile: 20px;
+  --section-gap: 120px;
+  --gutter: 24px;
+  --container-max: 1440px;
 }
 
 /* ===========================
    RESET & BASE
    =========================== */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -64,10 +66,26 @@ body {
   min-height: 100vh;
 }
 
-a { color: inherit; text-decoration: none; }
-img { display: block; max-width: 100%; }
-button { cursor: pointer; font-family: var(--font-body); background: none; border: none; }
-main { flex: 1; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-body);
+  background: none;
+  border: none;
+}
+
+main {
+  flex: 1;
+}
 
 /* ===========================
    TYPOGRAPHY SCALES
@@ -143,8 +161,17 @@ main { flex: 1; }
   .container {
     padding: 0 var(--margin-mobile);
   }
-  .font-display-hero { font-size: 48px; line-height: 56px; }
-  .font-headline-lg  { font-size: 32px; line-height: 40px; letter-spacing: 0.03em; }
+
+  .font-display-hero {
+    font-size: 48px;
+    line-height: 56px;
+  }
+
+  .font-headline-lg {
+    font-size: 32px;
+    line-height: 40px;
+    letter-spacing: 0.03em;
+  }
 }
 
 /* ===========================
@@ -183,7 +210,10 @@ main { flex: 1; }
   border: none;
   transition: letter-spacing 0.5s ease;
 }
-.btn-primary:hover { letter-spacing: 0.4em; }
+
+.btn-primary:hover {
+  letter-spacing: 0.4em;
+}
 
 .btn-ghost {
   display: inline-flex;
@@ -200,7 +230,11 @@ main { flex: 1; }
   background: transparent;
   transition: background 0.3s ease, letter-spacing 0.5s ease;
 }
-.btn-ghost:hover { background: rgba(255, 255, 255, 0.05); letter-spacing: 0.3em; }
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  letter-spacing: 0.3em;
+}
 
 /* ===========================
    NAV LINKS
@@ -213,8 +247,17 @@ main { flex: 1; }
   color: var(--on-surface-variant);
   transition: color 0.5s ease, letter-spacing 0.5s ease;
 }
-.nav-link:hover { color: var(--primary); letter-spacing: 0.3em; }
-.nav-link.active { color: var(--primary); border-bottom: 1px solid var(--primary); padding-bottom: 4px; }
+
+.nav-link:hover {
+  color: var(--primary);
+  letter-spacing: 0.3em;
+}
+
+.nav-link.active {
+  color: var(--primary);
+  border-bottom: 1px solid var(--primary);
+  padding-bottom: 4px;
+}
 
 /* ===========================
    PRODUCT CARDS
@@ -222,16 +265,19 @@ main { flex: 1; }
 .product-card {
   cursor: pointer;
 }
+
 .product-card .card-image {
   overflow: hidden;
   background-color: var(--surface-container-low);
 }
+
 .product-card .card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .product-card:hover .card-image img {
   transform: scale(1.05);
 }
@@ -247,18 +293,36 @@ main { flex: 1; }
    SHIMMER ANIMATION
    =========================== */
 @keyframes subtle-shimmer {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
-.shimmer { animation: subtle-shimmer 3s ease-in-out infinite; }
+
+.shimmer {
+  animation: subtle-shimmer 3s ease-in-out infinite;
+}
 
 /* ===========================
    FADE IN
    =========================== */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 .fade-in-up {
   animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -266,13 +330,21 @@ main { flex: 1; }
 /* ===========================
    GHOST BORDER
    =========================== */
-.ghost-border { border: 1px solid rgba(229, 226, 224, 0.1); }
+.ghost-border {
+  border: 1px solid rgba(229, 226, 224, 0.1);
+}
 
 /* ===========================
    HIDE SCROLLBAR
    =========================== */
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 /* ===========================
    MATERIAL ICONS
@@ -289,17 +361,33 @@ main { flex: 1; }
 /* ===========================
    STARLIGHT BORDER
    =========================== */
-.starlight-border { border: 1px solid rgba(201, 198, 194, 0.2); }
+.starlight-border {
+  border: 1px solid rgba(201, 198, 194, 0.2);
+}
 
 /* ===========================
    ACCORDION
    =========================== */
-details summary { list-style: none; }
-details summary::-webkit-details-marker { display: none; }
+details summary {
+  list-style: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
 
 /* ===========================
    SCROLLBAR
    =========================== */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #141313; }
-::-webkit-scrollbar-thumb { background: #353434; border-radius: 10px; }
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #141313;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #353434;
+  border-radius: 10px;
+}

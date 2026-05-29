@@ -1,8 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function LoginPage() {
+function LoginForm() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -10,6 +10,7 @@ export default function LoginPage() {
     const searchParams = useSearchParams();
 
     const handleLogin = async () => {
+        if (!password) return;
         setLoading(true);
         setError('');
 
@@ -23,7 +24,6 @@ export default function LoginPage() {
             const data = await res.json();
 
             if (res.ok) {
-                // Redirect back to where they came from, or /admin by default
                 const from = searchParams.get('from') || '/admin';
                 router.push(from);
             } else {
@@ -54,10 +54,11 @@ export default function LoginPage() {
                 gap: '1.5rem',
             }}>
                 <h1 style={{
-                    color: 'var(--primary, #e5e2e0)',
+                    color: '#e5e2e0',
                     letterSpacing: '0.3em',
                     fontSize: '14px',
                     textAlign: 'center',
+                    margin: 0,
                 }}>
                     ADMIN ACCESS
                 </h1>
@@ -73,7 +74,7 @@ export default function LoginPage() {
                         border: 'none',
                         borderBottom: '1px solid rgba(229,226,224,0.2)',
                         padding: '0.75rem 0',
-                        color: 'var(--primary, #e5e2e0)',
+                        color: '#e5e2e0',
                         outline: 'none',
                         fontSize: '13px',
                         width: '100%',
@@ -93,7 +94,7 @@ export default function LoginPage() {
                         padding: '1rem',
                         background: 'transparent',
                         border: '1px solid rgba(229,226,224,0.3)',
-                        color: 'var(--primary, #e5e2e0)',
+                        color: '#e5e2e0',
                         cursor: loading || !password ? 'not-allowed' : 'pointer',
                         letterSpacing: '0.2em',
                         fontSize: '11px',
@@ -105,5 +106,13 @@ export default function LoginPage() {
                 </button>
             </div>
         </div>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense>
+            <LoginForm />
+        </Suspense>
     );
 }
