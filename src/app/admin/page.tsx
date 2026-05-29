@@ -1,0 +1,811 @@
+'use client';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+
+interface Product {
+  id: string;
+  name: string;
+  subtitle: string;
+  price: number;
+  category: string;
+  tag: string;
+  image: string;
+  images: string[];
+  description: string;
+  collection: string;
+  material: string;
+  shipping: string;
+}
+
+interface OrderItem {
+  id: string;
+  name: string;
+  qty: number;
+  size: string;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  timestamp: string;
+  items: OrderItem[];
+  subtotal: number;
+  tax: number;
+  total: number;
+}
+
+interface Category {
+  value: string;
+  label: string;
+}
+
+// ─── Shared input style ───────────────────────────────────────────────────────
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  background: 'transparent',
+  border: 'none',
+  borderBottom: '1px solid rgba(229,226,224,0.2)',
+  padding: '0.75rem 0',
+  color: 'var(--primary)',
+  fontFamily: 'var(--font-body)',
+  outline: 'none',
+  fontSize: '13px',
+};
+
+const selectStyle: React.CSSProperties = {
+  ...inputStyle,
+  background: '#1c1b1b',
+  cursor: 'pointer',
+};
+
+// ─── Label component ──────────────────────────────────────────────────────────
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <label
+      className="font-label-caps"
+      style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.5rem' }}
+    >
+      {children}
+    </label>
+  );
+}
+
+export default function AdminDashboard() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [activeTab, setActiveTab] = useState<'inventory' | 'add' | 'orders' | 'categories'>('inventory');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // ── Add Product Form ──────────────────────────────────────────────────────
+  const [form, setForm] = useState({
+    name: '', subtitle: '', price: '', category: '',
+    tag: '', image: '', description: '',
+    collection: 'COLLECTION 01: NEBULA', material: '', shipping: '',
+  });
+
+  // ── Inline "Create Category" panel (visible inside Add tab) ───────────────
+  const [showCatPanel, setShowCatPanel] = useState(false);
+  const [newCatLabel, setNewCatLabel] = useState('');
+  const [catLoading, setCatLoading] = useState(false);
+  const [catMsg, setCatMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
+
+  // ── Categories tab ─────────────────────────────────────────────────────────
+  const [catTabLabel, setCatTabLabel] = useState('');
+
+  // ── Edit Modal ─────────────────────────────────────────────────────────────
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // ─── Fetch everything ──────────────────────────────────────────────────────
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      const data: Category[] = await res.json();
+      setCategories(data);
+      // seed form default to first category
+      if (data.length > 0) {
+        setForm(prev => ({ ...prev, category: prev.category || data[0].value }));
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [prodRes, ordRes] = await Promise.all([
+        fetch('/api/products'),
+        fetch('/api/admin/orders'),
+      ]);
+      const prodData = await prodRes.json();
+      const ordData = await ordRes.json();
+      setProducts(prodData);
+      setOrders(ordData);
+    } catch (err) {
+      console.error('Error fetching admin workspace data:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+    fetchData();
+  }, []);
+
+  // ─── Create Category (shared handler) ─────────────────────────────────────
+  const handleCreateCategory = async (
+    labelValue: string,
+    onSuccess?: (cat: Category) => void,
+  ) => {
+    if (!labelValue.trim()) return;
+    setCatLoading(true);
+    setCatMsg(null);
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ label: labelValue.trim() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchCategories();
+        setCatMsg({ type: 'ok', text: `"${data.category.label}" registered in the catalogue.` });
+        onSuccess?.(data.category);
+      } else {
+        setCatMsg({ type: 'err', text: data.error || 'Registration failed.' });
+      }
+    } catch {
+      setCatMsg({ type: 'err', text: 'Network transmission failed.' });
+    } finally {
+      setCatLoading(false);
+    }
+  };
+
+  // ─── Delete Category ───────────────────────────────────────────────────────
+  const handleDeleteCategory = async (value: string) => {
+    if (!confirm(`Remove category "${value}" from the registry? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/categories?value=${encodeURIComponent(value)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchCategories();
+      } else {
+        alert(data.error || 'Deletion failed.');
+      }
+    } catch {
+      alert('Network transmission failed.');
+    }
+  };
+
+  // ─── Add Product ───────────────────────────────────────────────────────────
+  const handleAddSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.price || !form.category) {
+      alert('Please configure the mandatory fields (Name, Price, Category).');
+      return;
+    }
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`${data.product.name} successfully registered in the celestial registry!`);
+        setForm({
+          name: '', subtitle: '', price: '', category: categories[0]?.value || '',
+          tag: '', image: '', description: '',
+          collection: 'COLLECTION 01: NEBULA', material: '', shipping: '',
+        });
+        setShowCatPanel(false);
+        setActiveTab('inventory');
+        fetchData();
+      } else {
+        alert('Registration failed: ' + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network transmission failed.');
+    }
+  };
+
+  // ─── Edit Product ──────────────────────────────────────────────────────────
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    try {
+      const res = await fetch(`/api/products/${editingProduct.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingProduct),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Product successfully updated!');
+        setEditingProduct(null);
+        fetchData();
+      } else {
+        alert('Update failed: ' + data.error);
+      }
+    } catch {
+      alert('Network transmission failed.');
+    }
+  };
+
+  // ─── Delete Product ────────────────────────────────────────────────────────
+  const handleDelete = async (id: string) => {
+    if (!confirm('Remove this garment from the catalogue? This cannot be undone.')) return;
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) { fetchData(); }
+      else { alert('Decommissioning failed: ' + data.error); }
+    } catch { alert('Network transmission failed.'); }
+  };
+
+  const loadPreset = () => {
+    setForm({
+      name: 'SUPERNOVA HOODIE',
+      subtitle: 'Technical Spacer Crepe / Cosmic Dust',
+      price: '340',
+      category: categories[0]?.value || 'essentials',
+      tag: 'NEW',
+      image: '/WhatsApp Image 2026-05-29 at 12.50.13 PM.jpeg',
+      description: 'A heavyweight, architectural technical hoodie detailed with double-bonded dynamic spacer crepe lines.',
+      collection: 'COLLECTION 02: HORIZON',
+      material: '60% Rayon technical blend, 35% Recycled Spacer fiber, 5% Elastane.',
+      shipping: 'Complimentary express shipping on orders over $500.',
+    });
+  };
+
+  // ─── Shared category <select> ──────────────────────────────────────────────
+  const CategorySelect = ({
+    value,
+    onChange,
+  }: {
+    value: string;
+    onChange: (v: string) => void;
+  }) => (
+    <select value={value} onChange={e => onChange(e.target.value)} style={selectStyle}>
+      {categories.length === 0 && (
+        <option value="" disabled>No categories yet — create one below</option>
+      )}
+      {categories.map(c => (
+        <option key={c.value} value={c.value}>{c.label}</option>
+      ))}
+    </select>
+  );
+
+  // ─── Tab definitions ───────────────────────────────────────────────────────
+  const tabs = [
+    { id: 'inventory', label: 'INVENTORY' },
+    { id: 'add', label: 'ADD APPAREL' },
+    { id: 'categories', label: 'CATEGORIES' },
+    { id: 'orders', label: 'ORDER RELAY' },
+  ] as const;
+
+  return (
+    <>
+      <Navbar />
+      <main style={{ paddingTop: '8.75rem', paddingBottom: 'var(--section-gap)', minHeight: '90vh' }}>
+        <div className="container">
+
+          {/* Header */}
+          <header style={{ marginBottom: '4rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '2rem' }}>
+            <div>
+              <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em', display: 'block', marginBottom: '0.5rem' }}>SOLARTH MANAGEMENT CONSOLE</span>
+              <h1 className="font-headline-lg" style={{ color: 'var(--primary)' }}>Control Relay</h1>
+            </div>
+            <div style={{ display: 'flex', border: '1px solid rgba(229,226,224,0.15)', padding: '4px', flexWrap: 'wrap', gap: '2px' }}>
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className="font-label-caps"
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: activeTab === tab.id ? 'var(--primary)' : 'transparent',
+                    color: activeTab === tab.id ? 'var(--on-primary)' : 'var(--primary)',
+                    transition: 'all 0.3s ease',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '10px',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </header>
+
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: '6rem 0' }}>
+              <div className="font-label-caps" style={{ letterSpacing: '0.3em', opacity: 0.5 }}>Synchronizing cosmic array...</div>
+            </div>
+          ) : (
+            <div className="fade-in-up">
+
+              {/* ─── TAB 1: INVENTORY ─── */}
+              {activeTab === 'inventory' && (
+                <section>
+                  {products.length === 0 ? (
+                    <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', border: '1px solid rgba(229,226,224,0.1)' }}>
+                      <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', marginBottom: '2rem' }}>The database is void of catalogue items.</p>
+                      <button onClick={() => setActiveTab('add')} className="btn-primary">Create First Product</button>
+                    </div>
+                  ) : (
+                    <div style={{ overflowX: 'auto' }} className="hide-scrollbar">
+                      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid rgba(229,226,224,0.2)' }}>
+                            {['APPAREL', 'COLLECTION', 'CATEGORY', 'PRICE', 'TAG', 'ACTIONS'].map((h, i) => (
+                              <th key={h} className="font-label-caps" style={{ padding: '1rem', opacity: 0.5, textAlign: i === 5 ? 'right' : 'left' }}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {products.map(product => (
+                            <tr key={product.id} style={{ borderBottom: '1px solid rgba(229,226,224,0.06)' }}>
+                              <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                                <div style={{ position: 'relative', width: '50px', height: '65px', overflow: 'hidden', backgroundColor: 'var(--surface-container)', flexShrink: 0 }}>
+                                  <Image src={product.image || '/logo.jpg'} alt={product.name} fill style={{ objectFit: 'cover' }} />
+                                </div>
+                                <div>
+                                  <h4 className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '4px' }}>{product.name}</h4>
+                                  <span className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>{product.subtitle}</span>
+                                </div>
+                              </td>
+                              <td className="font-body-md" style={{ padding: '1rem', color: 'var(--primary)' }}>{product.collection}</td>
+                              <td className="font-label-caps" style={{ padding: '1rem', color: 'var(--on-surface-variant)', fontSize: '10px' }}>{product.category}</td>
+                              <td className="font-body-md" style={{ padding: '1rem', color: 'var(--primary)' }}>${product.price.toLocaleString()}</td>
+                              <td className="font-caption" style={{ padding: '1rem' }}>
+                                {product.tag
+                                  ? <span style={{ border: '1px solid rgba(255,255,255,0.2)', padding: '2px 8px', fontSize: '9px', letterSpacing: '0.1em' }}>{product.tag}</span>
+                                  : <span style={{ opacity: 0.2 }}>—</span>
+                                }
+                              </td>
+                              <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                <div style={{ display: 'inline-flex', gap: '0.75rem' }}>
+                                  <button
+                                    onClick={() => setEditingProduct(product)}
+                                    className="font-label-caps"
+                                    style={{ border: '1px solid rgba(229,226,224,0.3)', padding: '0.5rem 1.25rem', fontSize: '9px', color: 'var(--primary)', backgroundColor: 'transparent', cursor: 'pointer', transition: 'all 0.3s' }}
+                                    onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                                    onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(229,226,224,0.3)'}
+                                  >EDIT</button>
+                                  <button
+                                    onClick={() => handleDelete(product.id)}
+                                    className="font-label-caps"
+                                    style={{ border: '1px solid rgba(255,75,75,0.3)', padding: '0.5rem 1.25rem', fontSize: '9px', color: '#ff4b4b', backgroundColor: 'transparent', cursor: 'pointer', transition: 'all 0.3s' }}
+                                    onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,75,75,0.1)'; e.currentTarget.style.borderColor = '#ff4b4b'; }}
+                                    onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,75,75,0.3)'; }}
+                                  >DELETE</button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* ─── TAB 2: ADD PRODUCT ─── */}
+              {activeTab === 'add' && (
+                <section style={{ maxWidth: '800px', margin: '0 auto' }}>
+                  <div className="glass-panel" style={{ padding: '3.5rem', border: '1px solid rgba(229,226,224,0.1)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+                      <h2 className="font-headline-md" style={{ color: 'var(--primary)', letterSpacing: '0.2em' }}>ADD NEW GARMENT</h2>
+                      <button
+                        type="button" onClick={loadPreset} className="font-label-caps"
+                        style={{ border: '1px solid var(--primary)', padding: '0.5rem 1rem', fontSize: '9px', color: 'var(--primary)', background: 'transparent', cursor: 'pointer', transition: 'all 0.3s' }}
+                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--on-primary)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--primary)'; }}
+                      >⚡ LOAD TEST MOCKUP</button>
+                    </div>
+
+                    <form onSubmit={handleAddSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                        <div>
+                          <FieldLabel>GARMENT NAME *</FieldLabel>
+                          <input type="text" required placeholder="e.g., ASTRAL CREW" value={form.name}
+                            onChange={e => setForm({ ...form, name: e.target.value })} style={inputStyle} />
+                        </div>
+                        <div>
+                          <FieldLabel>PRICE (USD) *</FieldLabel>
+                          <input type="number" required placeholder="e.g., 295" value={form.price}
+                            onChange={e => setForm({ ...form, price: e.target.value })} style={inputStyle} />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                        <div>
+                          <FieldLabel>SUBTITLE / SPECIFICATION</FieldLabel>
+                          <input type="text" placeholder="e.g., Pima Cotton Blend / Starlight Silver" value={form.subtitle}
+                            onChange={e => setForm({ ...form, subtitle: e.target.value })} style={inputStyle} />
+                        </div>
+
+                        {/* ── Category select + inline create ── */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <FieldLabel>CATEGORY *</FieldLabel>
+                            <button
+                              type="button"
+                              onClick={() => { setShowCatPanel(v => !v); setCatMsg(null); setNewCatLabel(''); }}
+                              className="font-label-caps"
+                              style={{
+                                fontSize: '9px', letterSpacing: '0.15em', padding: '3px 10px',
+                                border: '1px solid rgba(229,226,224,0.25)', background: 'transparent',
+                                color: 'var(--on-surface-variant)', cursor: 'pointer', transition: 'all 0.3s',
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                              onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(229,226,224,0.25)'}
+                            >
+                              {showCatPanel ? '✕ CLOSE' : '+ NEW'}
+                            </button>
+                          </div>
+                          <CategorySelect value={form.category} onChange={v => setForm({ ...form, category: v })} />
+
+                          {/* Inline create-category panel */}
+                          {showCatPanel && (
+                            <div style={{
+                              marginTop: '1rem', padding: '1.25rem',
+                              border: '1px solid rgba(229,226,224,0.12)',
+                              background: 'rgba(229,226,224,0.03)',
+                              display: 'flex', flexDirection: 'column', gap: '0.75rem',
+                            }}>
+                              <span className="font-label-caps" style={{ fontSize: '9px', letterSpacing: '0.3em', opacity: 0.5 }}>NEW CATEGORY</span>
+                              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end' }}>
+                                <input
+                                  type="text"
+                                  placeholder="e.g., Loungewear"
+                                  value={newCatLabel}
+                                  onChange={e => { setNewCatLabel(e.target.value); setCatMsg(null); }}
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      handleCreateCategory(newCatLabel, cat => {
+                                        setForm(prev => ({ ...prev, category: cat.value }));
+                                        setNewCatLabel('');
+                                        setShowCatPanel(false);
+                                      });
+                                    }
+                                  }}
+                                  style={{ ...inputStyle, flex: 1 }}
+                                />
+                                <button
+                                  type="button"
+                                  disabled={catLoading || !newCatLabel.trim()}
+                                  onClick={() => handleCreateCategory(newCatLabel, cat => {
+                                    setForm(prev => ({ ...prev, category: cat.value }));
+                                    setNewCatLabel('');
+                                    setShowCatPanel(false);
+                                  })}
+                                  className="font-label-caps"
+                                  style={{
+                                    padding: '0.5rem 1rem', fontSize: '9px', letterSpacing: '0.15em',
+                                    border: '1px solid var(--primary)', color: 'var(--primary)',
+                                    background: 'transparent', cursor: 'pointer', whiteSpace: 'nowrap',
+                                    opacity: catLoading || !newCatLabel.trim() ? 0.4 : 1, transition: 'all 0.3s',
+                                  }}
+                                >
+                                  {catLoading ? '...' : 'REGISTER'}
+                                </button>
+                              </div>
+                              {catMsg && (
+                                <span className="font-caption" style={{ color: catMsg.type === 'ok' ? '#7fcf9f' : '#ff4b4b', fontSize: '10px' }}>
+                                  {catMsg.type === 'ok' ? '✓' : '✗'} {catMsg.text}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                        <div>
+                          <FieldLabel>PRIMARY IMAGE PATH/URL</FieldLabel>
+                          <input type="text" placeholder="/WhatsApp Image ..." value={form.image}
+                            onChange={e => setForm({ ...form, image: e.target.value })} style={inputStyle} />
+                          <span className="font-caption" style={{ opacity: 0.4, marginTop: '4px', display: 'block' }}>Defaults to logo if left empty</span>
+                        </div>
+                        <div>
+                          <FieldLabel>SEASONAL / SPECIAL TAG</FieldLabel>
+                          <input type="text" placeholder="e.g., NEW, LIMITED, BEST SELLER" value={form.tag}
+                            onChange={e => setForm({ ...form, tag: e.target.value })} style={inputStyle} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <FieldLabel>COLLECTION NAME</FieldLabel>
+                        <input type="text" placeholder="e.g., COLLECTION 01: NEBULA" value={form.collection}
+                          onChange={e => setForm({ ...form, collection: e.target.value })} style={inputStyle} />
+                      </div>
+
+                      <div>
+                        <FieldLabel>DESCRIPTION</FieldLabel>
+                        <textarea
+                          placeholder="Write the architectural and design rationale for this piece..."
+                          value={form.description}
+                          onChange={e => setForm({ ...form, description: e.target.value })}
+                          style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }}
+                        />
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                        <div>
+                          <FieldLabel>MATERIALS &amp; CARE</FieldLabel>
+                          <input type="text" placeholder="e.g., 85% Virgin Wool, 15% Mulberry Silk." value={form.material}
+                            onChange={e => setForm({ ...form, material: e.target.value })} style={inputStyle} />
+                        </div>
+                        <div>
+                          <FieldLabel>SHIPPING &amp; LOGISTICS</FieldLabel>
+                          <input type="text" placeholder="e.g., Complimentary express shipping." value={form.shipping}
+                            onChange={e => setForm({ ...form, shipping: e.target.value })} style={inputStyle} />
+                        </div>
+                      </div>
+
+                      <div style={{ paddingTop: '1.5rem' }}>
+                        <button type="submit" className="btn-primary" style={{ width: '100%', padding: '1.5rem', letterSpacing: '0.3em' }}>
+                          BROADCAST TO CATALOGUE
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </section>
+              )}
+
+              {/* ─── TAB 3: CATEGORIES ─── */}
+              {activeTab === 'categories' && (
+                <section style={{ maxWidth: '700px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+
+                  {/* Create new category */}
+                  <div className="glass-panel" style={{ padding: '3rem', border: '1px solid rgba(229,226,224,0.1)' }}>
+                    <h2 className="font-headline-md" style={{ color: 'var(--primary)', letterSpacing: '0.2em', marginBottom: '2rem' }}>REGISTER NEW CATEGORY</h2>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+                      <div style={{ flex: 1 }}>
+                        <FieldLabel>CATEGORY LABEL</FieldLabel>
+                        <input
+                          type="text"
+                          placeholder="e.g., Loungewear, Accessories, Knitwear"
+                          value={catTabLabel}
+                          onChange={e => { setCatTabLabel(e.target.value); setCatMsg(null); }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleCreateCategory(catTabLabel, () => setCatTabLabel(''));
+                            }
+                          }}
+                          style={inputStyle}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        disabled={catLoading || !catTabLabel.trim()}
+                        onClick={() => handleCreateCategory(catTabLabel, () => setCatTabLabel(''))}
+                        className="btn-primary font-label-caps"
+                        style={{ padding: '0.85rem 2rem', opacity: catLoading || !catTabLabel.trim() ? 0.4 : 1, transition: 'opacity 0.3s' }}
+                      >
+                        {catLoading ? '...' : 'REGISTER'}
+                      </button>
+                    </div>
+                    {catMsg && (
+                      <p className="font-caption" style={{ marginTop: '1rem', color: catMsg.type === 'ok' ? '#7fcf9f' : '#ff4b4b' }}>
+                        {catMsg.type === 'ok' ? '✓' : '✗'} {catMsg.text}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Existing categories list */}
+                  <div className="glass-panel" style={{ padding: '3rem', border: '1px solid rgba(229,226,224,0.1)' }}>
+                    <h2 className="font-headline-md" style={{ color: 'var(--primary)', letterSpacing: '0.2em', marginBottom: '2rem' }}>
+                      ACTIVE CATEGORIES
+                      <span className="font-label-caps" style={{ fontSize: '10px', opacity: 0.4, marginLeft: '1rem' }}>{categories.length} registered</span>
+                    </h2>
+                    {categories.length === 0 ? (
+                      <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', opacity: 0.5 }}>No categories registered yet.</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                        {categories.map((cat, idx) => (
+                          <div
+                            key={cat.value}
+                            style={{
+                              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                              padding: '1.25rem 0',
+                              borderBottom: idx < categories.length - 1 ? '1px solid rgba(229,226,224,0.06)' : 'none',
+                            }}
+                          >
+                            <div>
+                              <span className="font-label-caps" style={{ color: 'var(--primary)', letterSpacing: '0.15em' }}>{cat.label}</span>
+                              <span className="font-caption" style={{ color: 'var(--on-surface-variant)', marginLeft: '1rem', opacity: 0.4, fontSize: '10px' }}>
+                                slug: {cat.value}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => handleDeleteCategory(cat.value)}
+                              className="font-label-caps"
+                              style={{
+                                border: '1px solid rgba(255,75,75,0.25)', padding: '0.4rem 1rem',
+                                fontSize: '9px', color: '#ff4b4b', background: 'transparent',
+                                cursor: 'pointer', transition: 'all 0.3s', letterSpacing: '0.1em',
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,75,75,0.1)'; e.currentTarget.style.borderColor = '#ff4b4b'; }}
+                              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,75,75,0.25)'; }}
+                            >
+                              REMOVE
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* ─── TAB 4: ORDER RELAY ─── */}
+              {activeTab === 'orders' && (
+                <section>
+                  {orders.length === 0 ? (
+                    <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', border: '1px solid rgba(229,226,224,0.1)' }}>
+                      <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)' }}>No transaction logs recorded in the galactic relay.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                      {orders.map(order => (
+                        <div key={order.id} className="glass-panel" style={{
+                          padding: '2.5rem', border: '1px solid rgba(229,226,224,0.1)',
+                          display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '2rem', alignItems: 'center',
+                        }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                              <div>
+                                <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', fontSize: '9px', letterSpacing: '0.2em' }}>ORDER REFERENCE</span>
+                                <strong style={{ color: 'var(--primary)', fontSize: '14px' }}>#{order.id}</strong>
+                              </div>
+                              <div>
+                                <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', fontSize: '9px', letterSpacing: '0.2em' }}>BROADCAST TIME</span>
+                                <span className="font-body-md" style={{ color: 'var(--primary)' }}>{new Date(order.timestamp).toLocaleString()}</span>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', borderTop: '1px solid rgba(229,226,224,0.06)', paddingTop: '1rem' }}>
+                              {order.items.map((item, idx) => (
+                                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '500px' }}>
+                                  <span className="font-body-md" style={{ color: 'var(--primary)' }}>
+                                    {item.qty}x <span className="font-label-caps" style={{ fontSize: '11px', letterSpacing: '0.1em' }}>{item.name}</span>
+                                    <strong style={{ color: 'var(--on-surface-variant)', fontSize: '9px', marginLeft: '8px', border: '1px solid rgba(255,255,255,0.1)', padding: '1px 4px' }}>SIZE {item.size}</strong>
+                                  </span>
+                                  <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>${(item.price * item.qty).toLocaleString()}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          <div style={{ borderLeft: '1px solid rgba(229,226,224,0.1)', paddingLeft: '2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'right' }}>
+                            <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', fontSize: '9px' }}>TOTAL VALUE</span>
+                            <span className="font-headline-md" style={{ color: 'var(--primary)', fontSize: '24px' }}>${order.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                            <span className="font-caption" style={{ color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>Subtotal: ${order.subtotal.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* ─── EDIT PRODUCT MODAL ─── */}
+      {editingProduct && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          backgroundColor: 'rgba(10,9,9,0.9)', backdropFilter: 'blur(15px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem',
+        }}>
+          <div className="glass-panel fade-in-up" style={{
+            maxWidth: '750px', width: '100%', maxHeight: '90vh', overflowY: 'auto',
+            padding: '3rem', border: '1px solid rgba(229,226,224,0.15)', position: 'relative',
+          }}>
+            <button
+              onClick={() => setEditingProduct(null)}
+              style={{ position: 'absolute', top: '2rem', right: '2rem', background: 'transparent', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>close</span>
+            </button>
+
+            <h2 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '2.5rem', letterSpacing: '0.2em' }}>EDIT APPAREL PIECE</h2>
+
+            <form onSubmit={handleEditSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div>
+                  <FieldLabel>GARMENT NAME *</FieldLabel>
+                  <input type="text" required value={editingProduct.name}
+                    onChange={e => setEditingProduct({ ...editingProduct, name: e.target.value })} style={inputStyle} />
+                </div>
+                <div>
+                  <FieldLabel>PRICE (USD) *</FieldLabel>
+                  <input type="number" required value={editingProduct.price}
+                    onChange={e => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })} style={inputStyle} />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div>
+                  <FieldLabel>SUBTITLE / SPECIFICATION</FieldLabel>
+                  <input type="text" value={editingProduct.subtitle}
+                    onChange={e => setEditingProduct({ ...editingProduct, subtitle: e.target.value })} style={inputStyle} />
+                </div>
+                <div>
+                  <FieldLabel>CATEGORY *</FieldLabel>
+                  <CategorySelect
+                    value={editingProduct.category}
+                    onChange={v => setEditingProduct({ ...editingProduct, category: v })}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div>
+                  <FieldLabel>IMAGE PATH</FieldLabel>
+                  <input type="text" value={editingProduct.image}
+                    onChange={e => setEditingProduct({ ...editingProduct, image: e.target.value })} style={inputStyle} />
+                </div>
+                <div>
+                  <FieldLabel>TAG</FieldLabel>
+                  <input type="text" value={editingProduct.tag}
+                    onChange={e => setEditingProduct({ ...editingProduct, tag: e.target.value })} style={inputStyle} />
+                </div>
+              </div>
+
+              <div>
+                <FieldLabel>COLLECTION NAME</FieldLabel>
+                <input type="text" value={editingProduct.collection}
+                  onChange={e => setEditingProduct({ ...editingProduct, collection: e.target.value })} style={inputStyle} />
+              </div>
+
+              <div>
+                <FieldLabel>DESCRIPTION</FieldLabel>
+                <textarea value={editingProduct.description}
+                  onChange={e => setEditingProduct({ ...editingProduct, description: e.target.value })}
+                  style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div>
+                  <FieldLabel>MATERIALS &amp; CARE</FieldLabel>
+                  <input type="text" value={editingProduct.material}
+                    onChange={e => setEditingProduct({ ...editingProduct, material: e.target.value })} style={inputStyle} />
+                </div>
+                <div>
+                  <FieldLabel>SHIPPING &amp; LOGISTICS</FieldLabel>
+                  <input type="text" value={editingProduct.shipping}
+                    onChange={e => setEditingProduct({ ...editingProduct, shipping: e.target.value })} style={inputStyle} />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1.5rem', paddingTop: '1rem' }}>
+                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '1.25rem', letterSpacing: '0.2em' }}>SAVE CHANGES</button>
+                <button type="button" onClick={() => setEditingProduct(null)} className="btn-ghost" style={{ flex: 1, padding: '1.25rem', letterSpacing: '0.2em' }}>CANCEL</button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      <Footer />
+    </>
+  );
+}
