@@ -10,25 +10,25 @@ const CATEGORIES_FILE = path.join(DATA_DIR, 'categories.json');
 async function ensureDB() {
   try {
     await fs.mkdir(DATA_DIR, { recursive: true });
-  } catch (err) {}
+  } catch (_err) {}
 
   try {
     await fs.access(DB_FILE);
-  } catch (err) {
+  } catch (_err) {
     // Database file does not exist yet. Seed with default assets.
     await fs.writeFile(DB_FILE, JSON.stringify(initialProducts, null, 2), 'utf-8');
   }
 
   try {
     await fs.access(ORDERS_FILE);
-  } catch (err) {
+  } catch (_err) {
     // Orders file does not exist yet. Seed with empty array.
     await fs.writeFile(ORDERS_FILE, JSON.stringify([], null, 2), 'utf-8');
   }
 
   try {
     await fs.access(CATEGORIES_FILE);
-  } catch (err) {
+  } catch (_err) {
     // Categories file does not exist yet. Seed with default categories.
     const defaultCategories = [
       { value: 'outerwear', label: 'OUTERWEAR' },
@@ -44,6 +44,7 @@ export async function getProducts() {
   return JSON.parse(data);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function saveProducts(products: any[]) {
   await ensureDB();
   await fs.writeFile(DB_FILE, JSON.stringify(products, null, 2), 'utf-8');
@@ -55,6 +56,7 @@ export async function getOrders() {
   return JSON.parse(data);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function saveOrder(order: any) {
   await ensureDB();
   const orders = await getOrders();
@@ -74,6 +76,7 @@ export async function getCategories() {
   return JSON.parse(data);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function saveCategories(categories: any[]) {
   await ensureDB();
   await fs.writeFile(CATEGORIES_FILE, JSON.stringify(categories, null, 2), 'utf-8');

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getOrders } from '@/lib/db';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const orders = await getOrders();
     return NextResponse.json(orders);

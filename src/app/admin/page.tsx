@@ -99,6 +99,43 @@ export default function AdminDashboard() {
   // ── Edit Modal ─────────────────────────────────────────────────────────────
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  // ── Image Upload ───────────────────────────────────────────────────────────
+  const [uploadingIdx, setUploadingIdx] = useState<{idx: number, isEdit: boolean} | null>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, idx: number, isEdit: boolean) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingIdx({ idx, isEdit });
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.url) {
+        if (isEdit && editingProduct) {
+          const newImages = [...(editingProduct.images || [editingProduct.image || ''])];
+          newImages[idx] = data.url;
+          setEditingProduct({ ...editingProduct, images: newImages, image: newImages[0] });
+        } else {
+          const newImages = [...form.images];
+          newImages[idx] = data.url;
+          setForm({ ...form, images: newImages, image: newImages[0] });
+        }
+      } else {
+        alert('Upload failed: ' + data.error);
+      }
+    } catch (err) {
+      alert('Upload failed.');
+    } finally {
+      setUploadingIdx(null);
+    }
+  };
+
   // ─── Fetch everything ──────────────────────────────────────────────────────
   const fetchCategories = async () => {
     try {
@@ -221,6 +258,12 @@ export default function AdminDashboard() {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct) return;
+
+    if (editingProduct.image.match(/^[a-zA-Z]:\\/)) {
+      alert('Error: Please provide a valid web URL (http/https) or relative path (/image.jpg), not a local file path.');
+      return;
+    }
+
     try {
       const res = await fetch(`/api/products/${editingProduct.id}`, {
         method: 'PUT',
@@ -268,22 +311,7 @@ export default function AdminDashboard() {
   };
 
   // ─── Shared category <select> ──────────────────────────────────────────────
-  const CategorySelect = ({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: (v: string) => void;
-  }) => (
-    <select value={value} onChange={e => onChange(e.target.value)} style={selectStyle}>
-      {categories.length === 0 && (
-        <option value="" disabled>No categories yet — create one below</option>
-      )}
-      {categories.map(c => (
-        <option key={c.value} value={c.value}>{c.label}</option>
-      ))}
-    </select>
-  );
+  // Category selection is now inlined where needed to prevent render-time component creation
 
   // ─── Tab definitions ───────────────────────────────────────────────────────
   const tabs = [
@@ -455,7 +483,14 @@ export default function AdminDashboard() {
                               {showCatPanel ? '✕ CLOSE' : '+ NEW'}
                             </button>
                           </div>
-                          <CategorySelect value={form.category} onChange={v => setForm({ ...form, category: v })} />
+                          <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} style={selectStyle}>
+                            {categories.length === 0 && (
+                              <option value="" disabled>No categories yet — create one below</option>
+                            )}
+                            {categories.map(c => (
+                              <option key={c.value} value={c.value}>{c.label}</option>
+                            ))}
+                          </select>
 
                           {/* Inline create-category panel */}
                           {showCatPanel && (
@@ -515,15 +550,14 @@ export default function AdminDashboard() {
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                         <div>
-                          <FieldLabel>IMAGE URLS (PRIMARY FIRST)</FieldLabel>
+                          <FieldLabel>IMAGES (PRIMARY FIRST)</FieldLabel>
                           {form.images.map((img, idx) => (
-                            <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                              <input type="text" placeholder="/image.jpg or https://..." value={img}
-                                onChange={e => {
-                                  const newImages = [...form.images];
-                                  newImages[idx] = e.target.value;
-                                  setForm({ ...form, images: newImages, image: newImages[0] });
-                                }} style={{ ...inputStyle, flex: 1 }} />
+                            <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
+                              {img && <img src={img} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />}
+                              <div style={{ flex: 1 }}>
+                                <input type="file" accept="image/*" onChange={e => handleImageUpload(e, idx, false)} style={{ color: 'var(--primary)', fontSize: '12px' }} />
+                                {uploadingIdx?.idx === idx && !uploadingIdx.isEdit && <span style={{ fontSize: '10px', color: 'var(--primary)', marginLeft: '8px' }}>Uploading...</span>}
+                              </div>
                               {form.images.length > 1 && (
                                 <button type="button" onClick={() => {
                                   const newImages = form.images.filter((_, i) => i !== idx);
@@ -767,24 +801,31 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <FieldLabel>CATEGORY *</FieldLabel>
-                  <CategorySelect
-                    value={editingProduct.category}
-                    onChange={v => setEditingProduct({ ...editingProduct, category: v })}
-                  />
+                  <select 
+                    value={editingProduct.category} 
+                    onChange={e => setEditingProduct({ ...editingProduct, category: e.target.value })} 
+                    style={selectStyle}
+                  >
+                    {categories.length === 0 && (
+                      <option value="" disabled>No categories yet — create one below</option>
+                    )}
+                    {categories.map(c => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                 <div style={{ gridColumn: 'span 2' }}>
-                  <FieldLabel>IMAGE URLS (PRIMARY FIRST)</FieldLabel>
+                  <FieldLabel>IMAGES (PRIMARY FIRST)</FieldLabel>
                   {(editingProduct.images || [editingProduct.image || '']).map((img, idx) => (
-                    <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                      <input type="text" placeholder="Image URL..." value={img}
-                        onChange={e => {
-                          const newImages = [...(editingProduct.images || [editingProduct.image || ''])];
-                          newImages[idx] = e.target.value;
-                          setEditingProduct({ ...editingProduct, images: newImages, image: newImages[0] });
-                        }} style={{ ...inputStyle, flex: 1 }} />
+                    <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
+                      {img && <img src={img} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />}
+                      <div style={{ flex: 1 }}>
+                        <input type="file" accept="image/*" onChange={e => handleImageUpload(e, idx, true)} style={{ color: 'var(--primary)', fontSize: '12px' }} />
+                        {uploadingIdx?.idx === idx && uploadingIdx.isEdit && <span style={{ fontSize: '10px', color: 'var(--primary)', marginLeft: '8px' }}>Uploading...</span>}
+                      </div>
                       {(editingProduct.images || []).length > 1 && (
                         <button type="button" onClick={() => {
                           const newImages = (editingProduct.images || []).filter((_, i) => i !== idx);

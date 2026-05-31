@@ -1,10 +1,9 @@
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { products } from '@/lib/data';
 import { useCart } from '@/context/CartContext';
 
 export default function CartPage() {
@@ -12,6 +11,15 @@ export default function CartPage() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/products')
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setAllProducts(data); })
+      .catch(() => {});
+  }, []);
 
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
   const tax = subtotal * 0.08;
@@ -42,7 +50,7 @@ export default function CartPage() {
     }
   };
 
-  const crossSell = products.filter(p => !items.find(i => i.id === p.id)).slice(0, 4);
+  const crossSell = allProducts.filter(p => !items.find(i => i.id === p.id)).slice(0, 4);
 
   if (!isHydrated) {
     return (

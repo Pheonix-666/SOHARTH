@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 
 export default function ProductDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [productsList, setProductsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -237,7 +238,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                   </div>
                   <div>
                     <h4 className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '0.5rem' }}>02 FABRICATION</h4>
-                    <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>{product.material.split('.')[0]}.</p>
+                    <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>{product.material?.split('.')[0] ?? ''}.</p>
                   </div>
                 </div>
               </div>

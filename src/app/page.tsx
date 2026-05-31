@@ -7,6 +7,7 @@ import BottomNav from '@/components/BottomNav';
 import { useState, useEffect } from 'react';
 
 export default function Home() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [productsList, setProductsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -25,12 +26,25 @@ export default function Home() {
 
   const featured = productsList.slice(0, 3);
 
-  if (isLoading || featured.length === 0) {
+  if (isLoading) {
     return (
       <>
         <Navbar />
         <main style={{ paddingTop: '8.75rem', paddingBottom: 'var(--section-gap)', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="font-label-caps" style={{ letterSpacing: '0.3em', opacity: 0.5 }}>Loading Celestial Orbit...</div>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (featured.length === 0) {
+    return (
+      <>
+        <Navbar />
+        <main style={{ paddingTop: '8.75rem', paddingBottom: 'var(--section-gap)', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2rem' }}>
+          <span className="material-symbols-outlined shimmer" style={{ fontSize: '3rem', opacity: 0.3 }}>travel_explore</span>
+          <div className="font-label-caps" style={{ letterSpacing: '0.3em', opacity: 0.5 }}>The catalogue is void — check back soon.</div>
         </main>
         <Footer />
       </>
@@ -45,7 +59,7 @@ export default function Home() {
         {/* ─── HERO ─── */}
         <section style={{ position: 'relative', height: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           <Image
-            src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=800"
+            src="/hero-bg.png"
             alt="Solarth hero"
             fill
             priority

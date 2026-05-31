@@ -11,7 +11,9 @@ export default function ProductsPage({
   searchParams: Promise<{ category?: string }>;
 }) {
   const { category } = use(searchParams);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [productsList, setProductsList] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
