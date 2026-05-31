@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Libre_Caslon_Text, Manrope } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
-import BottomNav from "@/components/BottomNav";
 
 const libreCaslon = Libre_Caslon_Text({
   subsets: ["latin"],
@@ -30,14 +29,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
       </head>
       <body className={`${libreCaslon.variable} ${manrope.variable}`}>
         <CartProvider>
           {children}
-          <BottomNav />
         </CartProvider>
       </body>
     </html>

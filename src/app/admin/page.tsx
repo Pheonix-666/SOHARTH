@@ -83,7 +83,7 @@ export default function AdminDashboard() {
   // ── Add Product Form ──────────────────────────────────────────────────────
   const [form, setForm] = useState({
     name: '', subtitle: '', price: '', category: '',
-    tag: '', image: '', description: '',
+    tag: '', image: '', images: [''], description: '',
     collection: 'COLLECTION 01: NEBULA', material: '', shipping: '',
   });
 
@@ -202,7 +202,7 @@ export default function AdminDashboard() {
         alert(`${data.product.name} successfully registered in the celestial registry!`);
         setForm({
           name: '', subtitle: '', price: '', category: categories[0]?.value || '',
-          tag: '', image: '', description: '',
+          tag: '', image: '', images: [''], description: '',
           collection: 'COLLECTION 01: NEBULA', material: '', shipping: '',
         });
         setShowCatPanel(false);
@@ -259,6 +259,7 @@ export default function AdminDashboard() {
       category: categories[0]?.value || 'essentials',
       tag: 'NEW',
       image: '/WhatsApp Image 2026-05-29 at 12.50.13 PM.jpeg',
+      images: ['/WhatsApp Image 2026-05-29 at 12.50.13 PM.jpeg', '/WhatsApp Image 2026-05-29 at 12.50.11 PM.jpeg'],
       description: 'A heavyweight, architectural technical hoodie detailed with double-bonded dynamic spacer crepe lines.',
       collection: 'COLLECTION 02: HORIZON',
       material: '60% Rayon technical blend, 35% Recycled Spacer fiber, 5% Elastane.',
@@ -514,10 +515,27 @@ export default function AdminDashboard() {
 
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
                         <div>
-                          <FieldLabel>PRIMARY IMAGE PATH/URL</FieldLabel>
-                          <input type="text" placeholder="/WhatsApp Image ..." value={form.image}
-                            onChange={e => setForm({ ...form, image: e.target.value })} style={inputStyle} />
-                          <span className="font-caption" style={{ opacity: 0.4, marginTop: '4px', display: 'block' }}>Defaults to logo if left empty</span>
+                          <FieldLabel>IMAGE URLS (PRIMARY FIRST)</FieldLabel>
+                          {form.images.map((img, idx) => (
+                            <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                              <input type="text" placeholder="/image.jpg or https://..." value={img}
+                                onChange={e => {
+                                  const newImages = [...form.images];
+                                  newImages[idx] = e.target.value;
+                                  setForm({ ...form, images: newImages, image: newImages[0] });
+                                }} style={{ ...inputStyle, flex: 1 }} />
+                              {form.images.length > 1 && (
+                                <button type="button" onClick={() => {
+                                  const newImages = form.images.filter((_, i) => i !== idx);
+                                  setForm({ ...form, images: newImages, image: newImages[0] || '' });
+                                }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer' }}>✕</button>
+                              )}
+                            </div>
+                          ))}
+                          <button type="button" onClick={() => setForm({ ...form, images: [...form.images, ''] })}
+                            style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '10px', marginTop: '0.5rem', cursor: 'pointer' }}>
+                            + ADD ANOTHER IMAGE
+                          </button>
                         </div>
                         <div>
                           <FieldLabel>SEASONAL / SPECIAL TAG</FieldLabel>
@@ -757,10 +775,28 @@ export default function AdminDashboard() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                <div>
-                  <FieldLabel>IMAGE PATH</FieldLabel>
-                  <input type="text" value={editingProduct.image}
-                    onChange={e => setEditingProduct({ ...editingProduct, image: e.target.value })} style={inputStyle} />
+                <div style={{ gridColumn: 'span 2' }}>
+                  <FieldLabel>IMAGE URLS (PRIMARY FIRST)</FieldLabel>
+                  {(editingProduct.images || [editingProduct.image || '']).map((img, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <input type="text" placeholder="Image URL..." value={img}
+                        onChange={e => {
+                          const newImages = [...(editingProduct.images || [editingProduct.image || ''])];
+                          newImages[idx] = e.target.value;
+                          setEditingProduct({ ...editingProduct, images: newImages, image: newImages[0] });
+                        }} style={{ ...inputStyle, flex: 1 }} />
+                      {(editingProduct.images || []).length > 1 && (
+                        <button type="button" onClick={() => {
+                          const newImages = (editingProduct.images || []).filter((_, i) => i !== idx);
+                          setEditingProduct({ ...editingProduct, images: newImages, image: newImages[0] || '' });
+                        }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer' }}>✕</button>
+                      )}
+                    </div>
+                  ))}
+                  <button type="button" onClick={() => setEditingProduct({ ...editingProduct, images: [...(editingProduct.images || [editingProduct.image || '']), ''] })}
+                    style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '10px', marginTop: '0.5rem', cursor: 'pointer' }}>
+                    + ADD ANOTHER IMAGE
+                  </button>
                 </div>
                 <div>
                   <FieldLabel>TAG</FieldLabel>

@@ -25,13 +25,16 @@ export default function ProductsPage({
         setCategories(categoriesData);
         setIsLoading(false);
       })
-      .catch(() => setIsLoading(false));
+      .catch(err => {
+        console.error('Failed to load dynamic catalog and categories:', err);
+        setIsLoading(false);
+      });
   }, []);
 
   const filters = [
-    { label: 'All', value: undefined },
+    { label: 'ALL', value: undefined },
     ...categories,
-    { label: 'New', value: 'new' },
+    { label: 'NEW ARRIVALS', value: 'new' },
   ];
 
   const displayProducts = category
@@ -42,13 +45,8 @@ export default function ProductsPage({
     return (
       <>
         <Navbar />
-        <main style={{
-          paddingTop: '5rem', minHeight: '100svh',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div className="font-label-caps" style={{ letterSpacing: '0.35em', opacity: 0.4 }}>
-            Syncing Collections…
-          </div>
+        <main style={{ paddingTop: '8.75rem', paddingBottom: 'var(--section-gap)', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="font-label-caps" style={{ letterSpacing: '0.3em', opacity: 0.5 }}>Syncing Collections...</div>
         </main>
         <Footer />
       </>
@@ -58,152 +56,128 @@ export default function ProductsPage({
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: '4rem' }}>
+      <main style={{ paddingTop: '8rem' }}>
 
         {/* ─── COLLECTION HEADER ─── */}
-        <header className="container" style={{
-          paddingTop: 'clamp(2rem, 6vw, 5rem)',
-          paddingBottom: 'clamp(1.5rem, 4vw, 3rem)',
-          textAlign: 'center',
-        }}>
-          <span className="font-label-caps" style={{ opacity: 0.5, display: 'block', marginBottom: '0.75rem', letterSpacing: '0.35em' }}>
+        <header className="container" style={{ marginBottom: '5rem', textAlign: 'center' }}>
+          <h1 className="font-display-hero" style={{ marginBottom: '1.5rem', color: 'var(--primary)', letterSpacing: '-0.02em' }}>
             The Eclipse Edit
-          </span>
-          <h1 className="font-display-hero" style={{ color: 'var(--primary)' }}>
-            COLLECTIONS
           </h1>
-          <p className="font-body-md" style={{
-            color: 'var(--on-surface-variant)', marginTop: '1rem',
-            maxWidth: '400px', margin: '1rem auto 0',
-          }}>
+          <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', maxWidth: '500px', margin: '0 auto', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
             Silhouettes inspired by astronomical precision and the void between stars.
           </p>
         </header>
 
-        {/* ─── FILTER BAR — scrollable pills ─── */}
-        <div className="filter-bar">
-          <div className="container">
-            <div className="pill-scroll-row">
-              {filters.map(f => (
-                <Link
-                  key={f.label}
-                  href={f.value ? `/products?category=${f.value}` : '/products'}
-                  className={`pill-chip${(category === f.value || (!category && !f.value)) ? ' active' : ''}`}
-                >
-                  {f.label}
-                </Link>
-              ))}
-            </div>
+        {/* ─── FILTER BAR ─── */}
+        <div style={{
+          position: 'sticky', top: '80px', zIndex: 40,
+          backgroundColor: 'rgba(20, 19, 19, 0.8)',
+          backdropFilter: 'blur(12px)',
+          padding: '2rem 0', marginBottom: '3rem',
+          borderBottom: '1px solid rgba(255,255,255,0.05)'
+        }}>
+          <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2.5rem' }}>
+            {filters.map(f => (
+              <Link
+                key={f.label}
+                href={f.value ? `/products?category=${f.value}` : '/products'}
+                className="font-label-caps"
+                style={{
+                  color: category === f.value || (!category && !f.value) ? 'var(--primary)' : 'var(--on-surface-variant)',
+                  borderBottom: category === f.value || (!category && !f.value) ? '1px solid var(--primary)' : '1px solid transparent',
+                  paddingBottom: '4px',
+                  letterSpacing: '0.3em',
+                  transition: 'color 0.3s ease, border-color 0.3s ease',
+                }}
+              >
+                {f.label}
+              </Link>
+            ))}
           </div>
         </div>
 
         {/* ─── PRODUCT GRID ─── */}
-        <section className="container section-sm" style={{ paddingBottom: 'var(--section-gap)' }}>
-          {displayProducts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '5rem 0', opacity: 0.4 }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>
-                inventory_2
-              </span>
-              <p className="font-label-caps">No pieces in this orbit yet</p>
-            </div>
-          ) : (
-            <div className="product-grid">
-              {displayProducts.map((product, i) => (
-                <Link
-                  href={`/products/${product.id}`}
-                  key={product.id}
-                  className="product-card"
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    // Stagger on desktop only via media query
-                  }}
-                >
-                  <div className="card-image" style={{
-                    aspectRatio: '3/4',
-                    position: 'relative',
-                    marginBottom: '0.875rem',
-                    backgroundColor: 'var(--surface-container-low)',
-                  }}>
-                    <Image src={product.image} alt={product.name} fill style={{ objectFit: 'cover' }} />
-                    {product.tag && (
-                      <span className="font-caption" style={{
-                        position: 'absolute', top: '0.6rem', left: '0.6rem',
-                        background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)',
-                        padding: '0.2rem 0.5rem', letterSpacing: '0.15em',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        borderRadius: '4px',
-                      }}>
-                        {product.tag}
-                      </span>
-                    )}
-                    {/* Wishlist button */}
-                    <button
-                      onClick={e => e.preventDefault()}
-                      style={{
-                        position: 'absolute', top: '0.6rem', right: '0.6rem',
-                        background: 'rgba(20,19,19,0.6)', backdropFilter: 'blur(8px)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '50%', width: '32px', height: '32px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--primary)' }}>
-                        favorite
-                      </span>
-                    </button>
-                  </div>
-
-                  {/* Product info */}
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                      <h3 className="font-headline-md" style={{
-                        color: 'var(--primary)', fontSize: 'clamp(13px, 3vw, 20px)',
-                        lineHeight: 1.3,
-                      }}>
-                        {product.name}
-                      </h3>
-                      <span className="font-body-md" style={{ color: 'var(--primary)', flexShrink: 0, fontSize: '13px' }}>
-                        ${product.price.toLocaleString()}
-                      </span>
-                    </div>
-                    <p className="font-caption" style={{ color: 'var(--on-surface-variant)', marginTop: '0.3rem' }}>
-                      {product.subtitle}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* ─── BOTTOM PROMO ─── */}
-        <section className="container" style={{ marginBottom: 'var(--section-gap)' }}>
-          <div className="glass-panel" style={{ padding: 'clamp(1.5rem, 5vw, 3rem)', textAlign: 'center' }}>
-            <h2 className="font-headline-lg" style={{ color: 'var(--primary)', marginBottom: '0.75rem' }}>
-              Join The Orbit
-            </h2>
-            <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '2rem', maxWidth: '400px', margin: '0 auto 2rem' }}>
-              Receive early access to planetary collections and editorial narratives.
-            </p>
-            <form style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '400px', margin: '0 auto' }}
-              onSubmit={e => e.preventDefault()}>
-              <input
-                type="email" placeholder="YOUR@EMAIL.COM"
+        <section className="container" style={{ paddingBottom: 'var(--section-gap)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0 var(--gutter)', rowGap: '8rem' }}>
+            {displayProducts.map((product, i) => (
+              <Link
+                href={`/products/${product.id}`}
+                key={product.id}
+                className="product-card"
                 style={{
-                  background: 'transparent',
-                  border: 'none', borderBottom: '1px solid var(--outline-variant)',
-                  padding: '0.75rem 0', color: 'var(--primary)',
-                  fontFamily: 'var(--font-body)', fontSize: '12px',
-                  fontWeight: 600, letterSpacing: '0.15em', outline: 'none',
-                  textAlign: 'center',
+                  display: 'flex', flexDirection: 'column',
+                  transform: i % 2 === 1 ? 'translateY(40px)' : 'none',
                 }}
-              />
-              <button type="submit" className="btn-primary">JOIN</button>
-            </form>
+              >
+                <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container-low)' }}>
+                  <Image src={product.image} alt={product.name} fill style={{ objectFit: 'cover' }} />
+                  {product.tag && (
+                    <span className="font-caption" style={{
+                      position: 'absolute', top: '1rem', left: '1rem',
+                      background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)',
+                      padding: '0.25rem 0.75rem', letterSpacing: '0.2em',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                    }}>
+                      {product.tag}
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                  <div>
+                    <h3 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{product.name}</h3>
+                    <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)' }}>{product.subtitle}</p>
+                  </div>
+                  <span className="font-body-md" style={{ color: 'var(--primary)', flexShrink: 0, marginLeft: '1rem' }}>${product.price.toLocaleString()}</span>
+                </div>
+                <button className="font-label-caps" style={{
+                  marginTop: '1rem', fontSize: '10px', letterSpacing: '0.3em',
+                  border: '1px solid rgba(71,71,65,0.3)', padding: '0.5rem 1rem',
+                  color: 'var(--primary)', transition: 'background 0.3s ease, color 0.3s ease',
+                  width: 'fit-content',
+                }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--primary)'; (e.currentTarget as HTMLElement).style.color = 'var(--on-primary)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--primary)'; }}
+                >
+                  Quick View
+                </button>
+              </Link>
+            ))}
           </div>
         </section>
 
+        {/* ─── NEWSLETTER BENTO ─── */}
+        <section className="container" style={{ marginBottom: 'var(--section-gap)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--gutter)' }}>
+            <div className="glass-panel" style={{ padding: '3rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <h2 className="font-headline-lg" style={{ color: 'var(--primary)', marginBottom: '1rem' }}>Transmission from the Void</h2>
+              <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', marginBottom: '3rem' }}>
+                Receive early access to planetary collections and editorial narratives directly in your inbox.
+              </p>
+              <form style={{ display: 'flex', gap: '1rem' }} onSubmit={e => e.preventDefault()}>
+                <input
+                  type="email" placeholder="YOUR@EMAIL.COM"
+                  style={{
+                    flex: 1, background: 'transparent',
+                    border: 'none', borderBottom: '1px solid var(--outline-variant)',
+                    padding: '1rem 0', color: 'var(--primary)',
+                    fontFamily: 'var(--font-body)', fontSize: '12px',
+                    fontWeight: 600, letterSpacing: '0.2em', outline: 'none',
+                  }}
+                />
+                <button type="submit" className="btn-primary" style={{ padding: '1rem 2rem', letterSpacing: '0.2em' }}>JOIN</button>
+              </form>
+            </div>
+            <div style={{ position: 'relative', overflow: 'hidden', minHeight: '400px' }}>
+              <Image
+                src="/WhatsApp Image 2026-05-29 at 12.50.12 PM (1).jpeg"
+                alt="Collection"
+                fill
+                style={{ objectFit: 'cover', opacity: 0.6 }}
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, var(--background), transparent)' }} />
+            </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>

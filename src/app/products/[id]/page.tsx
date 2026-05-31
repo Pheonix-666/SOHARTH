@@ -60,6 +60,8 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
     );
   }
 
+  const safeImages = product.images && product.images.length > 0 ? product.images : [product.image];
+
   return (
     <>
       <Navbar />
@@ -80,14 +82,14 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div style={{ gridColumn: 'span 2', position: 'relative', aspectRatio: '4/5', overflow: 'hidden', backgroundColor: 'var(--surface-container)' }}>
               <Image
-                src={product.images[activeImage] || product.image}
+                src={safeImages[activeImage] || safeImages[0] || product.image}
                 alt={product.name}
                 fill
                 style={{ objectFit: 'cover', objectPosition: 'center top', transition: 'transform 1s ease' }}
                 priority
               />
             </div>
-            {product.images.slice(0, 2).map((img: string, i: number) => (
+            {safeImages.slice(0, 2).map((img: string, i: number) => (
               <div
                 key={i}
                 onClick={() => setActiveImage(i)}
@@ -241,7 +243,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               </div>
               <div style={{ position: 'relative', aspectRatio: '16/9', overflow: 'hidden' }} className="glass-panel">
                 <Image
-                  src={product.images[1] || product.image}
+                  src={safeImages[1] || safeImages[0] || product.image}
                   alt={`${product.name} detail`}
                   fill
                   style={{ objectFit: 'cover', filter: 'grayscale(60%)', opacity: 0.7, transition: 'all 1s ease' }}
