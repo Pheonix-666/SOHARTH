@@ -1,77 +1,61 @@
-import { NextResponse } from 'next/server';
-import { getProducts, saveProducts } from '@/lib/db';
+// src/app/api/products/[id]/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase';
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const products = await getProducts();
-    const product = products.find((p: any) => p.id === id);
-
-    if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(product);
-  } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+/**
+ * GET a single product by ID
+ */
+export async function GET(req: NextRequest) {
+  const { id } = params;
+  if (!id) {
+    return NextResponse.json({ error: 'Missing id parameter' }, { status: 400 });
   }
+
+  const { data, error } = await supabaseAdmin
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const body = await request.json();
-    const products = await getProducts();
-    const index = products.findIndex((p: any) => p.id === id);
-
-    if (index === -1) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-    }
-
-    // Merge existing details with incoming updates
-    const updatedProduct = {
-      ...products[index],
-      ...body,
-      id, // Lock ID integrity
-      price: body.price !== undefined ? Number(body.price) : products[index].price,
-      name: body.name ? body.name.toUpperCase() : products[index].name,
-    };
-
-    products[index] = updatedProduct;
-    await saveProducts(products);
-
-    return NextResponse.json({ success: true, product: updatedProduct });
-  } catch (error) {
-    console.error('Error updating product:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+/**
+ * PATCH (or PUT) updates a product by ID
+ */
+export async function PATCH(req: NextRequest) {
+  const { id } = params;
+  if (!id) {
+    return NextResponse.json({ error: 'Missing id parameter' }, { status: 400 });
   }
+  const updates = await req.json();
+
+  const { data, error } = await supabaseAdmin
+    .from('products')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true, product: data });
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
-    const products = await getProducts();
-    const index = products.findIndex((p: any) => p.id === id);
-
-    if (index === -1) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-    }
-
-    const filteredProducts = products.filter((p: any) => p.id !== id);
-    await saveProducts(filteredProducts);
-
-    return NextResponse.json({ success: true, message: 'Product deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting product:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+/**
+ * DELETE a product by ID
+ */
+export async function DELETE(req: NextRequest) {
+  const { id } = params;
+  if (!id) {
+    return NextResponse.json({ error: 'Missing id parameter' }, { status: 400 });
   }
+
+  const { error } = await supabaseAdmin
+    .from('products')
+    .delete()
+    .eq('id', id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
 }

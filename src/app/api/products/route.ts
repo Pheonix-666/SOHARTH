@@ -1,57 +1,56 @@
-import { NextResponse } from 'next/server';
-import { getProducts, saveProducts } from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase';
 
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
+export async function GET() {
+  const { data, error } = await supabaseAdmin
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-    const products = await getProducts();
-    let filteredProducts = products;
-    
-    if (category) {
-      filteredProducts = products.filter((p: any) => p.category === category);
-    }
-
-    return NextResponse.json(filteredProducts);
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
-  }
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json(data);
 }
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { name, subtitle, price, category, tag, image, images, description, collection, material, shipping } = body;
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const { data, error } = await supabaseAdmin
+    .from('products')
+    .insert(body)
+    .select()
+    .single();
 
-    if (!name || !price || !category) {
-      return NextResponse.json({ error: 'Missing required fields: name, price, category are mandatory' }, { status: 400 });
-    }
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true, product: data });
+}
 
-    const products = await getProducts();
-    
-    // Create new product object with safe fallbacks matching our high-fashion aesthetic
-    const newProduct = {
-      id: Math.random().toString(36).substring(2, 10).toUpperCase(),
-      name: name.toUpperCase(),
-      subtitle: subtitle || 'Premium Collection Piece',
-      price: Number(price),
-      category: category.toLowerCase(),
-      tag: tag || '',
-      image: image || '/WhatsApp Image 2026-05-29 at 12.50.11 PM.jpeg',
-      images: images && images.length > 0 ? images : [image || '/WhatsApp Image 2026-05-29 at 12.50.11 PM.jpeg'],
-      description: description || 'Meticulously crafted designer garment. Engineered with architectural precision.',
-      collection: collection || 'COLLECTION 01: NEBULA',
-      material: material || '100% Organic Virgin Fiber Blend. Dry clean only.',
-      shipping: shipping || 'Complimentary express shipping on orders over $500. 30-day return window.',
-    };
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
 
-    products.push(newProduct);
-    await saveProducts(products);
+  if (!id) return NextResponse.json({ error: 'No ID provided' }, { status: 400 });
 
-    return NextResponse.json({ success: true, product: newProduct });
-  } catch (error) {
-    console.error('Error creating product:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
+  const { error } = await supabaseAdmin
+    .from('products')
+    .delete()
+    .eq('id', id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
+}
+
+export async function PATCH(req: NextRequest) {
+  const body = await req.json();
+  const { id, ...updates } = body;
+
+  if (!id) return NextResponse.json({ error: 'No ID provided' }, { status: 400 });
+
+  const { data, error } = await supabaseAdmin
+    .from('products')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true, product: data });
 }

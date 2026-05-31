@@ -6,5 +6,9 @@
   {
     "value": "essentials",
     "label": "ESSENTIALS"
+  },
+  {
+    "value": "heroic",
+    "label": "HEROIC"
   }
 ]
