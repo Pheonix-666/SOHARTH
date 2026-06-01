@@ -59,7 +59,7 @@ export default function Home() {
         {/* ─── HERO ─── */}
         <section style={{ position: 'relative', height: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           <Image
-            src="/hero-bg.png"
+            src="/hero-bg.jpeg"
             alt="Solarth hero"
             fill
             priority
