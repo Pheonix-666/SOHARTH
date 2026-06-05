@@ -36,7 +36,7 @@ export default function AccountPage() {
     const [msg, setMsg] = useState('');
 
     useEffect(() => {
-        if (!loading && !user) router.push('/auth/login?from=/account');
+        // Redirect removed to disable user login requirement
     }, [user, loading]);
 
     useEffect(() => {

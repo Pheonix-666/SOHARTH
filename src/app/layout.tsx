@@ -1,9 +1,4 @@
-import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
-import "./globals.css";
-
 import { CartProvider } from "@/context/CartContext";
-import { AuthProvider } from "@/context/AuthContext";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -32,11 +27,9 @@ export default function RootLayout({
         />
       </head>
       <body className={manrope.variable}>
-        <AuthProvider>
-          <CartProvider>
-            {children}
-          </CartProvider>
-        </AuthProvider>
+        <CartProvider>
+          {children}
+        </CartProvider>
       </body>
     </html>
   );

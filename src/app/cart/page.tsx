@@ -16,7 +16,7 @@ export default function CartPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       // redirect to login with return path
-      window.location.href = '/auth/login?from=/cart';
+      // redirect to login with return path (removed)
     }
   }, [user, authLoading]);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
