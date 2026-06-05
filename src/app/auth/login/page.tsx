@@ -2,7 +2,9 @@
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import styles from '../auth.module.css';
 import Link from 'next/link';
+
 
 const inputStyle: React.CSSProperties = {
     background: 'transparent',
@@ -35,30 +37,32 @@ function LoginForm() {
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-form">
-                <h1 style={{ color: '#e5e2e0', letterSpacing: '0.3em', fontSize: '14px', textAlign: 'center', margin: 0 }}>
-                    SIGN IN
-                </h1>
-
-                <input type="email" placeholder="Email Address" value={email}
-                    onChange={e => setEmail(e.target.value)} className="auth-input" />
-                <input type="password" placeholder="Password" value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleLogin()} style={inputStyle} />
-
-                {error && <p style={{ color: '#ff4b4b', fontSize: '12px', margin: 0 }}>{error}</p>}
-
-                <button onClick={handleLogin} disabled={loading}
-                    style={{ padding: '1rem', background: 'transparent', border: '1px solid rgba(229,226,224,0.3)', color: '#e5e2e0', cursor: loading ? 'not-allowed' : 'pointer', letterSpacing: '0.2em', fontSize: '11px', opacity: loading ? 0.5 : 1, transition: 'all 0.3s' }}>
-                    {loading ? 'SIGNING IN...' : 'SIGN IN'}
-                </button>
-
-                <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(229,226,224,0.4)', margin: 0 }}>
-                    No account?{' '}
-                    <Link href="/auth/signup" style={{ color: '#e5e2e0', letterSpacing: '0.1em' }}>CREATE ONE</Link>
-                </p>
-            </div>
+        <div className={styles.authContainer}>
+          <div className={styles.authForm}>
+            <h1 className={styles.heading}>SIGN IN</h1>
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className={styles.inputField}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleLogin()}
+              className={styles.inputField}
+            />
+            {error && <p className={styles.errorMsg}>{error}</p>}
+            <button onClick={handleLogin} disabled={loading} className={styles.authButton}>
+              {loading ? 'SIGNING IN...' : 'SIGN IN'}
+            </button>
+            <p className={styles.footerText}>
+              No account? <Link href="/auth/signup" className={styles.linkText}>CREATE ONE</Link>
+            </p>
+          </div>
         </div>
     );
 }

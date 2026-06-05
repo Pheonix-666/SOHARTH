@@ -16,6 +16,8 @@ interface AuthContextType {
     signUp: (email: string, password: string, fullName: string, phone: string) => Promise<{ error: string | null }>;
     signIn: (email: string, password: string) => Promise<{ error: string | null }>;
     signOut: () => Promise<void>;
+    addAddress: (address: { street: string; city: string; state: string; zip: string; country: string }) => Promise<{ error: string | null }>;
+    getAddresses: () => Promise<any[]>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -76,11 +78,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const signOut = async () => {
-        await supabaseBrowser.auth.signOut();
+  const { error } = await supabaseBrowser.auth.signOut();
+  if (error) console.error('Sign out error:', error);
+  setUser(null);
+  setProfile(null);
+  return;
+};
+
+    // ----- Address handling -----
+    const addAddress = async (address: {
+      street: string;
+      city: string;
+      state: string;
+      zip: string;
+      country: string;
+    }) => {
+      if (!user?.id) return { error: 'User not authenticated' };
+      const { error } = await supabaseBrowser.from('addresses').insert({
+        user_id: user.id,
+        ...address,
+      });
+      return { error: error?.message ?? null };
+    };
+
+    const getAddresses = async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabaseBrowser
+        .from('addresses')
+        .select('*')
+        .eq('user_id', user.id);
+      if (error) console.error(error);
+      return data ?? [];
     };
 
     return (
-        <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut }}>
+        <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut, addAddress, getAddresses }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,14 +1,26 @@
 'use client';
+import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CartPage() {
   const { cart: items, updateQty, removeFromCart, clearCart, isHydrated } = useCart();
+  const { addAddress } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  useEffect(() => {
+    if (!authLoading && !user) {
+      // redirect to login with return path
+      window.location.href = '/auth/login?from=/cart';
+    }
+  }, [user, authLoading]);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [address, setAddress] = useState({ street: '', city: '', state: '', zip: '', country: '' });
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState('');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,9 +38,22 @@ export default function CartPage() {
   const total = subtotal + tax;
 
   const handleCheckout = async () => {
+    // Validate address fields
+    const { street, city, state, zip, country } = address;
+    if (!street || !city || !state || !zip || !country) {
+      alert('Please fill out your shipping address before checkout.');
+      return;
+    }
     if (items.length === 0) return;
     setIsCheckingOut(true);
     try {
+      // Save address to user profile
+      const { error: addrError } = await addAddress({ street, city, state, zip, country });
+      if (addrError) {
+        alert('Failed to save address: ' + addrError);
+        setIsCheckingOut(false);
+        return;
+      }
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -51,6 +76,19 @@ export default function CartPage() {
   };
 
   const crossSell = allProducts.filter(p => !items.find(i => i.id === p.id)).slice(0, 4);
+
+  // Simple input style for address fields
+  const addressInputStyle: React.CSSProperties = {
+    background: 'transparent',
+    border: 'none',
+    borderBottom: '1px solid rgba(229,226,224,0.2)',
+    padding: '0.5rem 0',
+    color: '#e5e2e0',
+    outline: 'none',
+    fontSize: '13px',
+    width: '100%',
+    marginBottom: '0.75rem',
+  };
 
   if (!isHydrated) {
     return (
@@ -105,6 +143,22 @@ export default function CartPage() {
         <div className="container">
 
           {/* Header */}
+          {/* Address Form (mobile) */}
+          <div className="auth-container" style={{ marginBottom: '2rem' }}>
+            <div className="auth-form">
+              <h2 style={{ color: '#e5e2e0', marginBottom: '1rem' }}>Shipping Address</h2>
+              {['street', 'city', 'state', 'zip', 'country'].map(key => (
+                <input
+                  key={key}
+                  type="text"
+                  placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
+                  value={address[key as keyof typeof address]}
+                  onChange={e => setAddress({ ...address, [key]: e.target.value })}
+                  style={addressInputStyle}
+                />
+              ))}
+            </div>
+          </div>
           <header style={{ marginBottom: '4rem' }}>
             <h1 className="font-headline-lg" style={{ color: 'var(--primary)', marginBottom: '1rem' }}>Your Selection</h1>
             <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', maxWidth: '500px' }}>
