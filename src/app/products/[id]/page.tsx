@@ -77,7 +77,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
         </div>
 
         {/* ─── PRODUCT SECTION ─── */}
-        <section className="container" style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: 'var(--gutter)', paddingBottom: '3rem', alignItems: 'start' }}>
+        <section className="container product-detail-grid" style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: 'var(--gutter)', paddingBottom: '3rem', alignItems: 'start' }}>
 
           {/* Gallery */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -107,7 +107,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
           </div>
 
           {/* Product Info — Sticky */}
-          <div style={{ position: 'sticky', top: '140px', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          <div className="product-info-sticky" style={{ position: 'sticky', top: '140px', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
             {/* Title Block */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -134,7 +134,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className="font-label-caps"
+                    className="font-label-caps size-btn"
                     style={{
                       padding: '1rem 0',
                       backgroundColor: selectedSize === size ? 'var(--primary)' : 'transparent',
@@ -223,7 +223,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
         {/* ─── DESIGN RATIONALE ─── */}
         <section style={{ backgroundColor: 'var(--surface-dim)', padding: 'var(--section-gap) 0', marginTop: 'var(--section-gap)', position: 'relative', overflow: 'hidden' }}>
           <div className="container">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--gutter)', alignItems: 'center' }}>
+            <div className="design-rationale-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--gutter)', alignItems: 'center' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
                 <div>
                   <h2 className="font-headline-lg" style={{ marginBottom: '1.5rem' }}>DESIGN RATIONALE</h2>

@@ -101,7 +101,7 @@ export default function Home() {
 
         {/* ─── BRAND STATEMENT ─── */}
         <section style={{ padding: 'var(--section-gap) 0' }}>
-          <div className="container" style={{ maxWidth: '760px', textAlign: 'center' }}>
+          <div className="container brand-statement" style={{ maxWidth: '760px', textAlign: 'center' }}>
             <span className="material-symbols-outlined shimmer" style={{ fontSize: '2.5rem', opacity: 0.4, marginBottom: '2rem', display: 'block' }}>
               auto_awesome
             </span>
@@ -114,22 +114,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ─── MOBILE SEARCH & FILTERS ─── */}
-        <section className="mobile-only" style={{ paddingTop: '2rem' }}>
-          <div className="container">
-            <div className="search-bar-container">
-              <span className="material-symbols-outlined" style={{ color: 'var(--on-surface-variant)' }}>search</span>
-              <input type="text" placeholder="Search..." />
-              <span className="material-symbols-outlined" style={{ color: 'var(--on-surface-variant)' }}>tune</span>
-            </div>
-            <div className="category-pills-container">
-              <button className="category-pill active">All</button>
-              <button className="category-pill">Women</button>
-              <button className="category-pill">Man</button>
-              <button className="category-pill">Kid</button>
-            </div>
-          </div>
-        </section>
+
 
         {/* ─── NEW ARRIVALS BENTO ─── */}
         <section style={{ paddingBottom: 'var(--section-gap)' }}>
@@ -222,7 +207,7 @@ export default function Home() {
             />
           </div>
           <div className="container" style={{ position: 'relative', zIndex: 10 }}>
-            <div className="glass-panel" style={{ maxWidth: '600px', padding: '4rem' }}>
+            <div className="glass-panel glass-panel-mobile" style={{ maxWidth: '600px', padding: '4rem' }}>
               <span className="font-label-caps" style={{ color: 'var(--primary)', letterSpacing: '0.4em', marginBottom: '2rem', display: 'block' }}>
                 The Alpine Edit
               </span>

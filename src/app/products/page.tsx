@@ -78,7 +78,7 @@ export default function ProductsPage({
           padding: '2rem 0', marginBottom: '3rem',
           borderBottom: '1px solid rgba(255,255,255,0.05)'
         }}>
-          <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2.5rem' }}>
+          <div className="container filter-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2.5rem' }}>
             {filters.map(f => (
               <Link
                 key={f.label}
@@ -100,15 +100,14 @@ export default function ProductsPage({
 
         {/* ─── PRODUCT GRID ─── */}
         <section className="container" style={{ paddingBottom: 'var(--section-gap)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0 var(--gutter)', rowGap: '8rem' }}>
+          <div className="catalog-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0 var(--gutter)', rowGap: '8rem' }}>
             {displayProducts.map((product, i) => (
               <Link
                 href={`/products/${product.id}`}
                 key={product.id}
-                className="product-card"
+                className={`product-card ${i % 2 === 1 ? 'catalog-item-offset' : ''}`}
                 style={{
                   display: 'flex', flexDirection: 'column',
-                  transform: i % 2 === 1 ? 'translateY(40px)' : 'none',
                 }}
               >
                 <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container-low)' }}>
@@ -149,8 +148,9 @@ export default function ProductsPage({
 
         {/* ─── NEWSLETTER BENTO ─── */}
         <section className="container" style={{ marginBottom: 'var(--section-gap)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--gutter)' }}>
-            <div className="glass-panel" style={{ padding: '3rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="newsletter-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--gutter)' }}
+          >
+            <div className="glass-panel glass-panel-mobile" style={{ padding: '3rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <h2 className="font-headline-lg" style={{ color: 'var(--primary)', marginBottom: '1rem' }}>Transmission from the Void</h2>
               <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', marginBottom: '3rem' }}>
                 Receive early access to planetary collections and editorial narratives directly in your inbox.

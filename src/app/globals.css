@@ -24,7 +24,7 @@
   --error: #ffb4ab;
 
   /* Typography */
-  --font-display: var(--font-caslon), 'Georgia', serif;
+  --font-display: var(--font-manrope), 'Helvetica Neue', sans-serif;
   --font-body: var(--font-manrope), 'Helvetica Neue', sans-serif;
 
   /* Spacing */
@@ -163,16 +163,110 @@ main {
   }
 
   .font-display-hero {
-    font-size: 48px;
-    line-height: 56px;
+    font-size: 40px;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
   }
 
   .font-headline-lg {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: 0.03em;
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+  }
+
+  .font-headline-md {
+    font-size: 20px;
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+  }
+
+  .font-body-lg {
+    font-size: 15px;
+    line-height: 1.35;
+  }
+
+  .font-body-md {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .font-caption {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  /* Left align paragraphs on mobile */
+  p, .font-body-lg, .font-body-md, .font-caption {
+    text-align: left !important;
+  }
+  
+  .text-center-mobile-left {
+    text-align: left !important;
+  }
+
+  /* Responsive Grids & Layouts */
+  .catalog-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+    row-gap: 3rem !important;
+  }
+
+  .catalog-item-offset {
+    transform: none !important;
+  }
+
+  .filter-bar {
+    justify-content: flex-start !important;
+    gap: 1.5rem !important;
+    overflow-x: auto;
+    width: 100%;
+    padding: 0.5rem var(--margin-mobile) !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .product-detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2.5rem !important;
+  }
+
+  .product-info-sticky {
+    position: static !important;
+    gap: 1.5rem !important;
   }
 }
+
+.catalog-item-offset {
+  transform: translateY(40px);
+}
+
+
+/* Micro-interactions & animations */
+.btn-primary, .btn-ghost, .btn-pill-cta {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-primary:active, .btn-ghost:active, .btn-pill-cta:active {
+  transform: scale(0.96);
+}
+.size-btn {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.size-btn:hover {
+  transform: translateY(-2px);
+}
+.size-btn:active {
+  transform: scale(0.95);
+}
+.product-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.product-card:hover {
+  transform: translateY(-4px);
+}
+
 
 /* ===========================
    GLASS MORPHISM
@@ -549,6 +643,37 @@ details summary::-webkit-details-marker {
     font-size: 11px;
     letter-spacing: 0.1em;
   }
+
+  /* Bento grid small cards: override inline gridColumn */
+  .product-grid .product-card {
+    grid-column: span 1 !important;
+  }
+  .product-grid .product-card.featured-card {
+    grid-column: span 2 !important;
+  }
+
+  /* Design Rationale 2-col grid on product detail */
+  .design-rationale-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Newsletter bento: single column on mobile, hide deco image */
+  .newsletter-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .newsletter-grid > div:last-child {
+    display: none !important;
+  }
+
+  /* Glass panel padding on mobile */
+  .glass-panel-mobile {
+    padding: 2rem !important;
+  }
+
+  /* Reduce section gap on mobile */
+  :root {
+    --section-gap: 64px;
+  }
   
   /* Floating CTA */
   .floating-cta-container {
@@ -561,6 +686,15 @@ details summary::-webkit-details-marker {
     justify-content: center;
     background: linear-gradient(to top, rgba(20,19,19,1) 30%, transparent);
     z-index: 100;
+  }
+
+  /* Brand statement: left-align on mobile */
+  .brand-statement {
+    text-align: left !important;
+    max-width: 100% !important;
+  }
+  .brand-statement .material-symbols-outlined {
+    text-align: left !important;
   }
   
   .btn-pill-cta {

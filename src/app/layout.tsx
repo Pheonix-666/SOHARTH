@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import { Libre_Caslon_Text, Manrope } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
-import { CartProvider } from "@/context/CartContext";
 
-const libreCaslon = Libre_Caslon_Text({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-caslon",
-  style: ["normal", "italic"],
-});
+import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -18,7 +13,8 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: "SOLARTH | Celestial Minimalism",
-  description: "Solarth bridges the gap between high-fashion editorial and cosmic wonder. Every piece is a quiet luxury, echoing the precision of astronomical phenomena.",
+  description:
+    "Solarth bridges the gap between high-fashion editorial and cosmic wonder. Every piece is a quiet luxury, echoing the precision of astronomical phenomena.",
 };
 
 export default function RootLayout({
@@ -30,13 +26,17 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+        />
       </head>
-      <body className={`${libreCaslon.variable} ${manrope.variable}`}>
-        <CartProvider>
-          {children}
-        </CartProvider>
+      <body className={manrope.variable}>
+        <AuthProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
