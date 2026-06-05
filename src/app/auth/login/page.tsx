@@ -35,14 +35,14 @@ function LoginForm() {
     };
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0909', padding: '2rem' }}>
-            <div style={{ width: '100%', maxWidth: '420px', padding: '3rem', border: '1px solid rgba(229,226,224,0.15)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className="auth-container">
+            <div className="auth-form">
                 <h1 style={{ color: '#e5e2e0', letterSpacing: '0.3em', fontSize: '14px', textAlign: 'center', margin: 0 }}>
                     SIGN IN
                 </h1>
 
                 <input type="email" placeholder="Email Address" value={email}
-                    onChange={e => setEmail(e.target.value)} style={inputStyle} />
+                    onChange={e => setEmail(e.target.value)} className="auth-input" />
                 <input type="password" placeholder="Password" value={password}
                     onChange={e => setPassword(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleLogin()} style={inputStyle} />

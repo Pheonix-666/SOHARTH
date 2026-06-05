@@ -112,7 +112,7 @@ export default function CartPage() {
             </p>
           </header>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: '3rem', alignItems: 'start' }}>
+          <div className="cart-grid">
 
             {/* Items List */}
             <section style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>

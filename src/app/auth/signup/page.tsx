@@ -59,9 +59,19 @@ function SignUpForm() {
     );
 
     return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0909', padding: '2rem' }}>
-            <div style={{ width: '100%', maxWidth: '420px', padding: '3rem', border: '1px solid rgba(229,226,224,0.15)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <h1 style={{ color: '#e5e2e0', letterSpacing: '0.3em', fontSize: '14px', textAlign: 'center', margin: 0 }}>
+        <div className="auth-container">
+            <div className="auth-form">
+                <h1 style={{ color: '#e5e2e0', letterSpacing: '0.3em', fontSize: '14px', textAlign: 'center', margin: 0 }}>CREATE ACCOUNT</h1>
+                {[{ key: 'fullName', placeholder: 'Full Name', type: 'text' },{ key: 'email', placeholder: 'Email Address', type: 'email' },{ key: 'phone', placeholder: 'Phone Number', type: 'tel' },{ key: 'password', placeholder: 'Password', type: 'password' },{ key: 'confirm', placeholder: 'Confirm Password', type: 'password' }].map(field => (
+                    <input
+                        key={field.key}
+                        type={field.type}
+                        placeholder={field.placeholder}
+                        value={form[field.key as keyof typeof form]}
+                        onChange={e => setForm({ ...form, [field.key]: e.target.value })}
+                        className="auth-input"
+                    />
+                ))}                <h1 style={{ color: '#e5e2e0', letterSpacing: '0.3em', fontSize: '14px', textAlign: 'center', margin: 0 }}>
                     CREATE ACCOUNT
                 </h1>
 

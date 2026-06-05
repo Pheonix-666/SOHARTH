@@ -49,7 +49,7 @@ export default function AboutPage() {
         </section>
 
         {/* Narrative Sections */}
-        <section className="container" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', marginBottom: '8rem', alignItems: 'start' }}>
+        <section className="container about-narrative-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', marginBottom: '8rem', alignItems: 'start' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderLeft: '1px solid rgba(229,226,224,0.2)', paddingLeft: '2rem' }}>
               <span className="font-headline-md" style={{ color: 'var(--primary)', letterSpacing: '0.1em' }}>01 / THE COSMIC SYNAPSE</span>
@@ -86,7 +86,7 @@ export default function AboutPage() {
               </div>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--gutter)' }}>
+            <div className="about-philosophy-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--gutter)' }}>
               {[
                 {
                   no: "I",
@@ -115,10 +115,10 @@ export default function AboutPage() {
         </section>
 
         {/* Dynamic CTA */}
-        <section className="container" style={{ marginTop: 'var(--section-gap)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+        <section className="container about-cta" style={{ marginTop: 'var(--section-gap)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
           <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em' }}>EXPLORE OUR WORKS</span>
           <h2 className="font-headline-lg" style={{ color: 'var(--primary)', maxWidth: '600px', lineHeight: 1.2 }}>EXPERIENCE THE COGNITIVE SIMPLICITY OF SOLARTH</h2>
-          <div style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem' }}>
+          <div className="about-cta-buttons" style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem' }}>
             <Link href="/products" className="btn-primary" style={{ padding: '1.25rem 3rem' }}>VIEW COLLECTIONS</Link>
             <Link href="/" className="btn-ghost" style={{ padding: '1.25rem 3rem' }}>RETURN HOME</Link>
           </div>
