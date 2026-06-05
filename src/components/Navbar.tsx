@@ -3,11 +3,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Navbar() {
   const [scrolled, setScrolled]   = useState(false);
   const [menuOpen, setMenuOpen]   = useState(false);
   const { cartCount, isHydrated } = useCart();
+  const { user } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -61,6 +63,11 @@ export default function Navbar() {
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1.5rem' }}>
             <Link href="/about" className="nav-link nav-right-link desktop-only">Our Story</Link>
 
+            {/* Profile / Login */}
+            <Link href={user ? "/account" : "/auth/login"} className="nav-link nav-right-link desktop-only">
+              {user ? "Account" : "Sign In"}
+            </Link>
+
             {/* Cart */}
             <Link href="/cart" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
               <span className="material-symbols-outlined" style={{ color: 'var(--primary)', fontSize: '22px' }}>
@@ -113,6 +120,7 @@ export default function Navbar() {
             { href: '/products?category=new', label: 'New Arrivals' },
             { href: '/products',            label: 'Collections' },
             { href: '/about',               label: 'Our Story' },
+            { href: user ? '/account' : '/auth/login', label: user ? 'Account' : 'Sign In' },
             { href: '/cart',                label: 'Cart' },
           ].map(item => (
             <Link

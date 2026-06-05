@@ -36,8 +36,10 @@ export default function AccountPage() {
     const [msg, setMsg] = useState('');
 
     useEffect(() => {
-        // Redirect removed to disable user login requirement
-    }, [user, loading]);
+        if (!loading && !user) {
+            router.push('/auth/login?from=/account');
+        }
+    }, [user, loading, router]);
 
     useEffect(() => {
         if (user) fetchAddresses();

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import BottomNav from '@/components/BottomNav';
+
 import { useState, useEffect } from 'react';
 
 export default function Home() {
@@ -186,7 +186,7 @@ export default function Home() {
                   <div style={{ paddingTop: '1.5rem' }}>
                     <h3 className="font-headline-md" style={{ marginBottom: '0.5rem' }}>{p.name}</h3>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>${p.price.toLocaleString()}</span>
+                      <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>₹{p.price.toLocaleString()}</span>
                       <span className="font-label-caps" style={{ opacity: 0.4 }}>{p.subtitle.split('/')[1]?.trim()}</span>
                     </div>
                   </div>
@@ -261,7 +261,7 @@ export default function Home() {
         </section>
       </main>
       <Footer />
-      <BottomNav />
+
     </>
   );
 }

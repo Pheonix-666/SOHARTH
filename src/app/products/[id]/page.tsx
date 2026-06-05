@@ -117,7 +117,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               <h1 className="font-headline-lg" style={{ lineHeight: 1.1 }}>{product.name}</h1>
               <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)' }}>{product.description}</p>
               <div className="font-headline-md" style={{ paddingTop: '0.5rem' }}>
-                ${product.price.toLocaleString()}
+                ₹{product.price.toLocaleString()}
               </div>
             </div>
 
@@ -194,7 +194,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
             <div style={{ borderTop: '1px solid rgba(71,71,65,0.3)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0' }}>
               {[
                 { key: 'materials', label: 'MATERIALS & CARE', content: product.material },
-                { key: 'shipping',  label: 'SHIPPING & RETURNS', content: product.shipping },
+                { key: 'shipping', label: 'SHIPPING & RETURNS', content: product.shipping },
               ].map(({ key, label, content }) => (
                 <div key={key} style={{ borderBottom: '1px solid rgba(71,71,65,0.3)' }}>
                   <button
@@ -277,7 +277,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                       <h5 className="font-label-caps" style={{ marginBottom: '0.25rem', transition: 'color 0.3s' }}>{p.name}</h5>
                       <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>{p.subtitle}</p>
                     </div>
-                    <span className="font-body-md">${p.price.toLocaleString()}</span>
+                    <span className="font-body-md">₹{p.price.toLocaleString()}</span>
                   </div>
                 </Link>
               ))}

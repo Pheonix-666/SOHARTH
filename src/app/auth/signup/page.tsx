@@ -1,101 +1,183 @@
 'use client';
 import { useState, Suspense } from 'react';
-
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
-import styles from '../auth.module.css';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
-const inputStyle: React.CSSProperties = {
-    background: 'transparent',
-    border: 'none',
-    borderBottom: '1px solid rgba(229,226,224,0.2)',
-    padding: '0.75rem 0',
-    color: '#e5e2e0',
-    outline: 'none',
-    fontSize: '13px',
-    width: '100%',
-    marginBottom: '1rem',
-};
+function SignupForm() {
+    const [fullName, setFullName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+    const { signUp } = useAuth();
 
-function SignUpForm() {
-  const { signUp: authSignUp, addAddress } = useAuth();
+    const handleSignup = async () => {
+        if (!email || !password || !fullName || !phone) {
+            setError('Please fill out all fields.');
+            return;
+        }
+        setLoading(true);
+        setError('');
 
-  const [form, setForm] = useState({
-    fullName: '', email: '', phone: '', password: '', confirm: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+        const { error: signUpError } = await signUp(email, password, fullName, phone);
 
-  const handleSubmit = async () => {
-    const { fullName, email, phone, password, confirm } = form;
-    if (!fullName || !email || !phone || !password || !confirm) {
-      setError('All fields are required.');
-      return;
-    }
-    if (password !== confirm) {
-      setError('Passwords do not match.');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      return;
-    }
-    setLoading(true);
-    setError('');
-    const { error: signUpError } = await authSignUp(email, password, fullName, phone);
-    if (signUpError) {
-      setError(signUpError);
-      setLoading(false);
-      return;
-    }
-    setSuccess(true);
-    setLoading(false);
-  };
-  if (success) return (
-    <div className={styles.successContainer}>
-      <div className={styles.successMessage}>
-        <h1 className={styles.heading}>CREATE ACCOUNT</h1>
-        <p className={styles.subtext}>Check your inbox and click the confirmation link to activate your account.</p>
-        <Link href="/auth/login" className={styles.linkText}>BACK TO LOGIN</Link>
-      </div>
-    </div>
-  );
+        if (signUpError) {
+            setError(signUpError);
+            setLoading(false);
+        } else {
+            router.push('/account');
+        }
+    };
 
-  const fields = [
-    { key: 'fullName', placeholder: 'Full Name', type: 'text' },
-    { key: 'email', placeholder: 'Email Address', type: 'email' },
-    { key: 'phone', placeholder: 'Phone Number', type: 'tel' },
-    { key: 'password', placeholder: 'Password', type: 'password' },
-    { key: 'confirm', placeholder: 'Confirm Password', type: 'password' },
-  ];
+    return (
+        <div style={{
+            minHeight: '80vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+        }}>
+            <div className="glass-panel" style={{
+                width: '100%',
+                maxWidth: '400px',
+                padding: '3rem',
+                border: '1px solid rgba(229,226,224,0.15)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.5rem',
+            }}>
+                <h1 style={{
+                    color: '#e5e2e0',
+                    letterSpacing: '0.3em',
+                    fontSize: '14px',
+                    textAlign: 'center',
+                    margin: 0,
+                    marginBottom: '1rem',
+                }}>
+                    CREATE ACCOUNT
+                </h1>
 
-  return (
-    <div className={styles.authContainer}>
-      <div className={styles.authForm}>
-        <h1 className={styles.heading}>CREATE ACCOUNT</h1>
-        {fields.map(field => (
-          <input
-            key={field.key}
-            type={field.type}
-            placeholder={field.placeholder}
-            value={form[field.key as keyof typeof form]}
-            onChange={e => setForm({ ...form, [field.key]: e.target.value })}
-            className={styles.inputField}
-          />
-        ))}
-        {error && <p className={styles.errorMsg}>{error}</p>}
-        <button onClick={handleSubmit} disabled={loading} className={styles.authButton}>
-          {loading ? 'CREATING...' : 'CREATE ACCOUNT'}
-        </button>
-        <p className={styles.footerText}>
-          {"Already have an account? "}<Link href="/auth/login" className={styles.linkText}>LOGIN</Link>
-        </p>
-      </div>
-    </div>
-  );
+                <input
+                    type="text"
+                    placeholder="Full Name"
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
+                    style={{
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: '1px solid rgba(229,226,224,0.2)',
+                        padding: '0.75rem 0',
+                        color: '#e5e2e0',
+                        outline: 'none',
+                        fontSize: '13px',
+                        width: '100%',
+                    }}
+                />
+
+                <input
+                    type="tel"
+                    placeholder="Phone Number"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    style={{
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: '1px solid rgba(229,226,224,0.2)',
+                        padding: '0.75rem 0',
+                        color: '#e5e2e0',
+                        outline: 'none',
+                        fontSize: '13px',
+                        width: '100%',
+                    }}
+                />
+
+                <input
+                    type="email"
+                    placeholder="Email Address"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    style={{
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: '1px solid rgba(229,226,224,0.2)',
+                        padding: '0.75rem 0',
+                        color: '#e5e2e0',
+                        outline: 'none',
+                        fontSize: '13px',
+                        width: '100%',
+                    }}
+                />
+
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSignup()}
+                    style={{
+                        background: 'transparent',
+                        border: 'none',
+                        borderBottom: '1px solid rgba(229,226,224,0.2)',
+                        padding: '0.75rem 0',
+                        color: '#e5e2e0',
+                        outline: 'none',
+                        fontSize: '13px',
+                        width: '100%',
+                    }}
+                />
+
+                {error && (
+                    <p style={{ color: '#ff4b4b', fontSize: '12px', margin: 0 }}>
+                        {error}
+                    </p>
+                )}
+
+                <button
+                    onClick={handleSignup}
+                    disabled={loading || !email || !password || !fullName || !phone}
+                    style={{
+                        padding: '1rem',
+                        background: 'transparent',
+                        border: '1px solid rgba(229,226,224,0.3)',
+                        color: '#e5e2e0',
+                        cursor: loading || !email || !password || !fullName || !phone ? 'not-allowed' : 'pointer',
+                        letterSpacing: '0.2em',
+                        fontSize: '11px',
+                        opacity: loading || !email || !password || !fullName || !phone ? 0.5 : 1,
+                        transition: 'all 0.3s',
+                        marginTop: '1rem',
+                    }}
+                >
+                    {loading ? 'CREATING...' : 'SIGN UP'}
+                </button>
+
+                <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                    <p style={{ fontSize: '12px', color: 'rgba(229,226,224,0.5)' }}>
+                        Already have an account?{' '}
+                        <Link href="/auth/login" style={{ color: '#e5e2e0', textDecoration: 'underline' }}>
+                            Sign in
+                        </Link>
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
 }
 
-export default function SignUpPage() {
-  return <Suspense><SignUpForm /></Suspense>;
+export default function SignupPage() {
+    return (
+        <>
+            <Navbar />
+            <main style={{ paddingTop: '8.75rem', paddingBottom: 'var(--section-gap)', minHeight: '100vh', background: '#0a0909' }}>
+                <Suspense fallback={<div style={{ textAlign: 'center', marginTop: '5rem', color: 'rgba(229,226,224,0.5)' }}>Loading...</div>}>
+                    <SignupForm />
+                </Suspense>
+            </main>
+            <Footer />
+        </>
+    );
 }

@@ -7,12 +7,10 @@ import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
-import { useAuth } from '@/context/AuthContext';
 
 export default function CartPage() {
   const { cart: items, updateQty, removeFromCart, clearCart, isHydrated } = useCart();
-  const { addAddress } = useAuth();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, addAddress } = useAuth();
   useEffect(() => {
     if (!authLoading && !user) {
       // redirect to login with return path
@@ -197,7 +195,7 @@ export default function CartPage() {
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                         <h3 className="font-headline-md" style={{ color: 'var(--primary)' }}>{item.name}</h3>
-                        <p className="font-body-md" style={{ color: 'var(--primary)', flexShrink: 0, marginLeft: '1rem' }}>${(item.price * item.qty).toLocaleString()}</p>
+                        <p className="font-body-md" style={{ color: 'var(--primary)', flexShrink: 0, marginLeft: '1rem' }}>₹{(item.price * item.qty).toLocaleString()}</p>
                       </div>
                       <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)', marginBottom: '1rem' }}>{item.subtitle}</p>
                       <div style={{ display: 'flex', gap: '1rem' }}>
@@ -232,9 +230,9 @@ export default function CartPage() {
                 <h2 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '2rem', letterSpacing: '0.3em', textTransform: 'uppercase' }}>Order Summary</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2.5rem' }}>
                   {[
-                    { label: 'Subtotal', value: `$${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}` },
-                    { label: 'Celestial Shipping', value: subtotal > 500 ? 'Complimentary' : '$25.00' },
-                    { label: 'Tax (Estimated)', value: `$${tax.toFixed(2)}` },
+                    { label: 'Subtotal', value: `₹${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}` },
+                    { label: 'Celestial Shipping', value: subtotal > 500 ? 'Complimentary' : '₹25.00' },
+                    { label: 'Tax (Estimated)', value: `₹${tax.toFixed(2)}` },
                   ].map(row => (
                     <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <span className="font-body-md" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{row.label}</span>
@@ -243,7 +241,7 @@ export default function CartPage() {
                   ))}
                   <div style={{ borderTop: '1px solid rgba(71,71,65,0.2)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                     <span className="font-label-caps" style={{ color: 'var(--primary)' }}>ESTIMATED TOTAL</span>
-                    <span className="font-headline-md" style={{ color: 'var(--primary)' }}>${total.toFixed(2)}</span>
+                    <span className="font-headline-md" style={{ color: 'var(--primary)' }}>₹{total.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -306,7 +304,7 @@ export default function CartPage() {
                     }}>add_shopping_cart</button>
                   </div>
                   <h4 className="font-body-md" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{p.name}</h4>
-                  <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)' }}>${p.price.toLocaleString()}</p>
+                  <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)' }}>₹{p.price.toLocaleString()}</p>
                 </Link>
               ))}
             </div>

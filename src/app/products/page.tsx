@@ -128,7 +128,7 @@ export default function ProductsPage({
                     <h3 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{product.name}</h3>
                     <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)' }}>{product.subtitle}</p>
                   </div>
-                  <span className="font-body-md" style={{ color: 'var(--primary)', flexShrink: 0, marginLeft: '1rem' }}>${product.price.toLocaleString()}</span>
+                  <span className="font-body-md" style={{ color: 'var(--primary)', flexShrink: 0, marginLeft: '1rem' }}>₹{product.price.toLocaleString()}</span>
                 </div>
                 <button className="font-label-caps" style={{
                   marginTop: '1rem', fontSize: '10px', letterSpacing: '0.3em',

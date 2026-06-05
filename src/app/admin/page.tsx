@@ -306,7 +306,7 @@ export default function AdminDashboard() {
       description: 'A heavyweight, architectural technical hoodie detailed with double-bonded dynamic spacer crepe lines.',
       collection: 'COLLECTION 02: HORIZON',
       material: '60% Rayon technical blend, 35% Recycled Spacer fiber, 5% Elastane.',
-      shipping: 'Complimentary express shipping on orders over $500.',
+      shipping: 'Complimentary express shipping on orders over ₹500.',
     });
   };
 
@@ -394,7 +394,7 @@ export default function AdminDashboard() {
                               </td>
                               <td className="font-body-md" style={{ padding: '1rem', color: 'var(--primary)' }}>{product.collection}</td>
                               <td className="font-label-caps" style={{ padding: '1rem', color: 'var(--on-surface-variant)', fontSize: '10px' }}>{product.category}</td>
-                              <td className="font-body-md" style={{ padding: '1rem', color: 'var(--primary)' }}>${product.price.toLocaleString()}</td>
+                              <td className="font-body-md" style={{ padding: '1rem', color: 'var(--primary)' }}>₹{product.price.toLocaleString()}</td>
                               <td className="font-caption" style={{ padding: '1rem' }}>
                                 {product.tag
                                   ? <span style={{ border: '1px solid rgba(255,255,255,0.2)', padding: '2px 8px', fontSize: '9px', letterSpacing: '0.1em' }}>{product.tag}</span>
@@ -736,15 +736,15 @@ export default function AdminDashboard() {
                                     {item.qty}x <span className="font-label-caps" style={{ fontSize: '11px', letterSpacing: '0.1em' }}>{item.name}</span>
                                     <strong style={{ color: 'var(--on-surface-variant)', fontSize: '9px', marginLeft: '8px', border: '1px solid rgba(255,255,255,0.1)', padding: '1px 4px' }}>SIZE {item.size}</strong>
                                   </span>
-                                  <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>${(item.price * item.qty).toLocaleString()}</span>
+                                  <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>₹{(item.price * item.qty).toLocaleString()}</span>
                                 </div>
                               ))}
                             </div>
                           </div>
                           <div style={{ borderLeft: '1px solid rgba(229,226,224,0.1)', paddingLeft: '2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'right' }}>
                             <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', fontSize: '9px' }}>TOTAL VALUE</span>
-                            <span className="font-headline-md" style={{ color: 'var(--primary)', fontSize: '24px' }}>${order.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                            <span className="font-caption" style={{ color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>Subtotal: ${order.subtotal.toLocaleString()}</span>
+                            <span className="font-headline-md" style={{ color: 'var(--primary)', fontSize: '24px' }}>₹{order.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                            <span className="font-caption" style={{ color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>Subtotal: ₹{order.subtotal.toLocaleString()}</span>
                           </div>
                         </div>
                       ))}

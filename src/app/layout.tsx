@@ -1,5 +1,9 @@
-import { CartProvider } from "@/context/CartContext";
+import { Manrope } from 'next/font/google';
+import type { Metadata } from 'next';
 
+import { CartProvider } from "@/context/CartContext";
+import { AuthProvider } from "@/context/AuthContext";
+import './globals.css';
 const manrope = Manrope({
   subsets: ["latin"],
   weight: ["200", "300", "400", "500", "600", "700", "800"],
@@ -27,9 +31,11 @@ export default function RootLayout({
         />
       </head>
       <body className={manrope.variable}>
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );
