@@ -37,6 +37,11 @@ export async function POST(request: Request) {
 
     console.log('Order saved to Supabase:', data.id);
 
+    // If logged in, clear their database cart
+    if (userId) {
+      await supabaseServer.from('carts').delete().eq('user_id', userId);
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Order placed successfully',
