@@ -283,6 +283,12 @@ main {
   -webkit-backdrop-filter: blur(24px);
   background: rgba(20, 19, 19, 0.7);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.25rem 0;
+  transition: padding 0.4s ease, background 0.4s ease, border 0.4s ease;
+}
+
+.glass-nav.scrolled {
+  padding: 0.75rem 0;
 }
 
 /* ===========================
@@ -374,6 +380,41 @@ main {
 
 .product-card:hover .card-image img {
   transform: scale(1.05);
+}
+
+/* ===========================
+   PRODUCT GALLERY & PAGE
+   =========================== */
+.product-main {
+  padding-top: 7.5rem;
+}
+.product-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.product-gallery-main {
+  position: relative;
+  aspect-ratio: 4/5;
+  overflow: hidden;
+  background-color: var(--surface-container);
+}
+.product-gallery-thumbnails {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 1rem;
+}
+.product-gallery-thumb {
+  position: relative;
+  aspect-ratio: 1/1;
+  overflow: hidden;
+  background-color: var(--surface-container);
+  cursor: pointer;
+  outline: 1px solid transparent;
+  transition: outline 0.3s ease;
+}
+.product-gallery-thumb.active {
+  outline: 1px solid var(--primary);
 }
 
 /* ===========================
@@ -915,6 +956,13 @@ details summary::-webkit-details-marker {
   .filter-bar::-webkit-scrollbar { display: none; }
 
   /* ─── PRODUCT DETAIL ─── */
+  .nav-product-page {
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
+  }
+  .product-main {
+    padding-top: 5rem !important;
+  }
   .product-detail-grid {
     grid-template-columns: 1fr !important;
     gap: 2rem !important;
@@ -925,6 +973,35 @@ details summary::-webkit-details-marker {
   }
   .design-rationale-grid {
     grid-template-columns: 1fr !important;
+  }
+  .product-gallery {
+    gap: 0.5rem;
+  }
+  .product-gallery-thumbnails {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .product-gallery-thumbnails::-webkit-scrollbar {
+    display: none;
+  }
+  .product-gallery-thumb {
+    flex: 0 0 80px;
+    scroll-snap-align: start;
+  }
+  .product-gallery-main {
+    aspect-ratio: 1/1;
+    width: 85%;
+    margin: 0 auto;
+    border-radius: 8px;
+  }
+  .add-to-bag-btn {
+    padding: 1rem !important;
+    font-size: 11px !important;
   }
 
   /* ─── CART PAGE ─── */

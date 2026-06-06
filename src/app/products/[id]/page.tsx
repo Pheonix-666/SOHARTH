@@ -38,7 +38,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
     return (
       <>
         <Navbar />
-        <main style={{ paddingTop: '8.75rem', paddingBottom: 'var(--section-gap)', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main className="product-main" style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="font-label-caps" style={{ letterSpacing: '0.3em', opacity: 0.5 }}>Receiving Coordinates...</div>
         </main>
         <Footer />
@@ -66,10 +66,10 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: '7.5rem' }}>
+      <main className="product-main">
 
         {/* ─── BREADCRUMB ─── */}
-        <div className="container" style={{ marginBottom: '2rem' }}>
+        <div className="container" style={{ marginBottom: '0.5rem' }}>
           <Link href="/products" className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', transition: 'color 0.3s' }}>
             <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_back</span>
             Back to Collections
@@ -80,8 +80,8 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
         <section className="container product-detail-grid" style={{ display: 'grid', gridTemplateColumns: '7fr 5fr', gap: 'var(--gutter)', paddingBottom: '3rem', alignItems: 'start' }}>
 
           {/* Gallery */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div style={{ gridColumn: 'span 2', position: 'relative', aspectRatio: '4/5', overflow: 'hidden', backgroundColor: 'var(--surface-container)' }}>
+          <div className="product-gallery">
+            <div className="product-gallery-main">
               <Image
                 src={safeImages[activeImage] || safeImages[0] || product.image}
                 alt={product.name}
@@ -90,20 +90,17 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                 priority
               />
             </div>
-            {safeImages.slice(0, 2).map((img: string, i: number) => (
-              <div
-                key={i}
-                onClick={() => setActiveImage(i)}
-                style={{
-                  position: 'relative', aspectRatio: '1/1', overflow: 'hidden',
-                  backgroundColor: 'var(--surface-container)', cursor: 'pointer',
-                  outline: activeImage === i ? '1px solid var(--primary)' : '1px solid transparent',
-                  transition: 'outline 0.3s ease',
-                }}
-              >
-                <Image src={img} alt={product.name} fill style={{ objectFit: 'cover', transition: 'transform 0.7s ease' }} />
-              </div>
-            ))}
+            <div className="product-gallery-thumbnails hide-scrollbar">
+              {safeImages.slice(0, 4).map((img: string, i: number) => (
+                <div
+                  key={i}
+                  onClick={() => setActiveImage(i)}
+                  className={`product-gallery-thumb ${activeImage === i ? 'active' : ''}`}
+                >
+                  <Image src={img} alt={product.name} fill style={{ objectFit: 'cover', transition: 'transform 0.7s ease' }} />
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Product Info — Sticky */}
@@ -115,7 +112,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                 {product.collection}
               </span>
               <h1 className="font-headline-lg" style={{ lineHeight: 1.1 }}>{product.name}</h1>
-              <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)' }}>{product.description}</p>
+              <p className="font-body-lg desktop-only" style={{ color: 'var(--on-surface-variant)' }}>{product.description}</p>
               <div className="font-headline-md" style={{ paddingTop: '0.5rem' }}>
                 ₹{product.price.toLocaleString()}
               </div>
@@ -147,6 +144,8 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                   </button>
                 ))}
               </div>
+
+              Back
             </div>
 
             {/* CTA Buttons */}
@@ -163,7 +162,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                   setIsAdded(true);
                   setTimeout(() => setIsAdded(false), 2000);
                 }}
-                className="btn-primary"
+                className="btn-primary add-to-bag-btn"
                 style={{
                   width: '100%',
                   padding: '1.5rem',
@@ -183,12 +182,15 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                 </span>
               </button>
               <button
-                className="btn-ghost"
+                className="btn-ghost desktop-only"
                 style={{ width: '100%', padding: '1.5rem', fontSize: '12px', letterSpacing: '0.2em' }}
               >
                 Add to Wishlist
               </button>
             </div>
+
+            {/* Mobile Description */}
+            <p className="font-body-lg mobile-only" style={{ color: 'var(--on-surface-variant)' }}>{product.description}</p>
 
             {/* Accordion Details */}
             <div style={{ borderTop: '1px solid rgba(71,71,65,0.3)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0' }}>

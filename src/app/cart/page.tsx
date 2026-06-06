@@ -181,67 +181,7 @@ export default function CartPage() {
         <div className="container">
 
           {/* Header */}
-          {/* Address Form (mobile) */}
-          <div className="auth-container" style={{ marginBottom: '2rem' }}>
-            <div className="auth-form">
-              <h2 style={{ color: '#e5e2e0', marginBottom: '1rem' }}>Shipping Address</h2>
-              
-              {savedAddresses.length > 0 && (
-                <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {savedAddresses.map(addr => (
-                    <label key={addr.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer', padding: '1rem', border: selectedAddressId === addr.id ? '1px solid var(--primary)' : '1px solid rgba(229,226,224,0.1)', borderRadius: '4px', transition: 'border 0.2s' }}>
-                      <input type="radio" name="saved_address" checked={selectedAddressId === addr.id}
-                        onChange={() => {
-                          setSelectedAddressId(addr.id);
-                          setAddress({
-                            street: addr.street || addr.line1 || '',
-                            city: addr.city || '',
-                            state: addr.state || '',
-                            zip: addr.zip || addr.pincode || '',
-                            country: addr.country || 'India'
-                          });
-                        }}
-                        style={{ marginTop: '4px', accentColor: 'var(--primary)' }}
-                      />
-                      <div>
-                        <p className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{addr.label || 'Saved Address'}</p>
-                        <p style={{ color: 'var(--on-surface-variant)', fontSize: '13px', lineHeight: 1.5 }}>
-                          {addr.line1 || addr.street}{addr.line2 ? `, ${addr.line2}` : ''}<br/>
-                          {addr.city}, {addr.state} {addr.pincode || addr.zip}<br/>
-                          {addr.country || 'India'}
-                        </p>
-                      </div>
-                    </label>
-                  ))}
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '1rem', border: selectedAddressId === 'new' ? '1px solid var(--primary)' : '1px solid rgba(229,226,224,0.1)', borderRadius: '4px', transition: 'border 0.2s' }}>
-                    <input type="radio" name="saved_address" checked={selectedAddressId === 'new'}
-                      onChange={() => {
-                        setSelectedAddressId('new');
-                        setAddress({ street: '', city: '', state: '', zip: '', country: '' });
-                      }}
-                      style={{ accentColor: 'var(--primary)' }}
-                    />
-                    <span style={{ color: '#e5e2e0', fontSize: '14px' }}>Use a new address</span>
-                  </label>
-                </div>
-              )}
 
-              {selectedAddressId === 'new' && (
-                <div style={{ animation: 'fadeIn 0.3s ease' }}>
-                  {['street', 'city', 'state', 'zip', 'country'].map(key => (
-                    <input
-                      key={key}
-                      type="text"
-                      placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-                      value={address[key as keyof typeof address]}
-                      onChange={e => setAddress({ ...address, [key]: e.target.value })}
-                      style={addressInputStyle}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
           <header style={{ marginBottom: '4rem' }}>
             <h1 className="font-headline-lg" style={{ color: 'var(--primary)', marginBottom: '1rem' }}>Your Selection</h1>
             <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', maxWidth: '500px' }}>
@@ -308,6 +248,68 @@ export default function CartPage() {
                 </div>
               ))}
             </section>
+
+                      {/* Address Form (mobile) */}
+          <div className="auth-container" style={{ marginBottom: '2rem' }}>
+            <div className="auth-form">
+              <h2 style={{ color: '#e5e2e0', marginBottom: '1rem' }}>Shipping Address</h2>
+              
+              {savedAddresses.length > 0 && (
+                <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {savedAddresses.map(addr => (
+                    <label key={addr.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer', padding: '1rem', border: selectedAddressId === addr.id ? '1px solid var(--primary)' : '1px solid rgba(229,226,224,0.1)', borderRadius: '4px', transition: 'border 0.2s' }}>
+                      <input type="radio" name="saved_address" checked={selectedAddressId === addr.id}
+                        onChange={() => {
+                          setSelectedAddressId(addr.id);
+                          setAddress({
+                            street: addr.street || addr.line1 || '',
+                            city: addr.city || '',
+                            state: addr.state || '',
+                            zip: addr.zip || addr.pincode || '',
+                            country: addr.country || 'India'
+                          });
+                        }}
+                        style={{ marginTop: '4px', accentColor: 'var(--primary)' }}
+                      />
+                      <div>
+                        <p className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{addr.label || 'Saved Address'}</p>
+                        <p style={{ color: 'var(--on-surface-variant)', fontSize: '13px', lineHeight: 1.5 }}>
+                          {addr.line1 || addr.street}{addr.line2 ? `, ${addr.line2}` : ''}<br/>
+                          {addr.city}, {addr.state} {addr.pincode || addr.zip}<br/>
+                          {addr.country || 'India'}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '1rem', border: selectedAddressId === 'new' ? '1px solid var(--primary)' : '1px solid rgba(229,226,224,0.1)', borderRadius: '4px', transition: 'border 0.2s' }}>
+                    <input type="radio" name="saved_address" checked={selectedAddressId === 'new'}
+                      onChange={() => {
+                        setSelectedAddressId('new');
+                        setAddress({ street: '', city: '', state: '', zip: '', country: '' });
+                      }}
+                      style={{ accentColor: 'var(--primary)' }}
+                    />
+                    <span style={{ color: '#e5e2e0', fontSize: '14px' }}>Use a new address</span>
+                  </label>
+                </div>
+              )}
+
+              {selectedAddressId === 'new' && (
+                <div style={{ animation: 'fadeIn 0.3s ease' }}>
+                  {['street', 'city', 'state', 'zip', 'country'].map(key => (
+                    <input
+                      key={key}
+                      type="text"
+                      placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
+                      value={address[key as keyof typeof address]}
+                      onChange={e => setAddress({ ...address, [key]: e.target.value })}
+                      style={addressInputStyle}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
             {/* Order Summary Panel */}
             <aside>

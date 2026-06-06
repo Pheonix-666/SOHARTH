@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useState, useRef } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
   const [scrolled, setScrolled]   = useState(false);
@@ -13,6 +14,7 @@ export default function Navbar() {
 
   const { cartCount, isHydrated } = useCart();
   const { user, profile, signOut } = useAuth();
+  const pathname = usePathname();
 
   const handleProfileEnter = () => {
     if (profileTimeout.current) clearTimeout(profileTimeout.current);
@@ -38,14 +40,12 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className="glass-nav"
+        className={`glass-nav ${scrolled ? 'scrolled' : ''} ${pathname?.startsWith('/products/') ? 'nav-product-page' : ''}`}
         style={{
           position: 'fixed',
           top: 0,
           width: '100%',
           zIndex: 50,
-          padding: scrolled ? '0.75rem 0' : '1.25rem 0',
-          transition: 'padding 0.4s ease',
         }}
       >
         <div
