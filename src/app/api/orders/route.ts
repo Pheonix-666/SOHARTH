@@ -1,32 +1,50 @@
 import { NextResponse } from 'next/server';
-import { saveOrder } from '@/lib/db';
+import { supabaseServer } from '@/lib/supabase-server';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { items, subtotal, tax, total } = body;
+    const { items, subtotal, tax, total, customer, shippingAddress, userId } = body;
 
     if (!items || items.length === 0) {
       return NextResponse.json({ success: false, error: 'Cannot checkout with an empty selection' }, { status: 400 });
     }
 
-    // Store in filesystem database persistently
-    const savedOrder = await saveOrder({
-      items,
-      subtotal,
-      tax,
-      total,
-    });
+    const { data, error } = await supabaseServer
+      .from('orders')
+      .insert({
+        user_id: userId || null,
+        items,
+        subtotal,
+        tax,
+        total,
+        customer: customer || {},
+        shipping_address: shippingAddress || {},
+        order_status: 'Pending',
+        payment_status: 'Pending',
+        payment_method: 'Cash on Delivery',
+        shipping_method: 'Standard',
+        tracking_number: '',
+        internal_notes: '',
+      })
+      .select('id')
+      .single();
 
-    console.log('Order processed persistently:', savedOrder);
+    if (error) {
+      console.error('Supabase order insert error:', error);
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Order placed successfully', 
-      orderId: savedOrder.id 
+    console.log('Order saved to Supabase:', data.id);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Order placed successfully',
+      orderId: data.id,
     });
   } catch (error) {
     console.error('Order registration error:', error);
     return NextResponse.json({ success: false, error: 'Invalid request payload' }, { status: 400 });
   }
 }
+

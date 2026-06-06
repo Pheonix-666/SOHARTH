@@ -78,7 +78,6 @@ export default function Home() {
               <div className="desktop-only" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                 <Link href="/products" className="btn-primary">Explore Collection</Link>
                 <Link href="/products?category=new" className="btn-ghost">New Arrivals</Link>
-                <Link href="/account" className="btn-ghost" style={{ marginLeft: '1rem' }}>My Account</Link>
               </div>
             </div>
           </div>

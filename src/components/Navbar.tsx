@@ -1,15 +1,26 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 
 export default function Navbar() {
   const [scrolled, setScrolled]   = useState(false);
   const [menuOpen, setMenuOpen]   = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const profileTimeout = useRef<NodeJS.Timeout | null>(null);
+
   const { cartCount, isHydrated } = useCart();
-  const { user } = useAuth();
+  const { user, profile, signOut } = useAuth();
+
+  const handleProfileEnter = () => {
+    if (profileTimeout.current) clearTimeout(profileTimeout.current);
+    setProfileDropdownOpen(true);
+  };
+  const handleProfileLeave = () => {
+    profileTimeout.current = setTimeout(() => setProfileDropdownOpen(false), 200);
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -64,9 +75,64 @@ export default function Navbar() {
             <Link href="/about" className="nav-link nav-right-link desktop-only">Our Story</Link>
 
             {/* Profile / Login */}
-            <Link href={user ? "/account" : "/auth/login"} className="nav-link nav-right-link desktop-only">
-              {user ? "Account" : "Sign In"}
-            </Link>
+            {user ? (
+              <div 
+                className="desktop-only" 
+                style={{ position: 'relative' }}
+                onMouseEnter={handleProfileEnter}
+                onMouseLeave={handleProfileLeave}
+              >
+                <Link href="/account" className="nav-link nav-right-link" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.5rem 0' }}>
+                  Hello, {profile?.full_name ? profile.full_name.split(' ')[0] : 'User'}
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px', transition: 'transform 0.3s', transform: profileDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>arrow_drop_down</span>
+                </Link>
+
+                {/* Dropdown Menu */}
+                {profileDropdownOpen && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    width: '200px',
+                    background: 'rgba(15,15,15,0.95)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(229,226,224,0.1)',
+                    borderRadius: '4px',
+                    padding: '1rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                    zIndex: 100
+                  }}>
+                    <div style={{ borderBottom: '1px solid rgba(229,226,224,0.1)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                      <span style={{ color: 'var(--primary)', fontSize: '13px', display: 'block' }}>{profile?.full_name || 'User'}</span>
+                      <span style={{ color: 'var(--on-surface-variant)', fontSize: '11px', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</span>
+                    </div>
+                    <Link href="/account" className="nav-link" style={{ fontSize: '12px', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>person</span>
+                      Your Profile
+                    </Link>
+                    <Link href="/account" className="nav-link" style={{ fontSize: '12px', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>inventory_2</span>
+                      Your Orders
+                    </Link>
+                    <button 
+                      onClick={() => { setProfileDropdownOpen(false); signOut(); }}
+                      className="nav-link" 
+                      style={{ fontSize: '12px', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', width: '100%' }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#ff4b4b' }}>logout</span>
+                      <span style={{ color: '#ff4b4b' }}>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link href="/auth/login" className="nav-link nav-right-link desktop-only">
+                Sign In
+              </Link>
+            )}
 
             {/* Cart */}
             <Link href="/cart" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>

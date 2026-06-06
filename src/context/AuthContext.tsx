@@ -58,22 +58,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const signUp = async (email: string, password: string, fullName: string, phone: string) => {
-        const { data, error } = await supabaseBrowser.auth.signUp({ email, password });
+        const { data, error } = await supabaseBrowser.auth.signUp({
+            email,
+            password,
+            options: {
+                data: { full_name: fullName, phone }, // stored in auth.users raw_user_meta_data
+            },
+        });
         if (error) return { error: error.message };
 
+        // Try to upsert profile immediately (works if email confirmation is off)
+        // If email confirmation is on, the DB trigger will handle it on confirmation
         if (data.user) {
-            await supabaseBrowser.from('profiles').insert({
+            const { error: profileError } = await supabaseBrowser.from('profiles').upsert({
                 id: data.user.id,
                 full_name: fullName,
                 phone,
-            });
+            }, { onConflict: 'id' });
+            if (profileError) {
+                console.warn('Profile upsert failed (will be created by DB trigger):', profileError.message);
+            }
         }
         return { error: null };
     };
 
     const signIn = async (email: string, password: string) => {
-        const { error } = await supabaseBrowser.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabaseBrowser.auth.signInWithPassword({ email, password });
         if (error) return { error: error.message };
+
+        // Ensure profile exists for this user (safety net for users who signed up
+        // before the trigger was added, or if trigger failed)
+        if (data.user) {
+            const { data: existing } = await supabaseBrowser
+                .from('profiles')
+                .select('id')
+                .eq('id', data.user.id)
+                .single();
+
+            if (!existing) {
+                const meta = data.user.user_metadata;
+                await supabaseBrowser.from('profiles').upsert({
+                    id: data.user.id,
+                    full_name: meta?.full_name ?? null,
+                    phone: meta?.phone ?? null,
+                }, { onConflict: 'id' });
+            }
+        }
         return { error: null };
     };
 

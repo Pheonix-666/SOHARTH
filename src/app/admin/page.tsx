@@ -35,6 +35,26 @@ interface Order {
   subtotal: number;
   tax: number;
   total: number;
+  customer?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  shippingAddress?: {
+    street?: string;
+    line1?: string;
+    city?: string;
+    state?: string;
+    zip?: string;
+    pincode?: string;
+    country?: string;
+  };
+  orderStatus?: string;
+  paymentStatus?: string;
+  paymentMethod?: string;
+  shippingMethod?: string;
+  trackingNumber?: string;
+  internalNotes?: string;
 }
 
 interface Category {
@@ -173,6 +193,72 @@ export default function AdminDashboard() {
     fetchCategories();
     fetchData();
   }, []);
+
+  // ── Orders Search & Filter States ─────────────────────────────────────────
+  const [orderSearch, setOrderSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  const filteredOrders = orders.filter(o => {
+    const searchLower = orderSearch.toLowerCase();
+    const matchesSearch = !orderSearch || 
+      o.id.toLowerCase().includes(searchLower) ||
+      (o.customer?.name || '').toLowerCase().includes(searchLower) ||
+      (o.customer?.email || '').toLowerCase().includes(searchLower) ||
+      (o.customer?.phone || '').includes(searchLower);
+    
+    const matchesStatus = statusFilter === 'All' || o.orderStatus === statusFilter || (!o.orderStatus && statusFilter === 'Pending');
+    return matchesSearch && matchesStatus;
+  });
+
+  const downloadCSV = () => {
+    const headers = ['Order ID', 'Date', 'Customer Name', 'Email', 'Phone', 'Address', 'Status', 'Payment Method', 'Tracking', 'Items', 'Total'];
+    const rows = filteredOrders.map(o => {
+      const itemsStr = o.items.map(i => `${i.qty}x ${i.name} (${i.size})`).join('; ');
+      const addr = o.shippingAddress ? `${o.shippingAddress.street || o.shippingAddress.line1 || ''}, ${o.shippingAddress.city}, ${o.shippingAddress.state} ${o.shippingAddress.zip || o.shippingAddress.pincode || ''}, ${o.shippingAddress.country}` : '';
+      return [
+        o.id,
+        new Date(o.timestamp).toLocaleString().replace(/,/g, ''),
+        o.customer?.name || '',
+        o.customer?.email || '',
+        o.customer?.phone || '',
+        `"${addr.replace(/"/g, '""')}"`,
+        o.orderStatus || 'Pending',
+        o.paymentMethod || 'Cash on Delivery',
+        o.trackingNumber || '',
+        `"${itemsStr.replace(/"/g, '""')}"`,
+        o.total
+      ].join(',');
+    });
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `solarth_orders_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleUpdateOrder = async (id: string, updates: any) => {
+    try {
+      const res = await fetch(`/api/admin/orders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      const data = await res.json();
+      if (data.success) {
+        // update local state
+        setOrders(orders.map(o => o.id === id ? { ...o, ...updates } : o));
+      } else {
+        alert('Failed to update order');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error while updating order');
+    }
+  };
 
   // ─── Create Category (shared handler) ─────────────────────────────────────
   const handleCreateCategory = async (
@@ -707,47 +793,178 @@ export default function AdminDashboard() {
               {/* ─── TAB 4: ORDER RELAY ─── */}
               {activeTab === 'orders' && (
                 <section>
-                  {orders.length === 0 ? (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: '300px' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Search by ID, Name, Email, Phone..." 
+                        value={orderSearch} 
+                        onChange={e => setOrderSearch(e.target.value)} 
+                        style={{ ...inputStyle, flex: 2 }} 
+                      />
+                      <select 
+                        value={statusFilter} 
+                        onChange={e => setStatusFilter(e.target.value)} 
+                        style={{ ...selectStyle, flex: 1 }}
+                      >
+                        <option value="All">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Refunded">Refunded</option>
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                      <button onClick={downloadCSV} className="btn-primary" style={{ padding: '0.75rem 1.5rem', fontSize: '11px', letterSpacing: '0.1em' }}>
+                        EXPORT CSV
+                      </button>
+                      <button onClick={() => window.print()} className="btn-ghost" style={{ padding: '0.75rem 1.5rem', fontSize: '11px', letterSpacing: '0.1em' }}>
+                        PRINT
+                      </button>
+                    </div>
+                  </div>
+
+                  {filteredOrders.length === 0 ? (
                     <div className="glass-panel" style={{ padding: '4rem', textAlign: 'center', border: '1px solid rgba(229,226,224,0.1)' }}>
-                      <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)' }}>No transaction logs recorded in the galactic relay.</p>
+                      <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)' }}>No transaction logs match your criteria.</p>
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                      {orders.map(order => (
-                        <div key={order.id} className="glass-panel" style={{
-                          padding: '2.5rem', border: '1px solid rgba(229,226,224,0.1)',
-                          display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '2rem', alignItems: 'center',
-                        }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-                              <div>
-                                <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', fontSize: '9px', letterSpacing: '0.2em' }}>ORDER REFERENCE</span>
-                                <strong style={{ color: 'var(--primary)', fontSize: '14px' }}>#{order.id}</strong>
-                              </div>
-                              <div>
-                                <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', fontSize: '9px', letterSpacing: '0.2em' }}>BROADCAST TIME</span>
-                                <span className="font-body-md" style={{ color: 'var(--primary)' }}>{new Date(order.timestamp).toLocaleString()}</span>
-                              </div>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', borderTop: '1px solid rgba(229,226,224,0.06)', paddingTop: '1rem' }}>
-                              {order.items.map((item, idx) => (
-                                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', maxWidth: '500px' }}>
-                                  <span className="font-body-md" style={{ color: 'var(--primary)' }}>
-                                    {item.qty}x <span className="font-label-caps" style={{ fontSize: '11px', letterSpacing: '0.1em' }}>{item.name}</span>
-                                    <strong style={{ color: 'var(--on-surface-variant)', fontSize: '9px', marginLeft: '8px', border: '1px solid rgba(255,255,255,0.1)', padding: '1px 4px' }}>SIZE {item.size}</strong>
-                                  </span>
-                                  <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>₹{(item.price * item.qty).toLocaleString()}</span>
+                      {filteredOrders.map(order => {
+                        const isExpanded = expandedOrderId === order.id;
+                        const addr = order.shippingAddress || {};
+                        return (
+                          <div key={order.id} className="glass-panel" style={{
+                            padding: '2.5rem', border: '1px solid rgba(229,226,224,0.1)',
+                            display: 'flex', flexDirection: 'column', gap: '2rem'
+                          }}>
+                            {/* Summary Row */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: '2rem', alignItems: 'center', cursor: 'pointer' }} onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}>
+                              <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+                                <div>
+                                  <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', fontSize: '9px', letterSpacing: '0.2em' }}>ORDER REF</span>
+                                  <strong style={{ color: 'var(--primary)', fontSize: '14px' }}>#{order.id}</strong>
                                 </div>
-                              ))}
+                                <div>
+                                  <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', fontSize: '9px', letterSpacing: '0.2em' }}>DATE</span>
+                                  <span className="font-body-md" style={{ color: 'var(--primary)' }}>{new Date(order.timestamp).toLocaleString()}</span>
+                                </div>
+                                <div>
+                                  <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', fontSize: '9px', letterSpacing: '0.2em' }}>STATUS</span>
+                                  <span className="font-body-md" style={{ color: order.orderStatus === 'Cancelled' ? '#ff4b4b' : order.orderStatus === 'Delivered' ? '#4bff8e' : 'var(--primary)' }}>
+                                    {order.orderStatus || 'Pending'}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', fontSize: '9px', letterSpacing: '0.2em' }}>CUSTOMER</span>
+                                  <span className="font-body-md" style={{ color: 'var(--primary)' }}>{order.customer?.name || 'Guest'}</span>
+                                </div>
+                              </div>
+                              <div style={{ borderLeft: '1px solid rgba(229,226,224,0.1)', paddingLeft: '2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'right' }}>
+                                <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', fontSize: '9px' }}>TOTAL</span>
+                                <span className="font-headline-md" style={{ color: 'var(--primary)', fontSize: '24px' }}>₹{order.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                              </div>
                             </div>
+
+                            {/* Expanded Details */}
+                            {isExpanded && (
+                              <div style={{ borderTop: '1px solid rgba(229,226,224,0.06)', paddingTop: '2rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+                                
+                                {/* Left Column: Customer & Items */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                                  <div>
+                                    <h4 className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '1rem', letterSpacing: '0.2em' }}>Customer Details</h4>
+                                    <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', lineHeight: 1.6 }}>
+                                      <strong>Name:</strong> {order.customer?.name}<br/>
+                                      <strong>Email:</strong> {order.customer?.email}<br/>
+                                      <strong>Phone:</strong> {order.customer?.phone}<br/>
+                                    </p>
+                                    <h4 className="font-label-caps" style={{ color: 'var(--primary)', marginTop: '1.5rem', marginBottom: '1rem', letterSpacing: '0.2em' }}>Shipping Address</h4>
+                                    <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', lineHeight: 1.6 }}>
+                                      {addr.street || addr.line1}<br/>
+                                      {addr.city}, {addr.state} {addr.zip || addr.pincode}<br/>
+                                      {addr.country}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '1rem', letterSpacing: '0.2em' }}>Items Ordered</h4>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                      {order.items.map((item, idx) => (
+                                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(229,226,224,0.05)' }}>
+                                          <span className="font-body-md" style={{ color: 'var(--primary)' }}>
+                                            {item.qty}x <span className="font-label-caps" style={{ fontSize: '11px', letterSpacing: '0.1em' }}>{item.name}</span>
+                                            <strong style={{ color: 'var(--on-surface-variant)', fontSize: '9px', marginLeft: '8px', border: '1px solid rgba(255,255,255,0.1)', padding: '1px 4px' }}>SIZE {item.size}</strong>
+                                          </span>
+                                          <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>₹{(item.price * item.qty).toLocaleString()}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Right Column: Management */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', background: 'rgba(255,255,255,0.02)', padding: '2rem', borderRadius: '4px' }}>
+                                  <h4 className="font-label-caps" style={{ color: 'var(--primary)', letterSpacing: '0.2em' }}>Order Management</h4>
+                                  
+                                  <div>
+                                    <label className="font-caption" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>Order Status</label>
+                                    <select 
+                                      value={order.orderStatus || 'Pending'} 
+                                      onChange={e => handleUpdateOrder(order.id, { orderStatus: e.target.value })}
+                                      style={{ ...selectStyle, padding: '0.5rem', background: 'rgba(0,0,0,0.5)' }}
+                                    >
+                                      <option value="Pending">Pending</option>
+                                      <option value="Confirmed">Confirmed</option>
+                                      <option value="Processing">Processing</option>
+                                      <option value="Shipped">Shipped</option>
+                                      <option value="Delivered">Delivered</option>
+                                      <option value="Cancelled">Cancelled</option>
+                                    </select>
+                                  </div>
+
+                                  <div>
+                                    <label className="font-caption" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>Payment Status (Method: {order.paymentMethod || 'Cash on Delivery'})</label>
+                                    <select 
+                                      value={order.paymentStatus || 'Pending'} 
+                                      onChange={e => handleUpdateOrder(order.id, { paymentStatus: e.target.value })}
+                                      style={{ ...selectStyle, padding: '0.5rem', background: 'rgba(0,0,0,0.5)' }}
+                                    >
+                                      <option value="Pending">Pending</option>
+                                      <option value="Paid">Paid</option>
+                                      <option value="Failed">Failed</option>
+                                      <option value="Refunded">Refunded</option>
+                                    </select>
+                                  </div>
+
+                                  <div>
+                                    <label className="font-caption" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>Tracking Number</label>
+                                    <input 
+                                      type="text" 
+                                      value={order.trackingNumber || ''} 
+                                      onChange={e => handleUpdateOrder(order.id, { trackingNumber: e.target.value })}
+                                      placeholder="e.g. 1Z9999999999999999"
+                                      style={{ ...inputStyle, padding: '0.5rem', background: 'rgba(0,0,0,0.5)' }}
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="font-caption" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.25rem' }}>Internal Notes</label>
+                                    <textarea 
+                                      value={order.internalNotes || ''} 
+                                      onChange={e => handleUpdateOrder(order.id, { internalNotes: e.target.value })}
+                                      placeholder="Customer called regarding..."
+                                      style={{ ...inputStyle, padding: '0.5rem', background: 'rgba(0,0,0,0.5)', minHeight: '80px', resize: 'vertical' }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                          <div style={{ borderLeft: '1px solid rgba(229,226,224,0.1)', paddingLeft: '2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', textAlign: 'right' }}>
-                            <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', fontSize: '9px' }}>TOTAL VALUE</span>
-                            <span className="font-headline-md" style={{ color: 'var(--primary)', fontSize: '24px' }}>₹{order.total.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                            <span className="font-caption" style={{ color: 'var(--on-surface-variant)', fontStyle: 'italic' }}>Subtotal: ₹{order.subtotal.toLocaleString()}</span>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </section>

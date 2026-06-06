@@ -10,16 +10,43 @@ import { useCart } from '@/context/CartContext';
 
 export default function CartPage() {
   const { cart: items, updateQty, removeFromCart, clearCart, isHydrated } = useCart();
-  const { user, loading: authLoading, addAddress } = useAuth();
+  const { user, profile, loading: authLoading, addAddress, getAddresses } = useAuth();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [address, setAddress] = useState({ street: '', city: '', state: '', zip: '', country: '' });
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | 'new' | null>(null);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+
   useEffect(() => {
     if (!authLoading && !user) {
       // redirect to login with return path
       // redirect to login with return path (removed)
     }
   }, [user, authLoading]);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [address, setAddress] = useState({ street: '', city: '', state: '', zip: '', country: '' });
-  const [orderPlaced, setOrderPlaced] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      getAddresses().then(addrs => {
+        setSavedAddresses(addrs);
+        if (addrs.length > 0) {
+          const defaultAddr = addrs.find(a => a.is_default) || addrs[0];
+          setSelectedAddressId(defaultAddr.id);
+          setAddress({
+            street: defaultAddr.street || defaultAddr.line1 || '',
+            city: defaultAddr.city || '',
+            state: defaultAddr.state || '',
+            zip: defaultAddr.zip || defaultAddr.pincode || '',
+            country: defaultAddr.country || 'India'
+          });
+        } else {
+          setSelectedAddressId('new');
+        }
+      });
+    } else if (!authLoading) {
+      setSelectedAddressId('new');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, authLoading]);
   const [orderId, setOrderId] = useState('');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [allProducts, setAllProducts] = useState<any[]>([]);
@@ -45,17 +72,30 @@ export default function CartPage() {
     if (items.length === 0) return;
     setIsCheckingOut(true);
     try {
-      // Save address to user profile
-      const { error: addrError } = await addAddress({ street, city, state, zip, country });
-      if (addrError) {
-        alert('Failed to save address: ' + addrError);
-        setIsCheckingOut(false);
-        return;
+      if (selectedAddressId === 'new' && user) {
+        // Save address to user profile
+        const { error: addrError } = await addAddress({ street, city, state, zip, country });
+        if (addrError) {
+          alert('Failed to save address: ' + addrError);
+          setIsCheckingOut(false);
+          return;
+        }
       }
+      const customer = {
+        name: profile?.full_name || '',
+        email: user?.email || '',
+        phone: profile?.phone || ''
+      };
+
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items, subtotal, tax, total }),
+        body: JSON.stringify({ 
+          items, subtotal, tax, total,
+          customer,
+          shippingAddress: { street, city, state, zip, country },
+          userId: user?.id || null,   // links order to logged-in user in Supabase
+        }),
       });
       const data = await res.json();
       if (data.success) {
@@ -145,16 +185,61 @@ export default function CartPage() {
           <div className="auth-container" style={{ marginBottom: '2rem' }}>
             <div className="auth-form">
               <h2 style={{ color: '#e5e2e0', marginBottom: '1rem' }}>Shipping Address</h2>
-              {['street', 'city', 'state', 'zip', 'country'].map(key => (
-                <input
-                  key={key}
-                  type="text"
-                  placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-                  value={address[key as keyof typeof address]}
-                  onChange={e => setAddress({ ...address, [key]: e.target.value })}
-                  style={addressInputStyle}
-                />
-              ))}
+              
+              {savedAddresses.length > 0 && (
+                <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {savedAddresses.map(addr => (
+                    <label key={addr.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer', padding: '1rem', border: selectedAddressId === addr.id ? '1px solid var(--primary)' : '1px solid rgba(229,226,224,0.1)', borderRadius: '4px', transition: 'border 0.2s' }}>
+                      <input type="radio" name="saved_address" checked={selectedAddressId === addr.id}
+                        onChange={() => {
+                          setSelectedAddressId(addr.id);
+                          setAddress({
+                            street: addr.street || addr.line1 || '',
+                            city: addr.city || '',
+                            state: addr.state || '',
+                            zip: addr.zip || addr.pincode || '',
+                            country: addr.country || 'India'
+                          });
+                        }}
+                        style={{ marginTop: '4px', accentColor: 'var(--primary)' }}
+                      />
+                      <div>
+                        <p className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{addr.label || 'Saved Address'}</p>
+                        <p style={{ color: 'var(--on-surface-variant)', fontSize: '13px', lineHeight: 1.5 }}>
+                          {addr.line1 || addr.street}{addr.line2 ? `, ${addr.line2}` : ''}<br/>
+                          {addr.city}, {addr.state} {addr.pincode || addr.zip}<br/>
+                          {addr.country || 'India'}
+                        </p>
+                      </div>
+                    </label>
+                  ))}
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '1rem', border: selectedAddressId === 'new' ? '1px solid var(--primary)' : '1px solid rgba(229,226,224,0.1)', borderRadius: '4px', transition: 'border 0.2s' }}>
+                    <input type="radio" name="saved_address" checked={selectedAddressId === 'new'}
+                      onChange={() => {
+                        setSelectedAddressId('new');
+                        setAddress({ street: '', city: '', state: '', zip: '', country: '' });
+                      }}
+                      style={{ accentColor: 'var(--primary)' }}
+                    />
+                    <span style={{ color: '#e5e2e0', fontSize: '14px' }}>Use a new address</span>
+                  </label>
+                </div>
+              )}
+
+              {selectedAddressId === 'new' && (
+                <div style={{ animation: 'fadeIn 0.3s ease' }}>
+                  {['street', 'city', 'state', 'zip', 'country'].map(key => (
+                    <input
+                      key={key}
+                      type="text"
+                      placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
+                      value={address[key as keyof typeof address]}
+                      onChange={e => setAddress({ ...address, [key]: e.target.value })}
+                      style={addressInputStyle}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <header style={{ marginBottom: '4rem' }}>
