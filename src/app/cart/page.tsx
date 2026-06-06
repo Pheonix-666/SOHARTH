@@ -115,19 +115,6 @@ export default function CartPage() {
 
   const crossSell = allProducts.filter(p => !items.find(i => i.id === p.id)).slice(0, 4);
 
-  // Simple input style for address fields
-  const addressInputStyle: React.CSSProperties = {
-    background: 'transparent',
-    border: 'none',
-    borderBottom: '1px solid rgba(229,226,224,0.2)',
-    padding: '0.5rem 0',
-    color: '#e5e2e0',
-    outline: 'none',
-    fontSize: '13px',
-    width: '100%',
-    marginBottom: '0.75rem',
-  };
-
   if (!isHydrated) {
     return (
       <>
@@ -189,189 +176,229 @@ export default function CartPage() {
             </p>
           </header>
 
-          <div className="cart-grid">
-
-            {/* Items List */}
-            <section style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              {items.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-                  <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', marginBottom: '2rem' }}>Your bag is empty.</p>
-                  <Link href="/products" className="btn-primary">Explore Collection</Link>
-                </div>
-              ) : items.map((item, idx) => (
-                <div
-                  key={`${item.id}-${item.size}`}
-                  style={{
-                    display: 'flex', gap: '2rem', paddingBottom: '2rem',
-                    borderBottom: '1px solid rgba(229,226,224,0.1)',
-                    animation: `fadeInUp 0.6s cubic-bezier(0.16,1,0.3,1) ${idx * 100}ms both`,
-                  }}
-                >
-                  {/* Thumbnail */}
-                  <Link href={`/products/${item.id}`} className="cart-item-thumb" style={{ position: 'relative', width: '192px', height: '256px', flexShrink: 0, overflow: 'hidden', backgroundColor: 'var(--surface-container)' }}>
-                    <Image src={item.image} alt={item.name} fill style={{ objectFit: 'cover', transition: 'transform 0.7s ease' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
-                    />
-                  </Link>
-
-                  {/* Details */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '0.5rem 0' }}>
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                        <h3 className="font-headline-md" style={{ color: 'var(--primary)' }}>{item.name}</h3>
-                        <p className="font-body-md" style={{ color: 'var(--primary)', flexShrink: 0, marginLeft: '1rem' }}>₹{(item.price * item.qty).toLocaleString()}</p>
-                      </div>
-                      <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)', marginBottom: '1rem' }}>{item.subtitle}</p>
-                      <div style={{ display: 'flex', gap: '1rem' }}>
-                        <span className="font-caption" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase' }}>Size: {item.size}</span>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      {/* Qty Controls */}
-                      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(71,71,65,0.3)', padding: '0 0.75rem' }}>
-                        <button onClick={() => updateQty(item.id, item.size, -1)} style={{ color: 'var(--on-surface-variant)', padding: '0.5rem 0', transition: 'color 0.3s' }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>remove</span>
-                        </button>
-                        <span className="font-body-md" style={{ padding: '0 1rem' }}>{item.qty}</span>
-                        <button onClick={() => updateQty(item.id, item.size, 1)} style={{ color: 'var(--on-surface-variant)', padding: '0.5rem 0', transition: 'color 0.3s' }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
-                        </button>
-                      </div>
-                      <button onClick={() => removeFromCart(item.id, item.size)} className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'color 0.3s' }}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
-                        REMOVE
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </section>
-
-                      {/* Address Form (mobile) */}
-          <div className="auth-container" style={{ marginBottom: '2rem' }}>
-            <div className="auth-form">
-              <h2 style={{ color: '#e5e2e0', marginBottom: '1rem' }}>Shipping Address</h2>
-              
-              {savedAddresses.length > 0 && (
-                <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {savedAddresses.map(addr => (
-                    <label key={addr.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer', padding: '1rem', border: selectedAddressId === addr.id ? '1px solid var(--primary)' : '1px solid rgba(229,226,224,0.1)', borderRadius: '4px', transition: 'border 0.2s' }}>
-                      <input type="radio" name="saved_address" checked={selectedAddressId === addr.id}
-                        onChange={() => {
-                          setSelectedAddressId(addr.id);
-                          setAddress({
-                            street: addr.street || addr.line1 || '',
-                            city: addr.city || '',
-                            state: addr.state || '',
-                            zip: addr.zip || addr.pincode || '',
-                            country: addr.country || 'India'
-                          });
-                        }}
-                        style={{ marginTop: '4px', accentColor: 'var(--primary)' }}
-                      />
-                      <div>
-                        <p className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{addr.label || 'Saved Address'}</p>
-                        <p style={{ color: 'var(--on-surface-variant)', fontSize: '13px', lineHeight: 1.5 }}>
-                          {addr.line1 || addr.street}{addr.line2 ? `, ${addr.line2}` : ''}<br/>
-                          {addr.city}, {addr.state} {addr.pincode || addr.zip}<br/>
-                          {addr.country || 'India'}
-                        </p>
-                      </div>
-                    </label>
-                  ))}
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', padding: '1rem', border: selectedAddressId === 'new' ? '1px solid var(--primary)' : '1px solid rgba(229,226,224,0.1)', borderRadius: '4px', transition: 'border 0.2s' }}>
-                    <input type="radio" name="saved_address" checked={selectedAddressId === 'new'}
-                      onChange={() => {
-                        setSelectedAddressId('new');
-                        setAddress({ street: '', city: '', state: '', zip: '', country: '' });
-                      }}
-                      style={{ accentColor: 'var(--primary)' }}
-                    />
-                    <span style={{ color: '#e5e2e0', fontSize: '14px' }}>Use a new address</span>
-                  </label>
-                </div>
-              )}
-
-              {selectedAddressId === 'new' && (
-                <div style={{ animation: 'fadeIn 0.3s ease' }}>
-                  {['street', 'city', 'state', 'zip', 'country'].map(key => (
-                    <input
-                      key={key}
-                      type="text"
-                      placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-                      value={address[key as keyof typeof address]}
-                      onChange={e => setAddress({ ...address, [key]: e.target.value })}
-                      style={addressInputStyle}
-                    />
-                  ))}
-                </div>
-              )}
+          {items.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '6rem 0' }}>
+              <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', marginBottom: '2rem' }}>Your bag is empty.</p>
+              <Link href="/products" className="btn-primary" style={{ padding: '1.25rem 2.5rem' }}>Explore Collection</Link>
             </div>
-          </div>
+          ) : (
+            <div className="cart-grid">
 
-            {/* Order Summary Panel */}
-            <aside>
-              <div className="glass-panel" style={{ padding: '3rem', position: 'sticky', top: '140px' }}>
-                <h2 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '2rem', letterSpacing: '0.3em', textTransform: 'uppercase' }}>Order Summary</h2>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2.5rem' }}>
-                  {[
-                    { label: 'Subtotal', value: `₹${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}` },
-                    { label: 'Celestial Shipping', value: subtotal > 500 ? 'Complimentary' : '₹25.00' },
-                    { label: 'Tax (Estimated)', value: `₹${tax.toFixed(2)}` },
-                  ].map(row => (
-                    <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span className="font-body-md" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{row.label}</span>
-                      <span className="font-body-md" style={{ color: 'var(--primary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{row.value}</span>
+              {/* Left Column: Products in Bag & Shipping Address */}
+              <div className="cart-main-col" style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+                
+                {/* Products in Bag */}
+                <section style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {items.map((item, idx) => (
+                    <div
+                      key={`${item.id}-${item.size}`}
+                      style={{
+                        display: 'flex', gap: '2rem', paddingBottom: '2rem',
+                        borderBottom: '1px solid rgba(229,226,224,0.1)',
+                        animation: `fadeInUp 0.6s cubic-bezier(0.16,1,0.3,1) ${idx * 100}ms both`,
+                      }}
+                    >
+                      {/* Thumbnail */}
+                      <Link href={`/products/${item.id}`} className="cart-item-thumb" style={{ position: 'relative', width: '192px', height: '256px', flexShrink: 0, overflow: 'hidden', backgroundColor: 'var(--surface-container)' }}>
+                        <Image src={item.image} alt={item.name} fill style={{ objectFit: 'cover', transition: 'transform 0.7s ease' }}
+                          onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)'}
+                          onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
+                        />
+                      </Link>
+
+                      {/* Details */}
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '0.5rem 0' }}>
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                            <h3 className="font-headline-md" style={{ color: 'var(--primary)' }}>{item.name}</h3>
+                            <p className="font-body-md" style={{ color: 'var(--primary)', flexShrink: 0, marginLeft: '1rem' }}>₹{(item.price * item.qty).toLocaleString()}</p>
+                          </div>
+                          <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)', marginBottom: '1rem' }}>{item.subtitle}</p>
+                          <div style={{ display: 'flex', gap: '1rem' }}>
+                            <span className="font-caption" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase' }}>Size: {item.size}</span>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          {/* Qty Controls */}
+                          <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(71,71,65,0.3)', padding: '0 0.75rem' }}>
+                            <button onClick={() => updateQty(item.id, item.size, -1)} style={{ color: 'var(--on-surface-variant)', padding: '0.5rem 0', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>remove</span>
+                            </button>
+                            <span className="font-body-md" style={{ padding: '0 1rem' }}>{item.qty}</span>
+                            <button onClick={() => updateQty(item.id, item.size, 1)} style={{ color: 'var(--on-surface-variant)', padding: '0.5rem 0', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+                            </button>
+                          </div>
+                          <button onClick={() => removeFromCart(item.id, item.size)} className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
+                            REMOVE
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   ))}
-                  <div style={{ borderTop: '1px solid rgba(71,71,65,0.2)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <span className="font-label-caps" style={{ color: 'var(--primary)' }}>ESTIMATED TOTAL</span>
-                    <span className="font-headline-md" style={{ color: 'var(--primary)' }}>₹{total.toFixed(2)}</span>
-                  </div>
-                </div>
+                </section>
 
-                {/* Promo Code */}
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.5rem' }}>PROMO CODE</label>
-                  <input
-                    type="text" placeholder="ENTER CODE"
-                    style={{
-                      width: '100%', background: 'transparent', border: 'none',
-                      borderBottom: '1px solid rgba(71,71,65,0.4)',
-                      padding: '0.5rem 0', color: 'var(--primary)',
-                      fontFamily: 'var(--font-body)', fontSize: '12px',
-                      letterSpacing: '0.2em', fontWeight: 600, outline: 'none',
-                    }}
-                  />
-                </div>
+                {/* Shipping Address */}
+                <div className="shipping-address-container">
+                  <h2 className="shipping-address-title">Shipping Address</h2>
+                  
+                  {savedAddresses.length > 0 && (
+                    <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {savedAddresses.map(addr => (
+                        <label key={addr.id} className={`address-option-label ${selectedAddressId === addr.id ? 'selected' : ''}`}>
+                          <input type="radio" name="saved_address" checked={selectedAddressId === addr.id}
+                            onChange={() => {
+                              setSelectedAddressId(addr.id);
+                              setAddress({
+                                street: addr.street || addr.line1 || '',
+                                city: addr.city || '',
+                                state: addr.state || '',
+                                zip: addr.zip || addr.pincode || '',
+                                country: addr.country || 'India'
+                              });
+                            }}
+                            style={{ marginTop: '4px', accentColor: 'var(--primary)' }}
+                          />
+                          <div>
+                            <p className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{addr.label || 'Saved Address'}</p>
+                            <p style={{ color: 'var(--on-surface-variant)', fontSize: '13px', lineHeight: 1.5 }}>
+                              {addr.line1 || addr.street}{addr.line2 ? `, ${addr.line2}` : ''}<br/>
+                              {addr.city}, {addr.state} {addr.pincode || addr.zip}<br/>
+                              {addr.country || 'India'}
+                            </p>
+                          </div>
+                        </label>
+                      ))}
+                      <label className={`address-option-label ${selectedAddressId === 'new' ? 'selected' : ''}`}>
+                        <input type="radio" name="saved_address" checked={selectedAddressId === 'new'}
+                          onChange={() => {
+                            setSelectedAddressId('new');
+                            setAddress({ street: '', city: '', state: '', zip: '', country: '' });
+                          }}
+                          style={{ accentColor: 'var(--primary)' }}
+                        />
+                        <span style={{ color: '#e5e2e0', fontSize: '14px' }}>Use a new address</span>
+                      </label>
+                    </div>
+                  )}
 
-                {/* Checkout CTA */}
-                <div style={{ paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <button
-                    onClick={handleCheckout}
-                    disabled={isCheckingOut || items.length === 0}
-                    className="btn-primary"
-                    style={{ width: '100%', padding: '1.25rem', letterSpacing: '0.3em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', opacity: isCheckingOut || items.length === 0 ? 0.5 : 1, cursor: isCheckingOut || items.length === 0 ? 'not-allowed' : 'pointer' }}
-                  >
-                    {isCheckingOut ? 'PROCESSING...' : 'SECURE CHECKOUT'}
-                    <span className="material-symbols-outlined" style={{ fontSize: '20px', transition: 'transform 0.3s' }}>arrow_forward</span>
-                  </button>
-
-                  {/* Trust Badges */}
-                  <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', paddingTop: '1rem', opacity: 0.4 }}>
-                    {['security', 'credit_card', 'verified_user'].map(icon => (
-                      <span key={icon} className="material-symbols-outlined" style={{ fontSize: '2rem' }}>{icon}</span>
-                    ))}
-                  </div>
-                  <p className="font-caption" style={{ color: 'var(--on-surface-variant)', textAlign: 'center', opacity: 0.6, fontStyle: 'italic', maxWidth: '280px', margin: '0 auto' }}>
-                    All transactions are encrypted through our secure lunar relay system.
-                  </p>
+                  {selectedAddressId === 'new' && (
+                    <div className="shipping-address-grid" style={{ animation: 'fadeIn 0.3s ease' }}>
+                      <div className="shipping-address-full">
+                        <input
+                          type="text"
+                          placeholder="Street Address"
+                          value={address.street}
+                          onChange={e => setAddress({ ...address, street: e.target.value })}
+                          className="shipping-address-input"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="City"
+                          value={address.city}
+                          onChange={e => setAddress({ ...address, city: e.target.value })}
+                          className="shipping-address-input"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="State"
+                          value={address.state}
+                          onChange={e => setAddress({ ...address, state: e.target.value })}
+                          className="shipping-address-input"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Zip / Pincode"
+                          value={address.zip}
+                          onChange={e => setAddress({ ...address, zip: e.target.value })}
+                          className="shipping-address-input"
+                        />
+                      </div>
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Country"
+                          value={address.country}
+                          onChange={e => setAddress({ ...address, country: e.target.value })}
+                          className="shipping-address-input"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
-            </aside>
-          </div>
+
+              {/* Order Summary Panel */}
+              <aside className="cart-summary-col">
+                <div className="glass-panel" style={{ padding: '3rem', position: 'sticky', top: '140px' }}>
+                  <h2 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '2rem', letterSpacing: '0.3em', textTransform: 'uppercase' }}>Order Summary</h2>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2.5rem' }}>
+                    {[
+                      { label: 'Subtotal', value: `₹${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}` },
+                      { label: 'Celestial Shipping', value: subtotal > 500 ? 'Complimentary' : '₹25.00' },
+                      { label: 'Tax (Estimated)', value: `₹${tax.toFixed(2)}` },
+                    ].map(row => (
+                      <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span className="font-body-md" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{row.label}</span>
+                        <span className="font-body-md" style={{ color: 'var(--primary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{row.value}</span>
+                      </div>
+                    ))}
+                    <div style={{ borderTop: '1px solid rgba(71,71,65,0.2)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <span className="font-label-caps" style={{ color: 'var(--primary)' }}>ESTIMATED TOTAL</span>
+                      <span className="font-headline-md" style={{ color: 'var(--primary)' }}>₹{total.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  {/* Promo Code */}
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <label className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.5rem' }}>PROMO CODE</label>
+                    <input
+                      type="text" placeholder="ENTER CODE"
+                      style={{
+                        width: '100%', background: 'transparent', border: 'none',
+                        borderBottom: '1px solid rgba(71,71,65,0.4)',
+                        padding: '0.5rem 0', color: 'var(--primary)',
+                        fontFamily: 'var(--font-body)', fontSize: '12px',
+                        letterSpacing: '0.2em', fontWeight: 600, outline: 'none',
+                      }}
+                    />
+                  </div>
+
+                  {/* Checkout CTA */}
+                  <div style={{ paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <button
+                      onClick={handleCheckout}
+                      disabled={isCheckingOut || items.length === 0}
+                      className="btn-primary"
+                      style={{ width: '100%', padding: '1.25rem', letterSpacing: '0.3em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', opacity: isCheckingOut || items.length === 0 ? 0.5 : 1, cursor: isCheckingOut || items.length === 0 ? 'not-allowed' : 'pointer' }}
+                    >
+                      {isCheckingOut ? 'PROCESSING...' : 'SECURE CHECKOUT'}
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px', transition: 'transform 0.3s' }}>arrow_forward</span>
+                    </button>
+
+                    {/* Trust Badges */}
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', paddingTop: '1rem', opacity: 0.4 }}>
+                      {['security', 'credit_card', 'verified_user'].map(icon => (
+                        <span key={icon} className="material-symbols-outlined" style={{ fontSize: '2rem' }}>{icon}</span>
+                      ))}
+                    </div>
+                    <p className="font-caption" style={{ color: 'var(--on-surface-variant)', textAlign: 'center', opacity: 0.6, fontStyle: 'italic', maxWidth: '280px', margin: '0 auto' }}>
+                      All transactions are encrypted through our secure secure relay system.
+                    </p>
+                  </div>
+                </div>
+              </aside>
+
+            </div>
+          )}
 
           {/* ─── COMPLETE YOUR ENSEMBLE ─── */}
           <section style={{ marginTop: 'var(--section-gap)' }}>

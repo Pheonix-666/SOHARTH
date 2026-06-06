@@ -649,6 +649,72 @@ details summary::-webkit-details-marker {
   align-items: start;
 }
 
+/* Shipping Address Section */
+.shipping-address-container {
+  padding: 3.5rem;
+  border-radius: 16px;
+  background: rgba(20, 19, 19, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(229, 226, 224, 0.1);
+  transition: all 0.3s ease;
+}
+
+.shipping-address-title {
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: 0.15em;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+}
+
+.shipping-address-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.shipping-address-full {
+  grid-column: span 2;
+}
+
+.shipping-address-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(229, 226, 224, 0.2);
+  padding: 0.75rem 0;
+  color: #e5e2e0;
+  outline: none;
+  font-size: 13px;
+  width: 100%;
+  transition: border-color 0.3s;
+}
+
+.shipping-address-input:focus {
+  border-bottom-color: var(--primary);
+}
+
+.address-option-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 1.25rem;
+  border: 1px solid rgba(229, 226, 224, 0.1);
+  border-radius: 6px;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.address-option-label.selected {
+  border-color: var(--primary);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.address-option-label:hover {
+  background-color: rgba(255, 255, 255, 0.01);
+}
+
 /* ===========================
    RESPONSIVE UTILITIES & BOTTOM NAV
    =========================== */
@@ -1007,10 +1073,8 @@ details summary::-webkit-details-marker {
   /* ─── CART PAGE ─── */
   .cart-grid {
     grid-template-columns: 1fr !important;
-    gap: 2rem !important;
+    gap: 2.5rem !important;
   }
-  /* Move order summary above items on mobile */
-  .cart-grid aside { order: -1; }
   /* Cart item thumbnail smaller on mobile */
   .cart-item-thumb {
     width: 100px !important;
@@ -1018,6 +1082,31 @@ details summary::-webkit-details-marker {
   }
   /* Disable hover-reveal overlay on mobile */
   .cart-grid .card-image:hover img { transform: none !important; }
+
+  /* Decreased height/padding of shipping address section on mobile */
+  .shipping-address-container {
+    padding: 1.5rem !important; /* Significantly reduced padding to decrease height */
+    border-radius: 8px;
+  }
+
+  .shipping-address-title {
+    font-size: 1.15rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .shipping-address-grid {
+    gap: 0.85rem !important; /* Tighter layout to save space */
+  }
+
+  .shipping-address-input {
+    padding: 0.45rem 0 !important; /* Reduced vertical inputs height */
+    font-size: 12px !important;
+  }
+
+  .address-option-label {
+    padding: 0.85rem !important; /* Compact selections */
+    gap: 0.5rem !important;
+  }
 
   /* ─── CROSS-SELL GRID (Cart page) ─── */
   .cross-sell-grid {
