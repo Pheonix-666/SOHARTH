@@ -90,7 +90,7 @@ export default function AccountPage() {
 
                 {/* Profile */}
                 <section style={{ marginBottom: '4rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                    <div className="account-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                         <h1 style={{ color: '#e5e2e0', letterSpacing: '0.3em', fontSize: '13px', margin: 0 }}>MY ACCOUNT</h1>
                         <button onClick={signOut} style={{ background: 'transparent', border: '1px solid rgba(229,226,224,0.2)', color: 'rgba(229,226,224,0.5)', padding: '0.5rem 1.5rem', cursor: 'pointer', fontSize: '10px', letterSpacing: '0.2em' }}>
                             SIGN OUT

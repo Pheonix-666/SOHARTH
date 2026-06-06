@@ -120,7 +120,7 @@ export default function Home() {
         <section style={{ paddingBottom: 'var(--section-gap)' }}>
           <div className="container">
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
+            <div className="new-arrivals-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
               <div>
                 <span className="font-label-caps" style={{ color: 'var(--primary)', letterSpacing: '0.3em', marginBottom: '1rem', display: 'block' }}>
                   The Seasonal Edit
@@ -240,7 +240,7 @@ export default function Home() {
             <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '3rem' }}>
               Subscribe to receive early access to new collections and editorial insights into the celestial lifestyle.
             </p>
-            <form style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', justifyContent: 'center' }} onSubmit={e => e.preventDefault()}>
+            <form className="newsletter-form" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', justifyContent: 'center' }} onSubmit={e => e.preventDefault()}>
               <div style={{ flex: 1, borderBottom: '1px solid var(--outline)', paddingBottom: '0.5rem' }}>
                 <input
                   type="email"

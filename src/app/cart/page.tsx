@@ -268,7 +268,7 @@ export default function CartPage() {
                   }}
                 >
                   {/* Thumbnail */}
-                  <Link href={`/products/${item.id}`} style={{ position: 'relative', width: '192px', height: '256px', flexShrink: 0, overflow: 'hidden', backgroundColor: 'var(--surface-container)' }}>
+                  <Link href={`/products/${item.id}`} className="cart-item-thumb" style={{ position: 'relative', width: '192px', height: '256px', flexShrink: 0, overflow: 'hidden', backgroundColor: 'var(--surface-container)' }}>
                     <Image src={item.image} alt={item.name} fill style={{ objectFit: 'cover', transition: 'transform 0.7s ease' }}
                       onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)'}
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
@@ -376,7 +376,7 @@ export default function CartPage() {
             <h3 className="font-label-caps" style={{ color: 'var(--on-surface-variant)', marginBottom: '2rem', letterSpacing: '0.3em' }}>
               COMPLETE YOUR ENSEMBLE
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--gutter)' }}>
+            <div className="cross-sell-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--gutter)' }}>
               {crossSell.map(p => (
                 <Link href={`/products/${p.id}`} key={p.id} className="product-card" style={{ display: 'block' }}>
                   <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1rem', backgroundColor: 'var(--surface-container)' }}>

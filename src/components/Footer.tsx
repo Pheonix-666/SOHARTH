@@ -15,7 +15,7 @@ export default function Footer() {
           SOLARTH
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 'var(--gutter)', marginBottom: '5rem' }}>
+        <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 'var(--gutter)', marginBottom: '5rem' }}>
           {/* About */}
           <div>
             <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', maxWidth: '240px', lineHeight: '1.8' }}>
@@ -49,7 +49,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="footer-bottom" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <span className="font-label-caps" style={{ opacity: 0.5, fontSize: '10px' }}>
             © {new Date().getFullYear()} SOLARTH. CELESTIAL MINIMALISM.
           </span>
