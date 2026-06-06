@@ -1,4 +1,5 @@
 import { Manrope } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 
 import { CartProvider } from "@/context/CartContext";
@@ -36,6 +37,7 @@ export default function RootLayout({
             {children}
           </CartProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
