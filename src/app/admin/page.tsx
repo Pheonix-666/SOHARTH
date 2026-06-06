@@ -234,7 +234,7 @@ export default function AdminDashboard() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `solarth_orders_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute("download", `soharth_orders_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -416,7 +416,7 @@ export default function AdminDashboard() {
           {/* Header */}
           <header style={{ marginBottom: '4rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '2rem' }}>
             <div>
-              <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em', display: 'block', marginBottom: '0.5rem' }}>SOLARTH MANAGEMENT CONSOLE</span>
+              <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em', display: 'block', marginBottom: '0.5rem' }}>SOHARTH MANAGEMENT CONSOLE</span>
               <h1 className="font-headline-lg" style={{ color: 'var(--primary)' }}>Control Relay</h1>
             </div>
             <div style={{ display: 'flex', border: '1px solid rgba(229,226,224,0.15)', padding: '4px', flexWrap: 'wrap', gap: '2px' }}>

@@ -11,9 +11,9 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "SOLARTH | Celestial Minimalism",
+  title: "SOHARTH | Celestial Minimalism",
   description:
-    "Solarth bridges the gap between high-fashion editorial and cosmic wonder. Every piece is a quiet luxury, echoing the precision of astronomical phenomena.",
+    "Soharth bridges the gap between high-fashion editorial and cosmic wonder. Every piece is a quiet luxury, echoing the precision of astronomical phenomena.",
 };
 
 export default function RootLayout({

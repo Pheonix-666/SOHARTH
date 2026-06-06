@@ -123,7 +123,7 @@ function LoginForm() {
 
                 <div style={{ textAlign: 'center', marginTop: '1rem' }}>
                     <p style={{ fontSize: '12px', color: 'rgba(229,226,224,0.5)' }}>
-                        New to Solarth?{' '}
+                        New to Soharth?{' '}
                         <Link href="/auth/signup" style={{ color: '#e5e2e0', textDecoration: 'underline' }}>
                             Create an account
                         </Link>

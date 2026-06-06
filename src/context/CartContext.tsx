@@ -38,7 +38,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     async function initCart() {
       // 1. Get local cart
       let localCart: CartItem[] = [];
-      const stored = localStorage.getItem('solarth_cart');
+      const stored = localStorage.getItem('soharth_cart');
       if (stored) {
         try {
           localCart = JSON.parse(stored);
@@ -70,7 +70,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
             setCart(mergedCart);
             // Optionally, clear local cart now that it's merged, or keep it perfectly in sync
-            localStorage.setItem('solarth_cart', JSON.stringify(mergedCart));
+            localStorage.setItem('soharth_cart', JSON.stringify(mergedCart));
             
             // Force sync to DB if merge happened
             if (localCart.length > 0) {
@@ -101,7 +101,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isHydrated && initialLoadDone.current) {
       // 1. Always save to local
-      localStorage.setItem('solarth_cart', JSON.stringify(cart));
+      localStorage.setItem('soharth_cart', JSON.stringify(cart));
       
       // 2. Sync to DB if logged in
       if (user) {

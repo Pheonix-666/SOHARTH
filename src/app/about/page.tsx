@@ -13,12 +13,12 @@ export default function AboutPage() {
         {/* Hero Section */}
         <section className="container" style={{ marginBottom: '6rem', animation: 'fadeInUp 0.8s cubic-bezier(0.16,1,0.3,1)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '800px', marginBottom: '4rem' }}>
-            <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em' }}>THE SOLARTH MANIFESTO</span>
+            <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em' }}>THE SOHARTH MANIFESTO</span>
             <h1 className="font-headline-lg" style={{ lineHeight: 1.1, color: 'var(--primary)' }}>
               BRIDGING EDITORIAL REFINEMENT & COSMIC PRECISION.
             </h1>
             <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', lineHeight: 1.8 }}>
-              Solarth is born from the silence between stars. We believe clothing is not merely a cover, but an architectural envelope for the modern soul—meticulously drafted and constructed with high-tactility, premium materials that echo the precision of astronomical phenomena.
+              Soharth is born from the silence between stars. We believe clothing is not merely a cover, but an architectural envelope for the modern soul—meticulously drafted and constructed with high-tactility, premium materials that echo the precision of astronomical phenomena.
             </p>
           </div>
           
@@ -26,7 +26,7 @@ export default function AboutPage() {
           <div className="glass-panel" style={{ position: 'relative', width: '100%', aspectRatio: '21/9', overflow: 'hidden', border: '1px solid rgba(229,226,224,0.1)' }}>
             <Image 
               src="/WhatsApp Image 2026-05-29 at 12.50.12 PM (1).jpeg" 
-              alt="Solarth draping detail" 
+              alt="Soharth draping detail" 
               fill 
               style={{ objectFit: 'cover', filter: 'grayscale(70%) brightness(0.6)' }}
             />
@@ -117,7 +117,7 @@ export default function AboutPage() {
         {/* Dynamic CTA */}
         <section className="container about-cta" style={{ marginTop: 'var(--section-gap)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
           <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em' }}>EXPLORE OUR WORKS</span>
-          <h2 className="font-headline-lg" style={{ color: 'var(--primary)', maxWidth: '600px', lineHeight: 1.2 }}>EXPERIENCE THE COGNITIVE SIMPLICITY OF SOLARTH</h2>
+          <h2 className="font-headline-lg" style={{ color: 'var(--primary)', maxWidth: '600px', lineHeight: 1.2 }}>EXPERIENCE THE COGNITIVE SIMPLICITY OF SOHARTH</h2>
           <div className="about-cta-buttons" style={{ display: 'flex', gap: '1.5rem', marginTop: '1rem' }}>
             <Link href="/products" className="btn-primary" style={{ padding: '1.25rem 3rem' }}>VIEW COLLECTIONS</Link>
             <Link href="/" className="btn-ghost" style={{ padding: '1.25rem 3rem' }}>RETURN HOME</Link>

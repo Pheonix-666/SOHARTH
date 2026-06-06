@@ -60,7 +60,7 @@ export default function Home() {
         <section style={{ position: 'relative', height: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
           <Image
             src="/hero-bg.jpeg"
-            alt="Solarth hero"
+            alt="Soharth hero"
             fill
             priority
             style={{ objectFit: 'cover', objectPosition: 'center top', transform: 'scale(1.05)' }}
@@ -109,7 +109,7 @@ export default function Home() {
               Born from the silence of the void, crafted for the movement of light.
             </h2>
             <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)' }}>
-              Solarth bridges the gap between high-fashion editorial and cosmic wonder. Every piece is a quiet luxury, echoing the precision of astronomical phenomena and the stillness of deep space.
+              Soharth bridges the gap between high-fashion editorial and cosmic wonder. Every piece is a quiet luxury, echoing the precision of astronomical phenomena and the stillness of deep space.
             </p>
           </div>
         </section>

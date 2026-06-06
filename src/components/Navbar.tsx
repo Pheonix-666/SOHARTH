@@ -59,14 +59,14 @@ export default function Navbar() {
               <Link href="/products" className="nav-link">Collections</Link>
             </div>
             <Link href="/" className="nav-logo-link mobile-flex" style={{ display: 'flex', alignItems: 'center' }}>
-              <Image src="/logo.jpg" alt="Solarth" width={36} height={36} priority style={{ objectFit: 'contain', borderRadius: '50%' }} />
+              <Image src="/logo.jpg" alt="Soharth" width={36} height={36} priority style={{ objectFit: 'contain', borderRadius: '50%' }} />
             </Link>
           </div>
 
           {/* Center Area: Logo (Desktop) / Empty (Mobile) */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Link href="/" className="nav-logo-link desktop-only" style={{ display: 'flex', alignItems: 'center' }}>
-              <Image src="/logo.jpg" alt="Solarth" width={44} height={44} priority style={{ objectFit: 'contain', borderRadius: '50%' }} />
+              <Image src="/logo.jpg" alt="Soharth" width={44} height={44} priority style={{ objectFit: 'contain', borderRadius: '50%' }} />
             </Link>
           </div>
 

@@ -6,7 +6,7 @@ export const supabaseBrowser = createBrowserClient(
     {
         cookieOptions: {
             maxAge: 30 * 24 * 60 * 60, // 30 days
-            name: 'solarth-auth-token'
+            name: 'soharth-auth-token'
         }
     }
 );
