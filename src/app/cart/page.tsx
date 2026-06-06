@@ -12,7 +12,7 @@ export default function CartPage() {
   const { cart: items, updateQty, removeFromCart, clearCart, isHydrated } = useCart();
   const { user, profile, loading: authLoading, addAddress, getAddresses } = useAuth();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [address, setAddress] = useState({ street: '', city: '', state: '', zip: '', country: '' });
+  const [address, setAddress] = useState({ street: '', city: '', state: '', zip: '', country: '', phone: '' });
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | 'new' | null>(null);
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -36,17 +36,19 @@ export default function CartPage() {
             city: defaultAddr.city || '',
             state: defaultAddr.state || '',
             zip: defaultAddr.zip || defaultAddr.pincode || '',
-            country: defaultAddr.country || 'India'
+            country: defaultAddr.country || 'India',
+            phone: profile?.phone || ''
           });
         } else {
           setSelectedAddressId('new');
+          setAddress(prev => ({ ...prev, phone: profile?.phone || '' }));
         }
       });
     } else if (!authLoading) {
       setSelectedAddressId('new');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, authLoading]);
+  }, [user, authLoading, profile]);
   const [orderId, setOrderId] = useState('');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [allProducts, setAllProducts] = useState<any[]>([]);
@@ -64,9 +66,9 @@ export default function CartPage() {
 
   const handleCheckout = async () => {
     // Validate address fields
-    const { street, city, state, zip, country } = address;
-    if (!street || !city || !state || !zip || !country) {
-      alert('Please fill out your shipping address before checkout.');
+    const { street, city, state, zip, country, phone } = address;
+    if (!street || !city || !state || !zip || !country || !phone) {
+      alert('Please fill out your shipping address and contact number before checkout.');
       return;
     }
     if (items.length === 0) return;
@@ -84,7 +86,7 @@ export default function CartPage() {
       const customer = {
         name: profile?.full_name || '',
         email: user?.email || '',
-        phone: profile?.phone || ''
+        phone: phone || profile?.phone || ''
       };
 
       const res = await fetch('/api/orders', {
@@ -256,7 +258,8 @@ export default function CartPage() {
                                 city: addr.city || '',
                                 state: addr.state || '',
                                 zip: addr.zip || addr.pincode || '',
-                                country: addr.country || 'India'
+                                country: addr.country || 'India',
+                                phone: profile?.phone || ''
                               });
                             }}
                             style={{ marginTop: '4px', accentColor: 'var(--primary)' }}
@@ -275,7 +278,7 @@ export default function CartPage() {
                         <input type="radio" name="saved_address" checked={selectedAddressId === 'new'}
                           onChange={() => {
                             setSelectedAddressId('new');
-                            setAddress({ street: '', city: '', state: '', zip: '', country: '' });
+                            setAddress({ street: '', city: '', state: '', zip: '', country: '', phone: profile?.phone || '' });
                           }}
                           style={{ accentColor: 'var(--primary)' }}
                         />
@@ -333,6 +336,19 @@ export default function CartPage() {
                       </div>
                     </div>
                   )}
+
+                  {/* Contact Number (always shown below address selection/form) */}
+                  <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(229,226,224,0.1)', paddingTop: '1.5rem' }}>
+                    <label className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.5rem', fontSize: '10px', letterSpacing: '0.2em' }}>Contact Number *</label>
+                    <input
+                      type="tel"
+                      placeholder="e.g. +91 98765 43210"
+                      value={address.phone}
+                      onChange={e => setAddress({ ...address, phone: e.target.value })}
+                      className="shipping-address-input"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
