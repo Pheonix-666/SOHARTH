@@ -1,5 +1,4 @@
 'use client';
-import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -10,47 +9,11 @@ import { useCart } from '@/context/CartContext';
 
 export default function CartPage() {
   const { cart: items, updateQty, removeFromCart, clearCart, isHydrated } = useCart();
-  const { user, profile, loading: authLoading, addAddress, getAddresses } = useAuth();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [address, setAddress] = useState({ street: '', city: '', state: '', zip: '', country: '', phone: '', name: '', email: '' });
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | 'new' | null>(null);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | 'new' | null>('new');
   const [orderPlaced, setOrderPlaced] = useState(false);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      // redirect to login with return path
-      // redirect to login with return path (removed)
-    }
-  }, [user, authLoading]);
-
-  useEffect(() => {
-    if (user) {
-      getAddresses().then(addrs => {
-        setSavedAddresses(addrs);
-        if (addrs.length > 0) {
-          const defaultAddr = addrs.find(a => a.is_default) || addrs[0];
-          setSelectedAddressId(defaultAddr.id);
-          setAddress({
-            street: defaultAddr.street || defaultAddr.line1 || '',
-            city: defaultAddr.city || '',
-            state: defaultAddr.state || '',
-            zip: defaultAddr.zip || defaultAddr.pincode || '',
-            country: defaultAddr.country || 'India',
-            phone: profile?.phone || '',
-            name: '',
-            email: ''
-          });
-        } else {
-          setSelectedAddressId('new');
-          setAddress(prev => ({ ...prev, phone: profile?.phone || '', name: '', email: '' }));
-        }
-      });
-    } else if (!authLoading) {
-      setSelectedAddressId('new');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, authLoading, profile]);
   const [orderId, setOrderId] = useState('');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [allProducts, setAllProducts] = useState<any[]>([]);
@@ -73,26 +36,17 @@ export default function CartPage() {
       alert('Please fill out your shipping address and contact number before checkout.');
       return;
     }
-    if (!user && (!name || !email)) {
+    if (!name || !email) {
       alert('Please fill out your name and email address for guest checkout.');
       return;
     }
     if (items.length === 0) return;
     setIsCheckingOut(true);
     try {
-      if (selectedAddressId === 'new' && user) {
-        // Save address to user profile
-        const { error: addrError } = await addAddress({ street, city, state, zip, country });
-        if (addrError) {
-          alert('Failed to save address: ' + addrError);
-          setIsCheckingOut(false);
-          return;
-        }
-      }
       const customer = {
-        name: user ? (profile?.full_name || '') : name,
-        email: user ? (user.email || '') : email,
-        phone: phone || profile?.phone || ''
+        name: name,
+        email: email,
+        phone: phone
       };
 
       const res = await fetch('/api/orders', {
@@ -102,7 +56,7 @@ export default function CartPage() {
           items, subtotal, tax, total,
           customer,
           shippingAddress: { street, city, state, zip, country },
-          userId: user?.id || null,   // links order to logged-in user in Supabase
+          userId: null,   // guest checkout
         }),
       });
       const data = await res.json();
@@ -265,7 +219,7 @@ export default function CartPage() {
                                 state: addr.state || '',
                                 zip: addr.zip || addr.pincode || '',
                                 country: addr.country || 'India',
-                                phone: profile?.phone || '',
+                                phone: '',
                                 name: '',
                                 email: ''
                               });
@@ -286,7 +240,7 @@ export default function CartPage() {
                         <input type="radio" name="saved_address" checked={selectedAddressId === 'new'}
                           onChange={() => {
                             setSelectedAddressId('new');
-                            setAddress({ street: '', city: '', state: '', zip: '', country: '', phone: profile?.phone || '', name: '', email: '' });
+                            setAddress({ street: '', city: '', state: '', zip: '', country: '', phone: '', name: '', email: '' });
                           }}
                           style={{ accentColor: 'var(--primary)' }}
                         />
@@ -349,7 +303,6 @@ export default function CartPage() {
                   <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(229,226,224,0.1)', paddingTop: '1.5rem' }}>
                     <h3 className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '1.5rem', fontSize: '11px', letterSpacing: '0.2em' }}>Contact Information</h3>
                     
-                    {!user && (
                       <div className="shipping-address-grid" style={{ marginBottom: '1.25rem' }}>
                         <div>
                           <label className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.25rem', fontSize: '9px', letterSpacing: '0.15em' }}>Full Name *</label>
@@ -374,7 +327,6 @@ export default function CartPage() {
                           />
                         </div>
                       </div>
-                    )}
 
                     <div>
                       <label className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.25rem', fontSize: '9px', letterSpacing: '0.15em' }}>Contact Number *</label>

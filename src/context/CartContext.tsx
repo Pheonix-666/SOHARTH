@@ -1,8 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { useAuth } from './AuthContext';
-
 export interface CartItem {
   id: string;
   name: string;
@@ -26,7 +24,6 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
   
@@ -47,73 +44,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      if (user) {
-        // 2. Fetch DB cart
-        try {
-          const res = await fetch(`/api/cart?userId=${user.id}`);
-          if (res.ok) {
-            const data = await res.json();
-            const dbCart: CartItem[] = data.items || [];
-            
-            // 3. Merge: Local cart items overwrite DB cart items if there is a conflict (based on id + size)
-            // Amazon style: keep both.
-            const mergedCart = [...dbCart];
-            localCart.forEach(localItem => {
-              const existingIdx = mergedCart.findIndex(dbItem => dbItem.id === localItem.id && dbItem.size === localItem.size);
-              if (existingIdx > -1) {
-                // If it exists, add quantities together
-                mergedCart[existingIdx].qty += localItem.qty;
-              } else {
-                mergedCart.push(localItem);
-              }
-            });
-
-            setCart(mergedCart);
-            // Optionally, clear local cart now that it's merged, or keep it perfectly in sync
-            localStorage.setItem('soharth_cart', JSON.stringify(mergedCart));
-            
-            // Force sync to DB if merge happened
-            if (localCart.length > 0) {
-              await fetch('/api/cart', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user.id, items: mergedCart })
-              });
-            }
-          }
-        } catch (err) {
-          console.error('Failed to sync cart on login', err);
-          setCart(localCart);
-        }
-      } else {
-        // Not logged in, just use local
-        setCart(localCart);
-      }
+      setCart(localCart);
       
       setIsHydrated(true);
       initialLoadDone.current = true;
     }
 
     initCart();
-  }, [user]); // Re-run when user changes (login/logout)
+  }, []); // Run once on mount
 
   // Save cart to localStorage and DB whenever it changes
   useEffect(() => {
     if (isHydrated && initialLoadDone.current) {
       // 1. Always save to local
       localStorage.setItem('soharth_cart', JSON.stringify(cart));
-      
-      // 2. Sync to DB if logged in
-      if (user) {
-        // Simple debounce could go here, but fetch is fine for small changes
-        fetch('/api/cart', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.id, items: cart })
-        }).catch(err => console.error('Failed to backup cart to DB', err));
-      }
     }
-  }, [cart, isHydrated, user]);
+  }, [cart, isHydrated]);
 
   const addToCart = (
     product: { id: string; name: string; subtitle: string; price: number; image: string },
