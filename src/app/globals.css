@@ -220,7 +220,7 @@ main {
     gap: 1.5rem !important;
     overflow-x: auto;
     width: 100%;
-    padding: 0.5rem var(--margin-mobile) !important;
+    padding: 4px var(--margin-mobile) 10px var(--margin-mobile) !important;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }
@@ -1015,7 +1015,7 @@ details summary::-webkit-details-marker {
     gap: 1.5rem !important;
     overflow-x: auto;
     width: 100%;
-    padding: 0.5rem var(--margin-mobile) !important;
+    padding: 4px var(--margin-mobile) 10px var(--margin-mobile) !important;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }

@@ -47,7 +47,7 @@ export default function ProductsPage({
     return (
       <>
         <Navbar />
-        <main style={{ paddingTop: '8.75rem', paddingBottom: 'var(--section-gap)', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <main style={{ paddingTop: '8rem', paddingBottom: 'var(--section-gap)', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="font-label-caps" style={{ letterSpacing: '0.3em', opacity: 0.5 }}>Syncing Collections...</div>
         </main>
         <Footer />
@@ -60,25 +60,15 @@ export default function ProductsPage({
       <Navbar />
       <main style={{ paddingTop: '8rem' }}>
 
-        {/* ─── COLLECTION HEADER ─── */}
-        <header className="container" style={{ marginBottom: '5rem', textAlign: 'center' }}>
-          <h1 className="font-display-hero" style={{ marginBottom: '1.5rem', color: 'var(--primary)', letterSpacing: '-0.02em' }}>
-            The Eclipse Edit
-          </h1>
-          <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', maxWidth: '500px', margin: '0 auto', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
-            Silhouettes inspired by astronomical precision and the void between stars.
-          </p>
-        </header>
-
         {/* ─── FILTER BAR ─── */}
         <div style={{
-          position: 'sticky', top: '80px', zIndex: 40,
+          position: 'sticky', top: '64px', zIndex: 40,
           backgroundColor: 'rgba(20, 19, 19, 0.8)',
           backdropFilter: 'blur(12px)',
-          padding: '2rem 0', marginBottom: '3rem',
+          padding: '1rem 0', marginBottom: '2rem',
           borderBottom: '1px solid rgba(255,255,255,0.05)'
         }}>
-          <div className="container filter-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2.5rem' }}>
+          <div className="container filter-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2 rem', paddingBlockStart: "4px", paddingBlockEnd: "2px" }}>
             {filters.map(f => (
               <Link
                 key={f.label}
@@ -87,7 +77,7 @@ export default function ProductsPage({
                 style={{
                   color: category === f.value || (!category && !f.value) ? 'var(--primary)' : 'var(--on-surface-variant)',
                   borderBottom: category === f.value || (!category && !f.value) ? '1px solid var(--primary)' : '1px solid transparent',
-                  paddingBottom: '4px',
+                  paddingBottom: '2px',
                   letterSpacing: '0.3em',
                   transition: 'color 0.3s ease, border-color 0.3s ease',
                 }}
