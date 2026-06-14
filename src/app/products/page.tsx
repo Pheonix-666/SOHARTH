@@ -68,7 +68,7 @@ export default function ProductsPage({
           padding: '1rem 0', marginBottom: '2rem',
           borderBottom: '1px solid rgba(255,255,255,0.05)'
         }}>
-          <div className="container filter-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2 rem', paddingBlockStart: "4px", paddingBlockEnd: "2px" }}>
+          <div className="container filter-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2rem', paddingBlockStart: "4px", paddingBlockEnd: "2px" }}>
             {filters.map(f => (
               <Link
                 key={f.label}

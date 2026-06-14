@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useToast } from '@/context/ToastContext';
 
 interface Product {
   id: string;
@@ -94,6 +95,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 }
 
 export default function AdminDashboard() {
+  const { showToast } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -147,10 +149,10 @@ export default function AdminDashboard() {
           setForm({ ...form, images: newImages, image: newImages[0] });
         }
       } else {
-        alert('Upload failed: ' + data.error);
+        showToast('Upload failed: ' + data.error, 'error');
       }
     } catch (err) {
-      alert('Upload failed.');
+      showToast('Upload failed.', 'error');
     } finally {
       setUploadingIdx(null);
     }
@@ -252,11 +254,11 @@ export default function AdminDashboard() {
         // update local state
         setOrders(orders.map(o => o.id === id ? { ...o, ...updates } : o));
       } else {
-        alert('Failed to update order');
+        showToast('Failed to update order', 'error');
       }
     } catch (err) {
       console.error(err);
-      alert('Network error while updating order');
+      showToast('Network error while updating order', 'error');
     }
   };
 
@@ -300,10 +302,10 @@ export default function AdminDashboard() {
       if (data.success) {
         await fetchCategories();
       } else {
-        alert(data.error || 'Deletion failed.');
+        showToast(data.error || 'Deletion failed.', 'error');
       }
     } catch {
-      alert('Network transmission failed.');
+      showToast('Network transmission failed.', 'error');
     }
   };
 
@@ -311,7 +313,7 @@ export default function AdminDashboard() {
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.price || !form.category) {
-      alert('Please configure the mandatory fields (Name, Price, Category).');
+      showToast('Please configure the mandatory fields (Name, Price, Category).', 'error');
       return;
     }
     try {
@@ -322,7 +324,7 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (data.success) {
-        alert(`${data.product.name} successfully registered in the celestial registry!`);
+        showToast(`${data.product.name} successfully registered in the celestial registry!`, 'success');
         setForm({
           name: '', subtitle: '', price: '', category: categories[0]?.value || '',
           tag: '', image: '', images: [''], description: '',
@@ -332,11 +334,11 @@ export default function AdminDashboard() {
         setActiveTab('inventory');
         fetchData();
       } else {
-        alert('Registration failed: ' + data.error);
+        showToast('Registration failed: ' + data.error, 'error');
       }
     } catch (err) {
       console.error(err);
-      alert('Network transmission failed.');
+      showToast('Network transmission failed.', 'error');
     }
   };
 
@@ -346,7 +348,7 @@ export default function AdminDashboard() {
     if (!editingProduct) return;
 
     if (editingProduct.image.match(/^[a-zA-Z]:\\/)) {
-      alert('Error: Please provide a valid web URL (http/https) or relative path (/image.jpg), not a local file path.');
+      showToast('Error: Please provide a valid web URL (http/https) or relative path (/image.jpg), not a local file path.', 'error');
       return;
     }
 
@@ -358,14 +360,14 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (data.success) {
-        alert('Product successfully updated!');
+        showToast('Product successfully updated!', 'success');
         setEditingProduct(null);
         fetchData();
       } else {
-        alert('Update failed: ' + data.error);
+        showToast('Update failed: ' + data.error, 'error');
       }
     } catch {
-      alert('Network transmission failed.');
+      showToast('Network transmission failed.', 'error');
     }
   };
 
@@ -375,9 +377,9 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
       const data = await res.json();
-      if (data.success) { fetchData(); }
-      else { alert('Decommissioning failed: ' + data.error); }
-    } catch { alert('Network transmission failed.'); }
+      if (data.success) { fetchData(); showToast('Product deleted.', 'info'); }
+      else { showToast('Decommissioning failed: ' + data.error, 'error'); }
+    } catch { showToast('Network transmission failed.', 'error'); }
   };
 
   const loadPreset = () => {

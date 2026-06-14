@@ -5,11 +5,15 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 import { useState, useEffect } from 'react';
+import { useCart } from '@/context/CartContext';
+import { useToast } from '@/context/ToastContext';
 
 export default function Home() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [productsList, setProductsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetch('/api/products')
@@ -140,8 +144,16 @@ export default function Home() {
                 className="product-card featured-card"
                 style={{ gridColumn: 'span 8', gridRow: 'span 2', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--surface-container-low)', borderRadius: '16px' }}
               >
-                <button style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--surface-container)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none' }} onClick={(e) => e.preventDefault()}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--primary)' }}>favorite</span>
+                <button 
+                  className="quick-add-hover"
+                  style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--surface-container)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }} 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    addToCart(featured[0], 'OS', 1);
+                    showToast(`${featured[0].name} added to cart`, 'success');
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--primary)' }}>add_shopping_cart</span>
                 </button>
                 <div className="card-image" style={{ height: '100%', borderRadius: '16px' }}>
                   <Image src={featured[0].image} alt={featured[0].name} fill style={{ objectFit: 'cover', transition: 'transform 1s ease' }} />
@@ -176,8 +188,16 @@ export default function Home() {
                   className="product-card"
                   style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', position: 'relative' }}
                 >
-                  <button style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--surface-container)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none' }} onClick={(e) => e.preventDefault()}>
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--primary)' }}>favorite</span>
+                  <button 
+                    className="quick-add-hover"
+                    style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--surface-container)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }} 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addToCart(p, 'OS', 1);
+                      showToast(`${p.name} added to cart`, 'success');
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--primary)' }}>add_shopping_cart</span>
                   </button>
                   <div className="card-image" style={{ flex: 1, position: 'relative', minHeight: '350px', borderRadius: '16px' }}>
                     <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />

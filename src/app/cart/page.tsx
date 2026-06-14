@@ -6,9 +6,11 @@ import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
+import { useToast } from '@/context/ToastContext';
 
 export default function CartPage() {
-  const { cart: items, updateQty, removeFromCart, clearCart, isHydrated } = useCart();
+  const { cart: items, updateQty, removeFromCart, clearCart, isHydrated, addToCart } = useCart();
+  const { showToast } = useToast();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [address, setAddress] = useState({ street: '', city: '', state: '', zip: '', country: '', phone: '', name: '', email: '' });
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
@@ -32,15 +34,24 @@ export default function CartPage() {
   const handleCheckout = async () => {
     // Validate address fields
     const { street, city, state, zip, country, phone, name, email } = address;
-    if (!street || !city || !state || !zip || !country || !phone) {
-      alert('Please fill out your shipping address and contact number before checkout.');
-      return;
-    }
+    
     if (!name || !email) {
-      alert('Please fill out your name and email address for guest checkout.');
+      showToast('Please fill out your name and email address.', 'error');
       return;
     }
-    if (items.length === 0) return;
+    
+    if (selectedAddressId === 'new') {
+      if (!street || !city || !state || !zip || !country || !phone) {
+        showToast('Please complete your shipping address.', 'error');
+        return;
+      }
+    }
+
+    if (items.length === 0) {
+      showToast('Your bag is empty.', 'error');
+      return;
+    }
+    
     setIsCheckingOut(true);
     try {
       const customer = {
@@ -64,12 +75,13 @@ export default function CartPage() {
         setOrderId(data.orderId);
         setOrderPlaced(true);
         clearCart();
+        showToast('Order placed successfully!', 'success');
       } else {
-        alert('Order processing failed. Please try again.');
+        showToast('Order processing failed. Please try again.', 'error');
       }
     } catch (err) {
       console.error(err);
-      alert('A network error occurred. Please try again.');
+      showToast('A network error occurred. Please try again.', 'error');
     } finally {
       setIsCheckingOut(false);
     }
@@ -417,7 +429,14 @@ export default function CartPage() {
                 <Link href={`/products/${p.id}`} key={p.id} className="product-card" style={{ display: 'block' }}>
                   <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1rem', backgroundColor: 'var(--surface-container)' }}>
                     <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
-                    <button className="material-symbols-outlined" style={{
+                    <button 
+                      className="material-symbols-outlined quick-add-btn" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        addToCart(p, 'OS', 1);
+                        showToast(`${p.name} added to cart`, 'success');
+                      }}
+                      style={{
                       position: 'absolute', bottom: '1rem', right: '1rem',
                       backgroundColor: 'rgba(20,19,19,0.8)', backdropFilter: 'blur(8px)',
                       padding: '0.75rem', color: 'var(--primary)', fontSize: '20px',

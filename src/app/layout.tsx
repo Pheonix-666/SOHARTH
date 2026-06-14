@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 
 import { CartProvider } from "@/context/CartContext";
+import { ToastProvider } from "@/context/ToastContext";
 import './globals.css';
 const manrope = Manrope({
   subsets: ["latin"],
@@ -31,9 +32,11 @@ export default function RootLayout({
         />
       </head>
       <body className={manrope.variable}>
-          <CartProvider>
-            {children}
-          </CartProvider>
+          <ToastProvider>
+            <CartProvider>
+              {children}
+            </CartProvider>
+          </ToastProvider>
         <Analytics />
       </body>
     </html>

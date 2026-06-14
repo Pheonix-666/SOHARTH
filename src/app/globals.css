@@ -266,6 +266,12 @@ main {
 .product-card:hover {
   transform: translateY(-4px);
 }
+.product-card:hover .quick-add-btn {
+  opacity: 1 !important;
+}
+.quick-add-hover:hover {
+  transform: scale(1.1) !important;
+}
 
 
 /* ===========================
@@ -1237,5 +1243,48 @@ details summary::-webkit-details-marker {
   /* Footer single column */
   .footer-grid {
     grid-template-columns: 1fr !important;
+  }
+}
+
+/* ===========================
+   TOAST NOTIFICATIONS
+   =========================== */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast-notification {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards, fadeOut 0.4s ease 2.6s forwards;
+  min-width: 300px;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
   }
 }
