@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { use, useState, useEffect } from 'react';
+import { use, useState, useEffect, useRef } from 'react';
 
 export default function ProductsPage({
   searchParams,
@@ -16,6 +16,22 @@ export default function ProductsPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [navHidden, setNavHidden] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y > 80) {
+        setNavHidden(y > lastScrollY.current);
+      } else {
+        setNavHidden(false);
+      }
+      lastScrollY.current = y;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -62,11 +78,12 @@ export default function ProductsPage({
 
         {/* ─── FILTER BAR ─── */}
         <div style={{
-          position: 'sticky', top: '64px', zIndex: 40,
-          backgroundColor: 'rgba(20, 19, 19, 0.8)',
+          position: 'sticky', top: navHidden ? '0px' : '64px', zIndex: 40,
+          backgroundColor: 'rgba(20, 19, 19, 0.85)',
           backdropFilter: 'blur(12px)',
           padding: '1rem 0', marginBottom: '2rem',
-          borderBottom: '1px solid rgba(255,255,255,0.05)'
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          transition: 'top 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         }}>
           <div className="container filter-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2rem', paddingBlockStart: "4px", paddingBlockEnd: "2px" }}>
             {filters.map(f => (

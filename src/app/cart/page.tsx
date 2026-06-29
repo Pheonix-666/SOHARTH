@@ -24,22 +24,60 @@ export default function CartPage() {
     fetch('/api/products')
       .then(res => res.json())
       .then(data => { if (Array.isArray(data)) setAllProducts(data); })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
+  const getShippingCost = () => {
+    if (items.length === 0) return 0;
+    const cityClean = (address.city || '').trim().toLowerCase();
+    const stateClean = (address.state || '').trim().toLowerCase();
+
+    console.log('getShippingCost input:', { city: cityClean, state: stateClean });
+
+    if (!cityClean && !stateClean) {
+      return 120; // Default shipping cost
+    }
+
+    const localCities = ['mumbai', 'kalyan', 'palghar', 'navi mumbai', 'navimumbai', 'navi-mumbai'];
+    const isLocal = localCities.some(c => 
+      cityClean.includes(c) || 
+      (c.includes(cityClean) && cityClean.length >= 3)
+    );
+
+    if (isLocal) {
+      console.log('Resolved shipping: 60 (Local city match)');
+      return 60;
+    }
+
+    const isMaharashtra = 
+      stateClean === 'maharashtra' || 
+      stateClean === 'mh' || 
+      stateClean.includes('maharashtra') ||
+      (stateClean.length >= 3 && 'maharashtra'.includes(stateClean));
+
+    if (isMaharashtra) {
+      console.log('Resolved shipping: 100 (Maharashtra match)');
+      return 100;
+    }
+
+    console.log('Resolved shipping: 120 (Out of Maharashtra/default)');
+    return 120;
+  };
+
+  const shipping = getShippingCost();
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
   const tax = subtotal * 0.08;
-  const total = subtotal + tax;
+  const total = subtotal + tax + shipping;
 
   const handleCheckout = async () => {
     // Validate address fields
     const { street, city, state, zip, country, phone, name, email } = address;
-    
+
     if (!name || !email) {
       showToast('Please fill out your name and email address.', 'error');
       return;
     }
-    
+
     if (selectedAddressId === 'new') {
       if (!street || !city || !state || !zip || !country || !phone) {
         showToast('Please complete your shipping address.', 'error');
@@ -51,7 +89,7 @@ export default function CartPage() {
       showToast('Your bag is empty.', 'error');
       return;
     }
-    
+
     setIsCheckingOut(true);
     try {
       const customer = {
@@ -63,7 +101,7 @@ export default function CartPage() {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           items, subtotal, tax, total,
           customer,
           shippingAddress: { street, city, state, zip, country },
@@ -160,7 +198,7 @@ export default function CartPage() {
 
               {/* Left Column: Products in Bag & Shipping Address */}
               <div className="cart-main-col" style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-                
+
                 {/* Products in Bag */}
                 <section style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                   {items.map((item, idx) => (
@@ -217,7 +255,7 @@ export default function CartPage() {
                 {/* Shipping Address */}
                 <div className="shipping-address-container">
                   <h2 className="shipping-address-title">Shipping Address</h2>
-                  
+
                   {savedAddresses.length > 0 && (
                     <div style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       {savedAddresses.map(addr => (
@@ -241,8 +279,8 @@ export default function CartPage() {
                           <div>
                             <p className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{addr.label || 'Saved Address'}</p>
                             <p style={{ color: 'var(--on-surface-variant)', fontSize: '13px', lineHeight: 1.5 }}>
-                              {addr.line1 || addr.street}{addr.line2 ? `, ${addr.line2}` : ''}<br/>
-                              {addr.city}, {addr.state} {addr.pincode || addr.zip}<br/>
+                              {addr.line1 || addr.street}{addr.line2 ? `, ${addr.line2}` : ''}<br />
+                              {addr.city}, {addr.state} {addr.pincode || addr.zip}<br />
                               {addr.country || 'India'}
                             </p>
                           </div>
@@ -314,31 +352,31 @@ export default function CartPage() {
                   {/* Contact Details */}
                   <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(229,226,224,0.1)', paddingTop: '1.5rem' }}>
                     <h3 className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '1.5rem', fontSize: '11px', letterSpacing: '0.2em' }}>Contact Information</h3>
-                    
-                      <div className="shipping-address-grid" style={{ marginBottom: '1.25rem' }}>
-                        <div>
-                          <label className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.25rem', fontSize: '9px', letterSpacing: '0.15em' }}>Full Name *</label>
-                          <input
-                            type="text"
-                            placeholder="e.g. Jane Doe"
-                            value={address.name}
-                            onChange={e => setAddress({ ...address, name: e.target.value })}
-                            className="shipping-address-input"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <label className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.25rem', fontSize: '9px', letterSpacing: '0.15em' }}>Email Address *</label>
-                          <input
-                            type="email"
-                            placeholder="e.g. jane@example.com"
-                            value={address.email}
-                            onChange={e => setAddress({ ...address, email: e.target.value })}
-                            className="shipping-address-input"
-                            required
-                          />
-                        </div>
+
+                    <div className="shipping-address-grid" style={{ marginBottom: '1.25rem' }}>
+                      <div>
+                        <label className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.25rem', fontSize: '9px', letterSpacing: '0.15em' }}>Full Name *</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Jane Doe"
+                          value={address.name}
+                          onChange={e => setAddress({ ...address, name: e.target.value })}
+                          className="shipping-address-input"
+                          required
+                        />
                       </div>
+                      <div>
+                        <label className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.25rem', fontSize: '9px', letterSpacing: '0.15em' }}>Email Address *</label>
+                        <input
+                          type="email"
+                          placeholder="e.g. jane@example.com"
+                          value={address.email}
+                          onChange={e => setAddress({ ...address, email: e.target.value })}
+                          className="shipping-address-input"
+                          required
+                        />
+                      </div>
+                    </div>
 
                     <div>
                       <label className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.25rem', fontSize: '9px', letterSpacing: '0.15em' }}>Contact Number *</label>
@@ -362,7 +400,7 @@ export default function CartPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2.5rem' }}>
                     {[
                       { label: 'Subtotal', value: `₹${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}` },
-                      { label: 'Celestial Shipping', value: subtotal > 500 ? 'Complimentary' : '₹25.00' },
+                      { label: 'Celestial Shipping', value: `₹${shipping.toFixed(2)}` },
                       { label: 'Tax (Estimated)', value: `₹${tax.toFixed(2)}` },
                     ].map(row => (
                       <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -429,19 +467,19 @@ export default function CartPage() {
                 <Link href={`/products/${p.id}`} key={p.id} className="product-card" style={{ display: 'block' }}>
                   <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1rem', backgroundColor: 'var(--surface-container)' }}>
                     <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
-                    <button 
-                      className="material-symbols-outlined quick-add-btn" 
+                    <button
+                      className="material-symbols-outlined quick-add-btn"
                       onClick={(e) => {
                         e.preventDefault();
                         addToCart(p, 'OS', 1);
                         showToast(`${p.name} added to cart`, 'success');
                       }}
                       style={{
-                      position: 'absolute', bottom: '1rem', right: '1rem',
-                      backgroundColor: 'rgba(20,19,19,0.8)', backdropFilter: 'blur(8px)',
-                      padding: '0.75rem', color: 'var(--primary)', fontSize: '20px',
-                      opacity: 0, transition: 'opacity 0.3s',
-                    }}>add_shopping_cart</button>
+                        position: 'absolute', bottom: '1rem', right: '1rem',
+                        backgroundColor: 'rgba(20,19,19,0.8)', backdropFilter: 'blur(8px)',
+                        padding: '0.75rem', color: 'var(--primary)', fontSize: '20px',
+                        opacity: 0, transition: 'opacity 0.3s',
+                      }}>add_shopping_cart</button>
                   </div>
                   <h4 className="font-body-md" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{p.name}</h4>
                   <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)' }}>₹{p.price.toLocaleString()}</p>

@@ -28,7 +28,7 @@ export default function Home() {
       });
   }, []);
 
-  const featured = productsList.slice(0, 3);
+  const featured = productsList.slice(0, 6);
 
   if (isLoading) {
     return (
@@ -61,27 +61,85 @@ export default function Home() {
       <main>
 
         {/* ─── HERO ─── */}
-        <section style={{ position: 'relative', height: '100vh', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <section
+          style={{
+            position: 'relative',
+            height: '100vh',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+          }}
+        >
           <Image
             src="/hero-bg.jpeg"
             alt="Soharth hero"
             fill
             priority
-            style={{ objectFit: 'cover', objectPosition: 'center top', transform: 'scale(1.05)' }}
+            className="hero-image"
           />
-          <div className="hero-gradient" style={{ position: 'absolute', inset: 0 }} />
 
-          <div className="fade-in-up" style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '0 var(--margin-mobile)' }}>
-            <span className="font-label-caps" style={{ opacity: 0.8, marginBottom: '1.5rem', display: 'block', letterSpacing: '0.5em' }}>
+          <div
+            className="hero-gradient"
+            style={{ position: 'absolute', inset: 0 }}
+          />
+
+          <div
+            className="fade-in-up"
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              textAlign: 'center',
+              padding: '0 var(--margin-mobile)',
+            }}
+          >
+            <span
+              className="font-label-caps"
+              style={{
+                opacity: 0.8,
+                marginBottom: '1.5rem',
+                display: 'block',
+                letterSpacing: '0.5em',
+              }}
+            >
               Celestial Minimalist Fashion
             </span>
-            <h1 className="font-display-hero" style={{ marginBottom: '3rem', color: 'var(--primary)' }}>
+
+            <h1
+              className="font-display-hero"
+              style={{
+                marginBottom: '3rem',
+                color: 'var(--primary)',
+              }}
+            >
               ELEVATE
             </h1>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-              <div className="desktop-only" style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <Link href="/products" className="btn-primary">Explore Collection</Link>
-                <Link href="/products?category=new" className="btn-ghost">New Arrivals</Link>
+
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+                alignItems: 'center',
+              }}
+            >
+              <div
+                className="desktop-only"
+                style={{
+                  display: 'flex',
+                  gap: '1.5rem',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                }}
+              >
+                <Link href="/products" className="btn-primary">
+                  Explore Collection
+                </Link>
+
+                <Link href="/products?category=new" className="btn-ghost">
+                  New Arrivals
+                </Link>
               </div>
             </div>
           </div>
@@ -89,17 +147,48 @@ export default function Home() {
           <div className="floating-cta-container mobile-only">
             <Link href="/products" className="btn-pill-cta">
               <span>Get Started</span>
+
               <span className="arrows">
-                <span className="material-symbols-outlined">chevron_right</span>
-                <span className="material-symbols-outlined" style={{ marginLeft: '-8px' }}>chevron_right</span>
-                <span className="material-symbols-outlined" style={{ marginLeft: '-8px' }}>chevron_right</span>
+                <span className="material-symbols-outlined">
+                  chevron_right
+                </span>
+
+                <span
+                  className="material-symbols-outlined"
+                  style={{ marginLeft: '-8px' }}
+                >
+                  chevron_right
+                </span>
+
+                <span
+                  className="material-symbols-outlined"
+                  style={{ marginLeft: '-8px' }}
+                >
+                  chevron_right
+                </span>
               </span>
             </Link>
           </div>
 
           {/* Atmospheric line */}
-          <div style={{ position: 'absolute', bottom: '5rem', left: '50%', transform: 'translateX(-50%)', opacity: 0.2, pointerEvents: 'none' }}>
-            <div style={{ width: '1px', height: '300px', background: 'linear-gradient(to top, var(--primary), transparent)' }} />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '5rem',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              opacity: 0.2,
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                width: '1px',
+                height: '300px',
+                background:
+                  'linear-gradient(to top, var(--primary), transparent)',
+              }}
+            />
           </div>
         </section>
 
@@ -121,7 +210,7 @@ export default function Home() {
 
 
         {/* ─── NEW ARRIVALS BENTO ─── */}
-        <section style={{ paddingBottom: 'var(--section-gap)' }}>
+        <section style={{ paddingBottom: '4rem' }}>
           <div className="container">
             {/* Header */}
             <div className="new-arrivals-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
@@ -131,66 +220,65 @@ export default function Home() {
                 </span>
                 <h2 className="font-headline-lg">NEW ARRIVALS</h2>
               </div>
-              <Link href="/products" className="font-label-caps" style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '0.5rem', transition: 'border-color 0.3s' }}>
-                View All Pieces
-              </Link>
             </div>
 
-            {/* Bento Grid */}
-            <div className="product-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 'var(--gutter)', height: '900px' }}>
+            {/* Bento Grid — Row 1: hero (8 cols) + 2 small (4 cols each) */}
+            <div className="product-grid home-bento-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 'var(--gutter)' }}>
               {/* Hero Card */}
-              <Link
-                href={`/products/${featured[0].id}`}
-                className="product-card featured-card"
-                style={{ gridColumn: 'span 8', gridRow: 'span 2', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--surface-container-low)', borderRadius: '16px' }}
-              >
-                <button 
-                  className="quick-add-hover"
-                  style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--surface-container)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }} 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    addToCart(featured[0], 'OS', 1);
-                    showToast(`${featured[0].name} added to cart`, 'success');
+              {featured[0] && (
+                <Link
+                  href={`/products/${featured[0].id}`}
+                  className="product-card featured-card"
+                  style={{ gridColumn: 'span 8', gridRow: 'span 1', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--surface-container-low)', borderRadius: '16px', minHeight: '560px' }}
+                >
+                  <button
+                    className="quick-add-hover"
+                    style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--surface-container)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addToCart(featured[0], 'OS', 1);
+                      showToast(`${featured[0].name} added to cart`, 'success');
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--primary)' }}>add_shopping_cart</span>
+                  </button>
+                  <div className="card-image" style={{ height: '100%', borderRadius: '16px' }}>
+                    <Image src={featured[0].image} alt={featured[0].name} fill style={{ objectFit: 'cover', transition: 'transform 1s ease' }} />
+                  </div>
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%)',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                    padding: '3rem', opacity: 0, transition: 'opacity 0.5s ease',
                   }}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--primary)' }}>add_shopping_cart</span>
-                </button>
-                <div className="card-image" style={{ height: '100%', borderRadius: '16px' }}>
-                  <Image src={featured[0].image} alt={featured[0].name} fill style={{ objectFit: 'cover', transition: 'transform 1s ease' }} />
-                </div>
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%)',
-                  display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-                  padding: '3rem', opacity: 0, transition: 'opacity 0.5s ease',
-                }}
-                  onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                  onMouseLeave={e => (e.currentTarget.style.opacity = '0')}
-                >
-                  {featured[0].tag && (
-                    <span className="font-caption" style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem', letterSpacing: '0.3em' }}>
-                      {featured[0].tag}
-                    </span>
-                  )}
-                  <h3 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '1rem' }}>{featured[0].name}</h3>
-                  <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', maxWidth: '380px', marginBottom: '1.5rem' }}>
-                    {featured[0].description.slice(0, 100)}...
-                  </p>
-                  <button className="btn-primary" style={{ width: 'fit-content' }}>Quick View</button>
-                </div>
-              </Link>
+                    onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                    onMouseLeave={e => (e.currentTarget.style.opacity = '0')}
+                  >
+                    {featured[0].tag && (
+                      <span className="font-caption" style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem', letterSpacing: '0.3em' }}>
+                        {featured[0].tag}
+                      </span>
+                    )}
+                    <h3 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '1rem' }}>{featured[0].name}</h3>
+                    <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', maxWidth: '380px', marginBottom: '1.5rem' }}>
+                      {featured[0].description?.slice(0, 100)}...
+                    </p>
+                    <button className="btn-primary" style={{ width: 'fit-content' }}>Quick View</button>
+                  </div>
+                </Link>
+              )}
 
-              {/* Small Cards */}
-              {featured.slice(1).map(p => (
+              {/* Side cards: products 2 & 3 */}
+              {featured.slice(1, 3).map(p => (
                 <Link
                   href={`/products/${p.id}`}
                   key={p.id}
                   className="product-card"
                   style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', position: 'relative' }}
                 >
-                  <button 
+                  <button
                     className="quick-add-hover"
-                    style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--surface-container)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }} 
+                    style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--surface-container)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
                     onClick={(e) => {
                       e.preventDefault();
                       addToCart(p, 'OS', 1);
@@ -199,20 +287,64 @@ export default function Home() {
                   >
                     <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--primary)' }}>add_shopping_cart</span>
                   </button>
-                  <div className="card-image" style={{ flex: 1, position: 'relative', minHeight: '350px', borderRadius: '16px' }}>
+                  <div className="card-image" style={{ flex: 1, position: 'relative', minHeight: '260px', borderRadius: '16px', overflow: 'hidden' }}>
                     <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
                   </div>
-                  <div style={{ paddingTop: '1.5rem' }}>
+                  <div style={{ paddingTop: '1.25rem' }}>
                     <h3 className="font-headline-md" style={{ marginBottom: '0.5rem' }}>{p.name}</h3>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>₹{p.price.toLocaleString()}</span>
-                      <span className="font-label-caps" style={{ opacity: 0.4 }}>{p.subtitle.split('/')[1]?.trim()}</span>
+                      <span className="font-label-caps" style={{ opacity: 0.4 }}>{p.subtitle?.split('/')[1]?.trim()}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+
+              {/* Row 2: 3 equal cards (products 4–6) */}
+              {featured.slice(3, 6).map(p => (
+                <Link
+                  href={`/products/${p.id}`}
+                  key={p.id}
+                  className="product-card"
+                  style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', position: 'relative', marginTop: '2rem' }}
+                >
+                  <button
+                    className="quick-add-hover"
+                    style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--surface-container)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addToCart(p, 'OS', 1);
+                      showToast(`${p.name} added to cart`, 'success');
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--primary)' }}>add_shopping_cart</span>
+                  </button>
+                  <div className="card-image" style={{ position: 'relative', height: '360px', borderRadius: '16px', overflow: 'hidden' }}>
+                    <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ paddingTop: '1.25rem' }}>
+                    <h3 className="font-headline-md" style={{ marginBottom: '0.5rem' }}>{p.name}</h3>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>₹{p.price.toLocaleString()}</span>
+                      <span className="font-label-caps" style={{ opacity: 0.4 }}>{p.subtitle?.split('/')[1]?.trim()}</span>
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
           </div>
+        </section>
+
+        {/* ─── VIEW ALL CTA ─── */}
+        <section style={{ padding: '3rem 0 var(--section-gap)', textAlign: 'center' }}>
+          <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em', marginBottom: '2.5rem', display: 'block', opacity: 0.6 }}>
+            {productsList.length > 0 ? `${productsList.length} pieces in the collection` : 'Explore the full collection'}
+          </span>
+          <Link href="/products" className="btn-flashy">
+            <span className="btn-flashy-shimmer" />
+            <span>View All Pieces</span>
+            <span className="material-symbols-outlined btn-flashy-icon">arrow_forward</span>
+          </Link>
         </section>
 
         {/* ─── GLASSMORPHISM FEATURE ─── */}
