@@ -60,12 +60,12 @@ export default function ProductsPage({
 
   const displayProducts = category
     ? productsList.filter(p => {
-        if (category === 'new') {
-          const createdAt = new Date(p.created_at);
-          return createdAt >= twentyDaysAgo;
-        }
-        return p.category === category;
-      })
+      if (category === 'new') {
+        const createdAt = new Date(p.created_at);
+        return createdAt >= twentyDaysAgo;
+      }
+      return p.category === category;
+    })
     : productsList;
 
   if (isLoading) {
