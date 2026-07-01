@@ -27,6 +27,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
 
   const product = productsList.find(p => p.id === id);
   const related = productsList.filter(p => p.id !== id).slice(0, 3);
+  const sameCategory = product ? productsList.filter(p => p.category === product.category && p.id !== id) : [];
 
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState('M');
@@ -266,11 +267,11 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                 <span className="font-label-caps" style={{ opacity: 0.5, display: 'block', marginBottom: '0.5rem' }}>THE UNIVERSE EXPANDS</span>
                 <h3 className="font-headline-md" style={{ letterSpacing: '0.3em' }}>RECOMMENDED FOR YOU</h3>
               </div>
-              <Link href="/products" className="btn-ghost" style={{ padding: '0.75rem 1.5rem' }}>View All</Link>
+              <Link href="/products" className="btn-primary" style={{ padding: '0.75rem 1.5rem', letterSpacing: '0.1em', whiteSpace: 'nowrap', flexShrink: 0 }}>View All</Link>
             </div>
-            <div style={{ display: 'flex', gap: 'var(--gutter)', overflowX: 'auto' }} className="hide-scrollbar">
+            <div style={{ display: 'flex', gap: 'var(--gutter)', overflowX: 'auto', paddingBottom: '1rem' }} className="hide-scrollbar">
               {related.map(p => (
-                <Link href={`/products/${p.id}`} key={p.id} className="product-card" style={{ minWidth: '340px', display: 'block' }}>
+                <Link href={`/products/${p.id}`} key={p.id} className="product-card scrolling-product-card">
                   <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container)' }}>
                     <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
                   </div>
@@ -286,6 +287,37 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
             </div>
           </div>
         </section>
+
+        {/* ─── SAME CATEGORY ─── */}
+        {sameCategory.length > 0 && (
+          <section style={{ padding: '0 0 var(--section-gap) 0', overflow: 'hidden' }}>
+            <div className="container">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem' }}>
+                <div>
+                  <span className="font-label-caps" style={{ opacity: 0.5, display: 'block', marginBottom: '0.5rem' }}>SIMILAR VIBES</span>
+                  <h3 className="font-headline-md" style={{ letterSpacing: '0.3em' }}>MORE IN {product.category.toUpperCase()}</h3>
+                </div>
+                <Link href={`/products?category=${product.category}`} className="btn-primary" style={{ padding: '0.75rem 1.5rem', letterSpacing: '0.1em', whiteSpace: 'nowrap', flexShrink: 0 }}>View All</Link>
+              </div>
+              <div style={{ display: 'flex', gap: 'var(--gutter)', overflowX: 'auto', paddingBottom: '1rem' }} className="hide-scrollbar">
+                {sameCategory.map(p => (
+                  <Link href={`/products/${p.id}`} key={p.id} className="product-card scrolling-product-card">
+                    <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container)' }}>
+                      <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <h5 className="font-label-caps" style={{ marginBottom: '0.25rem', transition: 'color 0.3s' }}>{p.name}</h5>
+                        <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>{p.subtitle}</p>
+                      </div>
+                      <span className="font-body-md">₹{p.price.toLocaleString()}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
       </main>
       <Footer />
     </>

@@ -2202,3 +2202,27 @@ details summary::-webkit-details-marker {
     margin-left: 0;
   }
 }
+
+/* ─── SCROLLING PRODUCT CARD (RESPONSIVE) ─── */
+.scrolling-product-card {
+  min-width: 280px;
+  max-width: 280px;
+  display: block;
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .scrolling-product-card {
+    min-width: 240px;
+    max-width: 240px;
+  }
+}
+
+@media (max-width: 600px) {
+  .scrolling-product-card {
+    /* Around 42vw allows exactly 2 items to show comfortably on mobile, 
+       plus a tiny bit of the 3rd one peeking out to indicate scrolling */
+    min-width: 42vw;
+    max-width: 42vw;
+  }
+}
