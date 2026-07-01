@@ -55,8 +55,17 @@ export default function ProductsPage({
     { label: 'NEW ARRIVALS', value: 'new' },
   ];
 
+  const twentyDaysAgo = new Date();
+  twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
+
   const displayProducts = category
-    ? productsList.filter(p => p.category === category || (category === 'new' && p.tag === 'NEW'))
+    ? productsList.filter(p => {
+        if (category === 'new') {
+          const createdAt = new Date(p.created_at);
+          return createdAt >= twentyDaysAgo;
+        }
+        return p.category === category;
+      })
     : productsList;
 
   if (isLoading) {
@@ -119,16 +128,7 @@ export default function ProductsPage({
               >
                 <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container-low)' }}>
                   <Image src={product.image} alt={product.name} fill style={{ objectFit: 'cover' }} />
-                  {product.tag && (
-                    <span className="font-caption" style={{
-                      position: 'absolute', top: '1rem', left: '1rem',
-                      background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)',
-                      padding: '0.25rem 0.75rem', letterSpacing: '0.2em',
-                      border: '1px solid rgba(255,255,255,0.15)',
-                    }}>
-                      {product.tag}
-                    </span>
-                  )}
+
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                   <div>

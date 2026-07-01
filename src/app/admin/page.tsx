@@ -463,8 +463,8 @@ export default function AdminDashboard() {
                       <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
                         <thead>
                           <tr style={{ borderBottom: '1px solid rgba(229,226,224,0.2)' }}>
-                            {['APPAREL', 'COLLECTION', 'CATEGORY', 'PRICE', 'TAG', 'ACTIONS'].map((h, i) => (
-                              <th key={h} className="font-label-caps" style={{ padding: '1rem', opacity: 0.5, textAlign: i === 5 ? 'right' : 'left' }}>{h}</th>
+                            {['APPAREL', 'COLLECTION', 'CATEGORY', 'PRICE', 'ACTIONS'].map((h, i) => (
+                              <th key={h} className="font-label-caps" style={{ padding: '1rem', opacity: 0.5, textAlign: i === 4 ? 'right' : 'left' }}>{h}</th>
                             ))}
                           </tr>
                         </thead>
@@ -483,12 +483,7 @@ export default function AdminDashboard() {
                               <td className="font-body-md" style={{ padding: '1rem', color: 'var(--primary)' }}>{product.collection}</td>
                               <td className="font-label-caps" style={{ padding: '1rem', color: 'var(--on-surface-variant)', fontSize: '10px' }}>{product.category}</td>
                               <td className="font-body-md" style={{ padding: '1rem', color: 'var(--primary)' }}>₹{product.price.toLocaleString()}</td>
-                              <td className="font-caption" style={{ padding: '1rem' }}>
-                                {product.tag
-                                  ? <span style={{ border: '1px solid rgba(255,255,255,0.2)', padding: '2px 8px', fontSize: '9px', letterSpacing: '0.1em' }}>{product.tag}</span>
-                                  : <span style={{ opacity: 0.2 }}>—</span>
-                                }
-                              </td>
+
                               <td style={{ padding: '1rem', textAlign: 'right' }}>
                                 <div style={{ display: 'inline-flex', gap: '0.75rem' }}>
                                   <button
@@ -658,11 +653,6 @@ export default function AdminDashboard() {
                             style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '10px', marginTop: '0.5rem', cursor: 'pointer' }}>
                             + ADD ANOTHER IMAGE
                           </button>
-                        </div>
-                        <div>
-                          <FieldLabel>SEASONAL / SPECIAL TAG</FieldLabel>
-                          <input type="text" placeholder="e.g., NEW, LIMITED, BEST SELLER" value={form.tag}
-                            onChange={e => setForm({ ...form, tag: e.target.value })} style={inputStyle} />
                         </div>
                       </div>
 
@@ -1057,11 +1047,6 @@ export default function AdminDashboard() {
                     style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '10px', marginTop: '0.5rem', cursor: 'pointer' }}>
                     + ADD ANOTHER IMAGE
                   </button>
-                </div>
-                <div>
-                  <FieldLabel>TAG</FieldLabel>
-                  <input type="text" value={editingProduct.tag}
-                    onChange={e => setEditingProduct({ ...editingProduct, tag: e.target.value })} style={inputStyle} />
                 </div>
               </div>
 

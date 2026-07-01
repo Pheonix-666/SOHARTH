@@ -4,13 +4,290 @@ import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
+
+/* ─── COUNTER ITEM ─── */
+function CounterItem({ icon, end, suffix, label, decimal }: { icon: string; end: number; suffix: string; label: string; decimal?: boolean }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const animated = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !animated.current) {
+        animated.current = true;
+        const duration = 1800;
+        const start = performance.now();
+        const step = (now: number) => {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setCount(parseFloat((eased * end).toFixed(decimal ? 1 : 0)));
+          if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }
+    }, { threshold: 0.4 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [end, decimal]);
+
+  return (
+    <div ref={ref} className="counter-item">
+      <span className="counter-icon">{icon}</span>
+      <span className="counter-number">{decimal ? count.toFixed(1) : count.toLocaleString()}{suffix}</span>
+      <span className="counter-label">{label}</span>
+    </div>
+  );
+}
+
+/* ─── TESTIMONIALS CAROUSEL ─── */
+const TESTIMONIALS = [
+  { quote: '"Absolutely obsessed with my order. The fabric feels celestial — worth every rupee."', author: 'Riya M., Delhi' },
+  { quote: '"Finally a brand that does minimal fashion right. The silhouettes are immaculate."', author: 'Aryan S., Mumbai' },
+  { quote: '"Ordered twice already. Packaging, quality, vibe — all 10/10."', author: 'Priya K., Bengaluru' },
+];
+
+function TestimonialsCarousel() {
+  const [active, setActive] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const goTo = useCallback((idx: number) => {
+    setActive((idx + TESTIMONIALS.length) % TESTIMONIALS.length);
+  }, []);
+
+  useEffect(() => {
+    timerRef.current = setTimeout(() => goTo(active + 1), 4000);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [active, goTo]);
+
+  return (
+    <section className="testimonials-section reveal-on-scroll">
+      <div className="container" style={{ maxWidth: '860px' }}>
+        <span className="font-label-caps" style={{ display: 'block', textAlign: 'center', letterSpacing: '0.4em', color: 'var(--on-surface-variant)', marginBottom: '3rem', opacity: 0.6 }}>
+          What Our Community Says
+        </span>
+
+        <div className="testimonial-carousel-wrapper">
+          <div
+            className="testimonial-track"
+            style={{ transform: `translateX(-${active * 100}%)` }}
+          >
+            {TESTIMONIALS.map((t, i) => (
+              <div key={i} className="testimonial-card">
+                <div className="testimonial-stars">
+                  {[...Array(5)].map((_, s) => (
+                    <span key={s} className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}>star</span>
+                  ))}
+                </div>
+                <p className="testimonial-quote">{t.quote}</p>
+                <span className="testimonial-author">— {t.author}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="carousel-controls">
+          <button className="carousel-arrow" onClick={() => goTo(active - 1)} aria-label="Previous">
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chevron_left</span>
+          </button>
+          <div className="carousel-dots">
+            {TESTIMONIALS.map((_, i) => (
+              <button key={i} className={`carousel-dot${i === active ? ' active' : ''}`} onClick={() => goTo(i)} aria-label={`Go to testimonial ${i + 1}`} />
+            ))}
+          </div>
+          <button className="carousel-arrow" onClick={() => goTo(active + 1)} aria-label="Next">
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+/* ─── REVIEW MODAL ─── */
+function ReviewModal({ onClose }: { onClose: () => void }) {
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [name, setName] = useState('');
+  const [city, setCity] = useState('');
+  const [text, setText] = useState('');
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  const submit = async () => {
+    if (!name.trim() || !text.trim() || rating === 0) return;
+    setStatus('loading');
+
+    let image_url: string | null = null;
+
+    if (photoFile) {
+      setUploadingPhoto(true);
+      const fd = new FormData();
+      fd.append('file', photoFile);
+      const upRes = await fetch('/api/upload', { method: 'POST', body: fd });
+      const upData = await upRes.json();
+      setUploadingPhoto(false);
+      if (upData.url) image_url = upData.url;
+    }
+
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, city, rating, text, image_url }),
+    });
+    setStatus(res.ok ? 'success' : 'error');
+  };
+
+  return (
+    <div
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', overflowY: 'auto' }}
+    >
+      <div style={{ background: '#141414', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '3rem', maxWidth: '520px', width: '100%', position: 'relative', margin: 'auto' }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', background: 'transparent', border: 'none', color: 'var(--on-surface-variant)', cursor: 'pointer' }}>
+          <span className="material-symbols-outlined">close</span>
+        </button>
+
+        {status === 'success' ? (
+          <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '3rem', color: '#4caf50', fontVariationSettings: "'FILL' 1", display: 'block', marginBottom: '1rem' }}>check_circle</span>
+            <h3 className="font-headline-md" style={{ marginBottom: '0.75rem' }}>Thank You!</h3>
+            <p className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>Your review has been submitted and will appear after approval.</p>
+            <button onClick={onClose} className="btn-primary" style={{ marginTop: '2rem' }}>Close</button>
+          </div>
+        ) : (
+          <>
+            <span className="font-label-caps" style={{ color: 'var(--primary)', letterSpacing: '0.4em', display: 'block', marginBottom: '1rem' }}>Share Your Experience</span>
+            <h3 className="font-headline-md" style={{ marginBottom: '2rem' }}>Write a Review</h3>
+
+            {/* Photo Upload */}
+            <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  width: 72, height: 72, borderRadius: '50%',
+                  border: '2px dashed rgba(255,255,255,0.2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', overflow: 'hidden', flexShrink: 0,
+                  background: photoPreview ? 'transparent' : 'rgba(255,255,255,0.03)',
+                  transition: 'border-color 0.2s',
+                }}
+              >
+                {photoPreview
+                  ? <img src={photoPreview} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span className="material-symbols-outlined" style={{ color: 'rgba(255,255,255,0.3)', fontSize: '28px' }}>add_a_photo</span>
+                }
+              </div>
+              <div>
+                <p className="font-label-caps" style={{ marginBottom: '0.35rem', opacity: 0.6, letterSpacing: '0.2em', fontSize: '10px' }}>Your Photo (optional)</p>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '0.4rem 1rem', color: 'var(--primary)', fontSize: '12px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600 }}
+                >
+                  {photoPreview ? 'Change Photo' : 'Upload Photo'}
+                </button>
+                {photoPreview && (
+                  <button
+                    type="button"
+                    onClick={() => { setPhotoPreview(null); setPhotoFile(null); }}
+                    style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', fontSize: '11px', cursor: 'pointer', marginLeft: '0.5rem', fontFamily: 'var(--font-body)' }}
+                  >Remove</button>
+                )}
+              </div>
+              <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoChange} />
+            </div>
+
+            {/* Star Picker */}
+            <div style={{ marginBottom: '2rem' }}>
+              <p className="font-label-caps" style={{ marginBottom: '0.75rem', opacity: 0.6, letterSpacing: '0.2em' }}>Your Rating</p>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button
+                    key={s}
+                    onMouseEnter={() => setHover(s)}
+                    onMouseLeave={() => setHover(0)}
+                    onClick={() => setRating(s)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px' }}
+                  >
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: '2rem',
+                        color: (hover || rating) >= s ? '#d4af37' : 'rgba(255,255,255,0.2)',
+                        fontVariationSettings: (hover || rating) >= s ? "'FILL' 1" : "'FILL' 0",
+                        transition: 'color 0.15s',
+                      }}
+                    >star</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Text Fields */}
+            {([
+              { label: 'Your Name *', value: name, setter: setName, placeholder: 'e.g. Riya M.' },
+              { label: 'City', value: city, setter: setCity, placeholder: 'e.g. Delhi' },
+            ] as { label: string; value: string; setter: (v: string) => void; placeholder: string }[]).map(f => (
+              <div key={f.label} style={{ marginBottom: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+                <label className="font-label-caps" style={{ display: 'block', marginBottom: '0.4rem', opacity: 0.5, letterSpacing: '0.2em', fontSize: '10px' }}>{f.label}</label>
+                <input
+                  value={f.value}
+                  onChange={e => f.setter(e.target.value)}
+                  placeholder={f.placeholder}
+                  style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', color: 'var(--primary)', fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 500 }}
+                />
+              </div>
+            ))}
+            <div style={{ marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+              <label className="font-label-caps" style={{ display: 'block', marginBottom: '0.4rem', opacity: 0.5, letterSpacing: '0.2em', fontSize: '10px' }}>Your Review *</label>
+              <textarea
+                value={text}
+                onChange={e => setText(e.target.value)}
+                placeholder="Tell us about your experience..."
+                rows={4}
+                style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', color: 'var(--primary)', fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 500, resize: 'none', lineHeight: 1.6 }}
+              />
+            </div>
+
+            {status === 'error' && <p style={{ color: '#ef4444', fontSize: '12px', marginBottom: '1rem' }}>Something went wrong. Please try again.</p>}
+
+            <button
+              onClick={submit}
+              disabled={status === 'loading' || !name || !text || rating === 0}
+              className="btn-primary"
+              style={{ width: '100%', justifyContent: 'center', display: 'flex', opacity: (!name || !text || rating === 0) ? 0.5 : 1 }}
+            >
+              {status === 'loading' ? (uploadingPhoto ? 'Uploading photo...' : 'Submitting...') : 'Submit Review'}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [productsList, setProductsList] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [dbReviews, setDbReviews] = useState<any[]>([]);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { addToCart } = useCart();
   const { showToast } = useToast();
@@ -27,6 +304,27 @@ export default function Home() {
         setIsLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    fetch('/api/reviews')
+      .then(res => res.json())
+      .then(data => Array.isArray(data) && setDbReviews(data))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, [isLoading]);
 
   const featured = productsList.slice(0, 6);
 
@@ -61,7 +359,9 @@ export default function Home() {
       <main>
 
         {/* ─── HERO ─── */}
+        {/* ─── DESKTOP HERO ─── */}
         <section
+          className="desktop-only"
           style={{
             position: 'relative',
             height: '100vh',
@@ -74,11 +374,13 @@ export default function Home() {
         >
           <Image
             src="/hero-bg.jpeg"
-            alt="Soharth hero"
+            alt="Soharth hero desktop"
             fill
             priority
-            className="hero-image"
+            style={{ objectFit: 'cover', objectPosition: 'center' }}
           />
+
+          <div className="hero-gradient-mesh" />
 
           <div
             className="hero-gradient"
@@ -86,46 +388,52 @@ export default function Home() {
           />
 
           <div
-            className="fade-in-up"
             style={{
               position: 'relative',
               zIndex: 10,
               textAlign: 'center',
-              padding: '0 var(--margin-mobile)',
+              padding: '0 var(--margin-desktop)',
             }}
           >
             <span
-              className="font-label-caps"
+              className="font-label-caps stagger-reveal"
               style={{
                 opacity: 0.8,
                 marginBottom: '1.5rem',
-                display: 'block',
+                display: 'inline-block',
                 letterSpacing: '0.5em',
               }}
             >
-              Celestial Minimalist Fashion
+              <span className="stagger-reveal-inner" style={{ animationDelay: '0.2s' }}>
+                Celestial Minimalist Fashion
+              </span>
             </span>
 
             <h1
-              className="font-display-hero"
+              className="font-display-hero stagger-reveal"
               style={{
                 marginBottom: '3rem',
                 color: 'var(--primary)',
               }}
             >
-              ELEVATE
+              <span className="stagger-reveal-inner" style={{ animationDelay: '0.4s' }}>
+                ELEVATE
+              </span>
             </h1>
 
             <div
+              className="fade-in-up"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '1rem',
                 alignItems: 'center',
+                animationDelay: '0.8s',
+                opacity: 0,
+                animationFillMode: 'forwards'
               }}
             >
               <div
-                className="desktop-only"
                 style={{
                   display: 'flex',
                   gap: '1.5rem',
@@ -144,9 +452,78 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="floating-cta-container mobile-only">
+          <div className="scroll-indicator">
+            <div className="scroll-indicator-line" />
+          </div>
+        </section>
+
+        {/* ─── MOBILE HERO ─── */}
+        <section
+          className="mobile-only"
+          style={{
+            position: 'relative',
+            height: '100vh',
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+          }}
+        >
+          <Image
+            src="/hero-bg.jpeg"
+            alt="Soharth hero mobile"
+            fill
+            priority
+            style={{ objectFit: 'cover', objectPosition: '70% center' }}
+          />
+
+          <div className="hero-gradient-mesh" style={{ transform: 'scale(1.5)' }} />
+
+          <div
+            className="hero-gradient"
+            style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 20%, var(--background) 90%)' }}
+          />
+
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              textAlign: 'center',
+              padding: '0 var(--margin-mobile)',
+            }}
+          >
+            <span
+              className="font-label-caps stagger-reveal"
+              style={{
+                opacity: 0.9,
+                marginBottom: '1rem',
+                display: 'inline-block',
+                letterSpacing: '0.3em',
+                fontSize: '10px'
+              }}
+            >
+              <span className="stagger-reveal-inner" style={{ animationDelay: '0.2s' }}>
+                Celestial Minimalist
+              </span>
+            </span>
+
+            <h1
+              className="font-display-hero stagger-reveal"
+              style={{
+                marginBottom: '2.5rem',
+                color: 'var(--primary)',
+              }}
+            >
+              <span className="stagger-reveal-inner" style={{ animationDelay: '0.4s' }}>
+                ELEVATE
+              </span>
+            </h1>
+          </div>
+
+          <div className="floating-cta-container fade-in-up" style={{ animationDelay: '0.8s', opacity: 0, animationFillMode: 'forwards' }}>
             <Link href="/products" className="btn-pill-cta">
-              <span>Get Started</span>
+              <span>Shop Now</span>
 
               <span className="arrows">
                 <span className="material-symbols-outlined">
@@ -169,31 +546,24 @@ export default function Home() {
               </span>
             </Link>
           </div>
+        </section>
 
-          {/* Atmospheric line */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '5rem',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              opacity: 0.2,
-              pointerEvents: 'none',
-            }}
-          >
-            <div
-              style={{
-                width: '1px',
-                height: '300px',
-                background:
-                  'linear-gradient(to top, var(--primary), transparent)',
-              }}
-            />
+        {/* ─── INTERACTIVE MARQUEE ─── */}
+        <section className="marquee-container reveal-on-scroll">
+          <div className="marquee-content">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} style={{ display: 'contents' }}>
+                <span className="marquee-item">CELESTIAL <span className="material-symbols-outlined marquee-star">flare</span></span>
+                <span className="marquee-item">MINIMALIST <span className="material-symbols-outlined marquee-star">flare</span></span>
+                <span className="marquee-item">PREMIUM <span className="material-symbols-outlined marquee-star">flare</span></span>
+                <span className="marquee-item">ARCHITECTURAL <span className="material-symbols-outlined marquee-star">flare</span></span>
+              </div>
+            ))}
           </div>
         </section>
 
         {/* ─── BRAND STATEMENT ─── */}
-        <section style={{ padding: 'var(--section-gap) 0' }}>
+        <section className="reveal-on-scroll" style={{ padding: 'calc(var(--section-gap) / 2) 0 var(--section-gap) 0' }}>
           <div className="container brand-statement" style={{ maxWidth: '760px', textAlign: 'center' }}>
             <span className="material-symbols-outlined shimmer" style={{ fontSize: '2.5rem', opacity: 0.4, marginBottom: '2rem', display: 'block' }}>
               auto_awesome
@@ -210,7 +580,7 @@ export default function Home() {
 
 
         {/* ─── NEW ARRIVALS BENTO ─── */}
-        <section style={{ paddingBottom: '4rem' }}>
+        <section className="reveal-on-scroll" style={{ paddingBottom: '4rem' }}>
           <div className="container">
             {/* Header */}
             <div className="new-arrivals-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
@@ -228,7 +598,7 @@ export default function Home() {
               {featured[0] && (
                 <Link
                   href={`/products/${featured[0].id}`}
-                  className="product-card featured-card"
+                  className="product-card product-card-enhanced featured-card"
                   style={{ gridColumn: 'span 8', gridRow: 'span 1', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--surface-container-low)', borderRadius: '16px', minHeight: '560px' }}
                 >
                   <button
@@ -254,11 +624,6 @@ export default function Home() {
                     onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
                     onMouseLeave={e => (e.currentTarget.style.opacity = '0')}
                   >
-                    {featured[0].tag && (
-                      <span className="font-caption" style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem', letterSpacing: '0.3em' }}>
-                        {featured[0].tag}
-                      </span>
-                    )}
                     <h3 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '1rem' }}>{featured[0].name}</h3>
                     <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', maxWidth: '380px', marginBottom: '1.5rem' }}>
                       {featured[0].description?.slice(0, 100)}...
@@ -273,7 +638,7 @@ export default function Home() {
                 <Link
                   href={`/products/${p.id}`}
                   key={p.id}
-                  className="product-card"
+                  className="product-card product-card-enhanced"
                   style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', position: 'relative' }}
                 >
                   <button
@@ -305,7 +670,7 @@ export default function Home() {
                 <Link
                   href={`/products/${p.id}`}
                   key={p.id}
-                  className="product-card"
+                  className="product-card product-card-enhanced"
                   style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', position: 'relative', marginTop: '2rem' }}
                 >
                   <button
@@ -336,7 +701,7 @@ export default function Home() {
         </section>
 
         {/* ─── VIEW ALL CTA ─── */}
-        <section style={{ padding: '3rem 0 var(--section-gap)', textAlign: 'center' }}>
+        <section className="reveal-on-scroll" style={{ padding: '3rem 0 var(--section-gap)', textAlign: 'center' }}>
           <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em', marginBottom: '2.5rem', display: 'block', opacity: 0.6 }}>
             {productsList.length > 0 ? `${productsList.length} pieces in the collection` : 'Explore the full collection'}
           </span>
@@ -347,69 +712,102 @@ export default function Home() {
           </Link>
         </section>
 
-        {/* ─── GLASSMORPHISM FEATURE ─── */}
-        <section style={{ paddingTop: 'var(--section-gap)', paddingBottom: 'var(--section-gap)', backgroundColor: 'var(--surface-dim)', position: 'relative', overflow: 'hidden' }}>
-          {/* Background image */}
-          <div style={{ position: 'absolute', top: 0, right: 0, width: '50%', height: '100%', opacity: 0.3 }}>
-            <Image
-              src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=800"
-              alt="Atmospheric detail"
-              fill
-              style={{ objectFit: 'cover' }}
-            />
-          </div>
-          <div className="container" style={{ position: 'relative', zIndex: 10 }}>
-            <div className="glass-panel glass-panel-mobile" style={{ maxWidth: '600px', padding: '4rem' }}>
-              <span className="font-label-caps" style={{ color: 'var(--primary)', letterSpacing: '0.4em', marginBottom: '2rem', display: 'block' }}>
-                The Alpine Edit
-              </span>
-              <h2 className="font-headline-lg" style={{ marginBottom: '2rem' }}>CLEAN SILHOUETTES. COOL TONES.</h2>
-              <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', marginBottom: '3rem' }}>
-                Built for comfort, styled for impact. Our technical range blends high-performance materials with a meditative aesthetic inspired by high-altitude horizons.
-              </p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '3rem' }}>
-                <div>
-                  <h4 className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '0.5rem' }}>FABRIC</h4>
-                  <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>Recycled technical wool</p>
-                </div>
-                <div>
-                  <h4 className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '0.5rem' }}>THERMAL</h4>
-                  <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>-15°C Certified</p>
-                </div>
-              </div>
-              <Link href="/products" className="btn-ghost">Discover The Range</Link>
+        {/* ─── SOCIAL PROOF COUNTER STRIP ─── */}
+        <section className="counter-strip reveal-on-scroll">
+          <div className="container">
+            <div className="counter-grid">
+              {[
+                { icon: '🌍', end: 2400, suffix: '+', label: 'Happy Customers' },
+                { icon: '👗', end: 180, suffix: '+', label: 'Pieces Curated' },
+                { icon: '⭐', end: 4.9, suffix: '', label: 'Avg. Rating', decimal: true },
+                { icon: '🚀', end: 48, suffix: 'h', label: 'Avg. Dispatch' },
+              ].map((stat, i) => (
+                <CounterItem key={i} {...stat} />
+              ))}
             </div>
           </div>
         </section>
 
-        {/* ─── NEWSLETTER ─── */}
-        <section style={{ padding: 'var(--section-gap) 0', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <div className="container" style={{ textAlign: 'center', maxWidth: '640px' }}>
-            <span className="material-symbols-outlined shimmer" style={{ fontSize: '3rem', color: 'var(--primary)', marginBottom: '2rem', display: 'block', fontVariationSettings: "'FILL' 1" }}>
-              stars
-            </span>
-            <h2 className="font-headline-lg" style={{ marginBottom: '1rem' }}>JOIN THE ORBIT</h2>
-            <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '3rem' }}>
-              Subscribe to receive early access to new collections and editorial insights into the celestial lifestyle.
-            </p>
-            <form className="newsletter-form" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end', justifyContent: 'center' }} onSubmit={e => e.preventDefault()}>
-              <div style={{ flex: 1, borderBottom: '1px solid var(--outline)', paddingBottom: '0.5rem' }}>
-                <input
-                  type="email"
-                  placeholder="EMAIL ADDRESS"
-                  style={{
-                    width: '100%', background: 'transparent', border: 'none', outline: 'none',
-                    color: 'var(--primary)', fontFamily: 'var(--font-body)', fontSize: '12px',
-                    fontWeight: 600, letterSpacing: '0.2em',
-                  }}
-                />
+        {/* ─── TESTIMONIALS CAROUSEL ─── */}
+        <TestimonialsCarousel />
+
+        {/* ─── REVIEWS SECTION ─── */}
+        <section className="reviews-section reveal-on-scroll" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="container">
+
+            {/* Header row */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1.5rem', marginBottom: '3rem' }}>
+              <div>
+                <div className="overall-rating-badge" style={{ marginBottom: '1rem' }}>
+                  <span className="overall-rating-score">{dbReviews.length > 0 ? (dbReviews.reduce((a: number, r: {rating: number}) => a + r.rating, 0) / dbReviews.length).toFixed(1) : '—'}</span>
+                  <div className="overall-rating-stars">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '16px' }}>star</span>
+                    ))}
+                  </div>
+                  <span className="overall-rating-count">{dbReviews.length} review{dbReviews.length !== 1 ? 's' : ''}</span>
+                </div>
+                <h2 className="font-headline-lg" style={{ marginBottom: '0.5rem' }}>COMMUNITY REVIEWS</h2>
+                <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', opacity: 0.7 }}>Real words from real people who wear Soharth.</p>
               </div>
-              <button type="submit" className="font-label-caps" style={{ color: 'var(--primary)', borderBottom: '1px solid transparent', paddingBottom: '0.5rem', transition: 'border-color 0.3s' }}>
-                Submit
+
+              <button
+                onClick={() => setReviewModalOpen(true)}
+                className="btn-primary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add_a_photo</span>
+                Write a Review
               </button>
-            </form>
+            </div>
+
+            {/* Review cards — always 2+ cols */}
+            {dbReviews.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '4rem 0', opacity: 0.4 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>rate_review</span>
+                <p className="font-label-caps" style={{ letterSpacing: '0.3em' }}>No reviews yet — be the first!</p>
+              </div>
+            ) : (
+              <div className="reviews-grid-live">
+                {dbReviews.map((r: {id: string; name: string; city: string; rating: number; text: string; image_url?: string; created_at: string}) => (
+                  <div key={r.id} className="review-card">
+                    <div className="review-card-stars">
+                      {[...Array(r.rating)].map((_, s) => (
+                        <span key={s} className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '15px' }}>star</span>
+                      ))}
+                    </div>
+                    <p className="review-card-text">{r.text}</p>
+                    {r.image_url && (
+                      <div style={{ borderRadius: '12px', overflow: 'hidden', height: '180px', marginTop: '0.5rem' }}>
+                        <img src={r.image_url} alt="Review photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    )}
+                    <div className="review-card-footer">
+                      <div className="review-avatar" style={{ padding: 0, overflow: 'hidden' }}>
+                        {r.image_url
+                          ? <img src={r.image_url} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--primary)', fontSize: '14px' }}>{r.name[0]}</span>
+                        }
+                      </div>
+                      <div>
+                        <div className="review-name">{r.name}</div>
+                        <div className="review-meta">{r.city}{r.city ? ' · ' : ''}{new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                      </div>
+                      <div className="review-verified">
+                        <span className="material-symbols-outlined" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>verified</span>
+                        Verified
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
+
+        {/* Review Modal */}
+        {reviewModalOpen && <ReviewModal onClose={() => setReviewModalOpen(false)} />}
+
       </main>
       <Footer />
 
