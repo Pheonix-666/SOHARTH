@@ -1907,3 +1907,39 @@ details summary::-webkit-details-marker {
 @media (max-width: 600px) {
   .reviews-grid { grid-template-columns: 1fr; }
 }
+
+/* ─── LIVE REVIEWS GRID (always min 2 cols) ─── */
+.reviews-grid-live {
+  display: grid;
+  /* On any screen ≥ 480px: 3 cols; 320–479px: 2 cols; <320px: still 2 cols via min() */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: 1.25rem;
+}
+
+/* Force exactly 2 cols on phones — never collapse to 1 */
+@media (max-width: 560px) {
+  .reviews-grid-live {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  .reviews-grid-live .review-card {
+    padding: 1.25rem;
+  }
+  .reviews-grid-live .review-card-text {
+    font-size: 12px;
+    line-height: 1.55;
+    /* Clamp long reviews on small cards */
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .reviews-grid-live .review-card-footer {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .reviews-grid-live .review-verified {
+    width: 100%;
+    margin-left: 0;
+  }
+}
