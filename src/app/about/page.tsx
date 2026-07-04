@@ -114,6 +114,35 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* Contact Section */}
+        <section style={{ padding: 'var(--section-gap) 0', position: 'relative' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 50%, rgba(229,226,224,0.06) 0%, transparent 60%)', zIndex: -1, pointerEvents: 'none' }} />
+          <div className="container">
+            <div className="glass-panel" style={{ padding: '4rem 2rem', border: '1px solid rgba(229,226,224,0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', textAlign: 'center', maxWidth: '1000px', margin: '0 auto', boxShadow: '0 30px 60px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05)' }}>
+              <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em' }}>GET IN TOUCH</span>
+              <h2 className="font-headline-lg" style={{ color: 'var(--primary)', lineHeight: 1.2, fontSize: '2.5rem' }}>
+                INITIATE CONTACT
+              </h2>
+              <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', lineHeight: 1.8, marginBottom: '2rem', maxWidth: '700px' }}>
+                Whether for private commissions, press inquiries, or detailed garment specifications, our team is available to assist you across the globe.
+              </p>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', width: '100%', textAlign: 'left' }}>
+                <div style={{ padding: '2.5rem', border: '1px solid rgba(229,226,224,0.1)', background: 'rgba(20,19,19,0.4)', backdropFilter: 'blur(10px)' }}>
+                  <h4 className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '1rem', letterSpacing: '0.2em' }}>CLIENT SERVICES</h4>
+                  <p className="font-caption" style={{ color: 'var(--on-surface-variant)', marginBottom: '0.5rem', fontSize: '1.1rem' }}>concierge@soharth.com</p>
+                  <p className="font-caption" style={{ color: 'var(--on-surface-variant)', fontSize: '1.1rem' }}>+91 9137773967</p>
+                </div>
+                <div style={{ padding: '2.5rem', border: '1px solid rgba(229,226,224,0.1)', background: 'rgba(20,19,19,0.4)', backdropFilter: 'blur(10px)' }}>
+                  <h4 className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '1rem', letterSpacing: '0.2em' }}>ATELIER</h4>
+                  <p className="font-caption" style={{ color: 'var(--on-surface-variant)', marginBottom: '0.5rem', fontSize: '1.1rem' }}>Via Monte Napoleone, 9</p>
+                  <p className="font-caption" style={{ color: 'var(--on-surface-variant)', fontSize: '1.1rem' }}>20121 Milano MI, Italy</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Dynamic CTA */}
         <section className="container about-cta" style={{ marginTop: 'var(--section-gap)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
           <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em' }}>EXPLORE OUR WORKS</span>

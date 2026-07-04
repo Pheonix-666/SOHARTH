@@ -44,69 +44,7 @@ function CounterItem({ icon, end, suffix, label, decimal }: { icon: string; end:
   );
 }
 
-/* ─── TESTIMONIALS CAROUSEL ─── */
-const TESTIMONIALS = [
-  { quote: '"Absolutely obsessed with my order. The fabric feels celestial — worth every rupee."', author: 'Riya M., Delhi' },
-  { quote: '"Finally a brand that does minimal fashion right. The silhouettes are immaculate."', author: 'Aryan S., Mumbai' },
-  { quote: '"Ordered twice already. Packaging, quality, vibe — all 10/10."', author: 'Priya K., Bengaluru' },
-];
 
-function TestimonialsCarousel() {
-  const [active, setActive] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const goTo = useCallback((idx: number) => {
-    setActive((idx + TESTIMONIALS.length) % TESTIMONIALS.length);
-  }, []);
-
-  useEffect(() => {
-    timerRef.current = setTimeout(() => goTo(active + 1), 4000);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [active, goTo]);
-
-  return (
-    <section className="testimonials-section reveal-on-scroll">
-      <div className="container" style={{ maxWidth: '860px' }}>
-        <span className="font-label-caps" style={{ display: 'block', textAlign: 'center', letterSpacing: '0.4em', color: 'var(--on-surface-variant)', marginBottom: '3rem', opacity: 0.6 }}>
-          What Our Community Says
-        </span>
-
-        <div className="testimonial-carousel-wrapper">
-          <div
-            className="testimonial-track"
-            style={{ transform: `translateX(-${active * 100}%)` }}
-          >
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="testimonial-card">
-                <div className="testimonial-stars">
-                  {[...Array(5)].map((_, s) => (
-                    <span key={s} className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '20px' }}>star</span>
-                  ))}
-                </div>
-                <p className="testimonial-quote">{t.quote}</p>
-                <span className="testimonial-author">— {t.author}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="carousel-controls">
-          <button className="carousel-arrow" onClick={() => goTo(active - 1)} aria-label="Previous">
-            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chevron_left</span>
-          </button>
-          <div className="carousel-dots">
-            {TESTIMONIALS.map((_, i) => (
-              <button key={i} className={`carousel-dot${i === active ? ' active' : ''}`} onClick={() => goTo(i)} aria-label={`Go to testimonial ${i + 1}`} />
-            ))}
-          </div>
-          <button className="carousel-arrow" onClick={() => goTo(active + 1)} aria-label="Next">
-            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>chevron_right</span>
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 
 /* ─── REVIEW MODAL ─── */
@@ -728,82 +666,101 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ─── TESTIMONIALS CAROUSEL ─── */}
-        <TestimonialsCarousel />
+        {/* ─── REVIEWS SECTION (Merged with Testimonials) ─── */}
+        {(() => {
+          const TESTIMONIALS = [
+            { quote: '"Absolutely obsessed with my order. The fabric feels celestial — worth every rupee."', author: 'Riya M., Delhi' },
+            { quote: '"Finally a brand that does minimal fashion right. The silhouettes are immaculate."', author: 'Aryan S., Mumbai' },
+            { quote: '"Ordered twice already. Packaging, quality, vibe — all 10/10."', author: 'Priya K., Bengaluru' },
+          ];
 
-        {/* ─── REVIEWS SECTION ─── */}
-        <section className="reviews-section reveal-on-scroll" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-          <div className="container">
+          const combinedReviews = [
+            ...TESTIMONIALS.map((t, i) => ({
+              id: `static-${i}`,
+              name: t.author.split(',')[0].trim(),
+              city: t.author.split(',')[1]?.trim() || '',
+              rating: 5,
+              text: t.quote.replace(/(^"|"$)/g, ''),
+              created_at: new Date(Date.now() - i * 86400000 * 15).toISOString(),
+            })),
+            ...dbReviews
+          ];
 
-            {/* Header row */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1.5rem', marginBottom: '3rem' }}>
-              <div>
-                <div className="overall-rating-badge" style={{ marginBottom: '1rem' }}>
-                  <span className="overall-rating-score">{dbReviews.length > 0 ? (dbReviews.reduce((a: number, r: {rating: number}) => a + r.rating, 0) / dbReviews.length).toFixed(1) : '—'}</span>
-                  <div className="overall-rating-stars">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '16px' }}>star</span>
+          return (
+            <section className="reviews-section reveal-on-scroll" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className="container">
+
+                {/* Header row */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1.5rem', marginBottom: '3rem' }}>
+                  <div>
+                    <div className="overall-rating-badge" style={{ marginBottom: '1rem' }}>
+                      <span className="overall-rating-score">{combinedReviews.length > 0 ? (combinedReviews.reduce((a: number, r: {rating: number}) => a + r.rating, 0) / combinedReviews.length).toFixed(1) : '—'}</span>
+                      <div className="overall-rating-stars">
+                        {[...Array(5)].map((_, i) => (
+                          <span key={i} className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '16px' }}>star</span>
+                        ))}
+                      </div>
+                      <span className="overall-rating-count">{combinedReviews.length} review{combinedReviews.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <h2 className="font-headline-lg" style={{ marginBottom: '0.5rem' }}>COMMUNITY REVIEWS</h2>
+                    <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', opacity: 0.7 }}>Real words from real people who wear Soharth.</p>
+                  </div>
+
+                  <button
+                    onClick={() => setReviewModalOpen(true)}
+                    className="btn-primary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add_a_photo</span>
+                    Write a Review
+                  </button>
+                </div>
+
+                {/* Review cards — always 2+ cols */}
+                {combinedReviews.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '4rem 0', opacity: 0.4 }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>rate_review</span>
+                    <p className="font-label-caps" style={{ letterSpacing: '0.3em' }}>No reviews yet — be the first!</p>
+                  </div>
+                ) : (
+                  <div className="reviews-grid-live">
+                    {combinedReviews.map((r: {id: string; name: string; city: string; rating: number; text: string; image_url?: string; created_at: string}) => (
+                      <div key={r.id} className="review-card">
+                        <div className="review-card-stars">
+                          {[...Array(r.rating)].map((_, s) => (
+                            <span key={s} className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '15px' }}>star</span>
+                          ))}
+                        </div>
+                        <p className="review-card-text">{r.text}</p>
+                        {r.image_url && (
+                          <div style={{ borderRadius: '12px', overflow: 'hidden', height: '180px', marginTop: '0.5rem' }}>
+                            <img src={r.image_url} alt="Review photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        )}
+                        <div className="review-card-footer">
+                          <div className="review-avatar" style={{ padding: 0, overflow: 'hidden' }}>
+                            {r.image_url
+                              ? <img src={r.image_url} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--primary)', fontSize: '14px' }}>{r.name[0]}</span>
+                            }
+                          </div>
+                          <div>
+                            <div className="review-name">{r.name}</div>
+                            <div className="review-meta">{r.city}{r.city ? ' · ' : ''}{new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                          </div>
+                          <div className="review-verified">
+                            <span className="material-symbols-outlined" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>verified</span>
+                            Verified
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
-                  <span className="overall-rating-count">{dbReviews.length} review{dbReviews.length !== 1 ? 's' : ''}</span>
-                </div>
-                <h2 className="font-headline-lg" style={{ marginBottom: '0.5rem' }}>COMMUNITY REVIEWS</h2>
-                <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', opacity: 0.7 }}>Real words from real people who wear Soharth.</p>
+                )}
               </div>
-
-              <button
-                onClick={() => setReviewModalOpen(true)}
-                className="btn-primary"
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add_a_photo</span>
-                Write a Review
-              </button>
-            </div>
-
-            {/* Review cards — always 2+ cols */}
-            {dbReviews.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '4rem 0', opacity: 0.4 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>rate_review</span>
-                <p className="font-label-caps" style={{ letterSpacing: '0.3em' }}>No reviews yet — be the first!</p>
-              </div>
-            ) : (
-              <div className="reviews-grid-live">
-                {dbReviews.map((r: {id: string; name: string; city: string; rating: number; text: string; image_url?: string; created_at: string}) => (
-                  <div key={r.id} className="review-card">
-                    <div className="review-card-stars">
-                      {[...Array(r.rating)].map((_, s) => (
-                        <span key={s} className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1", fontSize: '15px' }}>star</span>
-                      ))}
-                    </div>
-                    <p className="review-card-text">{r.text}</p>
-                    {r.image_url && (
-                      <div style={{ borderRadius: '12px', overflow: 'hidden', height: '180px', marginTop: '0.5rem' }}>
-                        <img src={r.image_url} alt="Review photo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </div>
-                    )}
-                    <div className="review-card-footer">
-                      <div className="review-avatar" style={{ padding: 0, overflow: 'hidden' }}>
-                        {r.image_url
-                          ? <img src={r.image_url} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--primary)', fontSize: '14px' }}>{r.name[0]}</span>
-                        }
-                      </div>
-                      <div>
-                        <div className="review-name">{r.name}</div>
-                        <div className="review-meta">{r.city}{r.city ? ' · ' : ''}{new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
-                      </div>
-                      <div className="review-verified">
-                        <span className="material-symbols-outlined" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>verified</span>
-                        Verified
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
+            </section>
+          );
+        })()}
 
         {/* Review Modal */}
         {reviewModalOpen && <ReviewModal onClose={() => setReviewModalOpen(false)} />}
