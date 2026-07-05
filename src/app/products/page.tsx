@@ -17,11 +17,19 @@ export default function ProductsPage({
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [navHidden, setNavHidden] = useState(false);
+  const [navHeight, setNavHeight] = useState(64);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
+    const measureNav = () => {
+      const nav = document.querySelector('.glass-nav') as HTMLElement | null;
+      if (nav) setNavHeight(nav.offsetHeight);
+    };
+    measureNav();
+
     const onScroll = () => {
       const y = window.scrollY;
+      measureNav();
       if (y > 80) {
         setNavHidden(y > lastScrollY.current);
       } else {
@@ -30,7 +38,11 @@ export default function ProductsPage({
       lastScrollY.current = y;
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener('resize', measureNav);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', measureNav);
+    };
   }, []);
 
   useEffect(() => {
@@ -87,36 +99,45 @@ export default function ProductsPage({
 
         {/* ─── FILTER BAR ─── */}
         <div style={{
-          position: 'sticky', top: navHidden ? '0px' : '64px', zIndex: 40,
-          backgroundColor: 'rgba(20, 19, 19, 0.85)',
-          backdropFilter: 'blur(12px)',
-          padding: '1rem 0', marginBottom: '2rem',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          position: 'sticky',
+          top: navHidden ? '0px' : `${navHeight}px`,
+          zIndex: 40,
+          backgroundColor: 'rgba(20, 19, 19, 0.92)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          padding: '0.85rem 0',
+          marginBottom: '2rem',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
           transition: 'top 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         }}>
-          <div className="container filter-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2rem', paddingBlockStart: "4px", paddingBlockEnd: "2px" }}>
-            {filters.map(f => (
-              <Link
-                key={f.label}
-                href={f.value ? `/products?category=${f.value}` : '/products'}
-                className="font-label-caps"
-                style={{
-                  color: category === f.value || (!category && !f.value) ? 'var(--primary)' : 'var(--on-surface-variant)',
-                  borderBottom: category === f.value || (!category && !f.value) ? '1px solid var(--primary)' : '1px solid transparent',
-                  paddingBottom: '2px',
-                  letterSpacing: '0.3em',
-                  transition: 'color 0.3s ease, border-color 0.3s ease',
-                }}
-              >
-                {f.label}
-              </Link>
-            ))}
+          <div className="container filter-bar" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '2rem', paddingBlockStart: '4px', paddingBlockEnd: '2px' }}>
+            {filters.map(f => {
+              const isActive = category === f.value || (!category && !f.value);
+              return (
+                <Link
+                  key={f.label}
+                  href={f.value ? `/products?category=${f.value}` : '/products'}
+                  className="font-label-caps"
+                  style={{
+                    color: isActive ? 'var(--primary)' : 'var(--on-surface-variant)',
+                    borderBottom: isActive ? '2px solid var(--primary)' : '2px solid transparent',
+                    paddingBottom: '4px',
+                    letterSpacing: '0.3em',
+                    transition: 'color 0.3s ease, border-color 0.3s ease',
+                    whiteSpace: 'nowrap',
+                    opacity: isActive ? 1 : 0.7,
+                  }}
+                >
+                  {f.label}
+                </Link>
+              );
+            })}
           </div>
         </div>
 
         {/* ─── PRODUCT GRID ─── */}
         <section className="container" style={{ paddingBottom: 'var(--section-gap)' }}>
-          <div className="catalog-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0 var(--gutter)', rowGap: '8rem' }}>
+          <div className="catalog-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--gutter)', rowGap: '3.5rem' }}>
             {displayProducts.map((product, i) => (
               <Link
                 href={`/products/${product.id}`}
@@ -126,28 +147,24 @@ export default function ProductsPage({
                   display: 'flex', flexDirection: 'column',
                 }}
               >
-                <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container-low)' }}>
-                  <Image src={product.image} alt={product.name} fill style={{ objectFit: 'cover' }} />
-
+                <div className="card-image" style={{
+                  aspectRatio: '3/4', position: 'relative', marginBottom: '1rem',
+                  backgroundColor: 'var(--surface-container-low)', overflow: 'hidden',
+                }}>
+                  <Image
+                    src={product.image} alt={product.name} fill
+                    style={{ objectFit: 'cover', transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+                  />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                  <div>
-                    <h3 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{product.name}</h3>
-                    <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)' }}>{product.subtitle}</p>
+                <div style={{ marginBottom: '0.25rem' }}>
+                  <h3 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '0.2rem', fontSize: '14px' }}>{product.name}</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)', fontSize: '9px', opacity: 0.6 }}>{product.subtitle}</p>
+                    <span className="font-body-md" style={{ color: 'var(--primary)', fontSize: '13px', fontWeight: 600 }}>₹{product.price.toLocaleString()}</span>
                   </div>
-                  <span className="font-body-md" style={{ color: 'var(--primary)', flexShrink: 0, marginLeft: '1rem' }}>₹{product.price.toLocaleString()}</span>
                 </div>
-                <button className="font-label-caps" style={{
-                  marginTop: '1rem', fontSize: '10px', letterSpacing: '0.3em',
-                  border: '1px solid rgba(71,71,65,0.3)', padding: '0.5rem 1rem',
-                  color: 'var(--primary)', transition: 'background 0.3s ease, color 0.3s ease',
-                  width: 'fit-content',
-                }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--primary)'; (e.currentTarget as HTMLElement).style.color = 'var(--on-primary)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--primary)'; }}
-                >
-                  Quick View
-                </button>
               </Link>
             ))}
           </div>

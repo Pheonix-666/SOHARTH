@@ -1082,6 +1082,11 @@ details summary::-webkit-details-marker {
   .product-grid .product-card:not(.featured-card) .card-image {
     min-height: 300px !important;
   }
+
+  .catalog-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    row-gap: 3rem !important;
+  }
 }
 
 /* ===========================
@@ -2224,5 +2229,12 @@ details summary::-webkit-details-marker {
        plus a tiny bit of the 3rd one peeking out to indicate scrolling */
     min-width: 42vw;
     max-width: 42vw;
+  }
+}
+
+/* Hide specific products on desktop */
+@media (min-width: 769px) {
+  .desktop-hidden-product {
+    display: none !important;
   }
 }

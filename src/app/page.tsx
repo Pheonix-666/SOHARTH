@@ -264,7 +264,7 @@ export default function Home() {
     return () => observer.disconnect();
   }, [isLoading]);
 
-  const featured = productsList.slice(0, 6);
+  const featured = productsList.slice(0, 5);
 
   if (isLoading) {
     return (
@@ -297,9 +297,7 @@ export default function Home() {
       <main>
 
         {/* ─── HERO ─── */}
-        {/* ─── DESKTOP HERO ─── */}
         <section
-          className="desktop-only"
           style={{
             position: 'relative',
             height: '100vh',
@@ -312,7 +310,7 @@ export default function Home() {
         >
           <Image
             src="/hero-bg.jpeg"
-            alt="Soharth hero desktop"
+            alt="Soharth hero"
             fill
             priority
             style={{ objectFit: 'cover', objectPosition: 'center' }}
@@ -330,7 +328,7 @@ export default function Home() {
               position: 'relative',
               zIndex: 10,
               textAlign: 'center',
-              padding: '0 var(--margin-desktop)',
+              padding: '0 5vw',
             }}
           >
             <span
@@ -392,97 +390,6 @@ export default function Home() {
 
           <div className="scroll-indicator">
             <div className="scroll-indicator-line" />
-          </div>
-        </section>
-
-        {/* ─── MOBILE HERO ─── */}
-        <section
-          className="mobile-only"
-          style={{
-            position: 'relative',
-            height: '100vh',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-          }}
-        >
-          <Image
-            src="/hero-bg.jpeg"
-            alt="Soharth hero mobile"
-            fill
-            priority
-            style={{ objectFit: 'cover', objectPosition: '70% center' }}
-          />
-
-          <div className="hero-gradient-mesh" style={{ transform: 'scale(1.5)' }} />
-
-          <div
-            className="hero-gradient"
-            style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 20%, var(--background) 90%)' }}
-          />
-
-          <div
-            style={{
-              position: 'relative',
-              zIndex: 10,
-              textAlign: 'center',
-              padding: '0 var(--margin-mobile)',
-            }}
-          >
-            <span
-              className="font-label-caps stagger-reveal"
-              style={{
-                opacity: 0.9,
-                marginBottom: '1rem',
-                display: 'inline-block',
-                letterSpacing: '0.3em',
-                fontSize: '10px'
-              }}
-            >
-              <span className="stagger-reveal-inner" style={{ animationDelay: '0.2s' }}>
-                Celestial Minimalist
-              </span>
-            </span>
-
-            <h1
-              className="font-display-hero stagger-reveal"
-              style={{
-                marginBottom: '2.5rem',
-                color: 'var(--primary)',
-              }}
-            >
-              <span className="stagger-reveal-inner" style={{ animationDelay: '0.4s' }}>
-                ELEVATE
-              </span>
-            </h1>
-          </div>
-
-          <div className="floating-cta-container fade-in-up" style={{ animationDelay: '0.8s', opacity: 0, animationFillMode: 'forwards' }}>
-            <Link href="/products" className="btn-pill-cta">
-              <span>Shop Now</span>
-
-              <span className="arrows">
-                <span className="material-symbols-outlined">
-                  chevron_right
-                </span>
-
-                <span
-                  className="material-symbols-outlined"
-                  style={{ marginLeft: '-8px' }}
-                >
-                  chevron_right
-                </span>
-
-                <span
-                  className="material-symbols-outlined"
-                  style={{ marginLeft: '-8px' }}
-                >
-                  chevron_right
-                </span>
-              </span>
-            </Link>
           </div>
         </section>
 
@@ -603,13 +510,13 @@ export default function Home() {
                 </Link>
               ))}
 
-              {/* Row 2: 3 equal cards (products 4–6) */}
-              {featured.slice(3, 6).map(p => (
+              {/* Row 2: 2 equal cards (products 4–5) - Hidden on Desktop */}
+              {featured.slice(3, 5).map(p => (
                 <Link
                   href={`/products/${p.id}`}
                   key={p.id}
-                  className="product-card product-card-enhanced"
-                  style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', position: 'relative', marginTop: '2rem' }}
+                  className="product-card product-card-enhanced desktop-hidden-product"
+                  style={{ gridColumn: 'span 6', display: 'flex', flexDirection: 'column', position: 'relative', marginTop: '2rem' }}
                 >
                   <button
                     className="quick-add-hover"
@@ -634,6 +541,7 @@ export default function Home() {
                   </div>
                 </Link>
               ))}
+
             </div>
           </div>
         </section>
