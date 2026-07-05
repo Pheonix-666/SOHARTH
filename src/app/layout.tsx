@@ -12,7 +12,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "SOHARTH | Celestial Minimalism",
+  title: "SOHARTH | FASHION TEE",
   description:
     "Soharth bridges the gap between high-fashion editorial and cosmic wonder. Every piece is a quiet luxury, echoing the precision of astronomical phenomena.",
 };
@@ -32,11 +32,11 @@ export default function RootLayout({
         />
       </head>
       <body className={manrope.variable}>
-          <ToastProvider>
-            <CartProvider>
-              {children}
-            </CartProvider>
-          </ToastProvider>
+        <ToastProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </ToastProvider>
         <Analytics />
       </body>
     </html>
