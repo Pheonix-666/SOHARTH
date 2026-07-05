@@ -29,24 +29,12 @@ export default function CartPage() {
 
   const getShippingCost = () => {
     if (items.length === 0) return 0;
-    const cityClean = (address.city || '').trim().toLowerCase();
+    
+    const countryClean = (address.country || '').trim().toLowerCase();
     const stateClean = (address.state || '').trim().toLowerCase();
 
-    console.log('getShippingCost input:', { city: cityClean, state: stateClean });
-
-    if (!cityClean && !stateClean) {
-      return 120; // Default shipping cost
-    }
-
-    const localCities = ['mumbai', 'kalyan', 'palghar', 'navi mumbai', 'navimumbai', 'navi-mumbai'];
-    const isLocal = localCities.some(c => 
-      cityClean.includes(c) || 
-      (c.includes(cityClean) && cityClean.length >= 3)
-    );
-
-    if (isLocal) {
-      console.log('Resolved shipping: 60 (Local city match)');
-      return 60;
+    if (countryClean && countryClean !== 'india' && countryClean !== 'in') {
+      return 200;
     }
 
     const isMaharashtra = 
@@ -56,17 +44,15 @@ export default function CartPage() {
       (stateClean.length >= 3 && 'maharashtra'.includes(stateClean));
 
     if (isMaharashtra) {
-      console.log('Resolved shipping: 100 (Maharashtra match)');
-      return 100;
+      return 60;
     }
 
-    console.log('Resolved shipping: 120 (Out of Maharashtra/default)');
     return 120;
   };
 
   const shipping = getShippingCost();
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-  const tax = subtotal * 0.08;
+  const tax = subtotal * 0.05;
   const total = subtotal + tax + shipping;
 
   const handleCheckout = async () => {
