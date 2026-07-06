@@ -510,12 +510,12 @@ export default function Home() {
                 </Link>
               ))}
 
-              {/* Row 2: 2 equal cards (products 4–5) - Hidden on Desktop */}
+              {/* Row 2: 2 equal cards (products 4–5) */}
               {featured.slice(3, 5).map(p => (
                 <Link
                   href={`/products/${p.id}`}
                   key={p.id}
-                  className="product-card product-card-enhanced desktop-hidden-product"
+                  className="product-card product-card-enhanced"
                   style={{ gridColumn: 'span 6', display: 'flex', flexDirection: 'column', position: 'relative', marginTop: '2rem' }}
                 >
                   <button

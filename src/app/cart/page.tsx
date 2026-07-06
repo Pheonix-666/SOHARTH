@@ -214,21 +214,24 @@ export default function CartPage() {
                           <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)', marginBottom: '1rem' }}>{item.subtitle}</p>
                           <div style={{ display: 'flex', gap: '1rem' }}>
                             <span className="font-caption" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase' }}>Size: {item.size}</span>
+                            {item.color && (
+                              <span className="font-caption" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase' }}>Color: {item.color}</span>
+                            )}
                           </div>
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           {/* Qty Controls */}
                           <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(71,71,65,0.3)', padding: '0 0.75rem' }}>
-                            <button onClick={() => updateQty(item.id, item.size, -1)} style={{ color: 'var(--on-surface-variant)', padding: '0.5rem 0', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            <button onClick={() => updateQty(item.id, item.size, -1, item.color)} style={{ color: 'var(--on-surface-variant)', padding: '0.5rem 0', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
                               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>remove</span>
                             </button>
                             <span className="font-body-md" style={{ padding: '0 1rem' }}>{item.qty}</span>
-                            <button onClick={() => updateQty(item.id, item.size, 1)} style={{ color: 'var(--on-surface-variant)', padding: '0.5rem 0', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
+                            <button onClick={() => updateQty(item.id, item.size, 1, item.color)} style={{ color: 'var(--on-surface-variant)', padding: '0.5rem 0', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
                               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
                             </button>
                           </div>
-                          <button onClick={() => removeFromCart(item.id, item.size)} className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
+                          <button onClick={() => removeFromCart(item.id, item.size, item.color)} className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
                             <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
                             REMOVE
                           </button>

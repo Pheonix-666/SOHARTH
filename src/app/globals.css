@@ -301,15 +301,19 @@ main {
 }
 
 .glass-nav {
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  background: rgba(20, 19, 19, 0.7);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 8, 8, 0.35);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
   padding: 1.25rem 0;
-  transition: padding 0.4s ease, background 0.4s ease, border 0.4s ease;
+  transition: padding 0.4s ease, background 0.4s ease, border 0.4s ease, box-shadow 0.4s ease;
 }
 
 .glass-nav.scrolled {
+  background: rgba(8, 8, 8, 0.65);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   padding: 0.75rem 0;
 }
 
@@ -1372,6 +1376,7 @@ details summary::-webkit-details-marker {
     border-radius: 8px;
   }
 
+
   .add-to-bag-btn {
     padding: 1rem !important;
     font-size: 11px !important;
@@ -1523,6 +1528,43 @@ details summary::-webkit-details-marker {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* ─── PRODUCT DETAILS PAGE ─── */
+  .product-detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  .product-main .container.product-detail-grid {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .product-gallery-main {
+    width: 100% !important;
+    border-radius: 0 !important;
+    aspect-ratio: 4/5 !important;
+    max-height: 65vh !important;
+  }
+  
+  .product-info-sticky {
+    position: static !important;
+    padding: 1.5rem !important;
+  }
+  
+  .mobile-sticky-cta {
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem 1.5rem !important;
+    background: rgba(10, 9, 9, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    z-index: 50;
   }
 }
 

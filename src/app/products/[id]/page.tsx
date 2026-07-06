@@ -31,9 +31,16 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
 
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState('M');
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState(0);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [isAdded, setIsAdded] = useState(false);
+
+  useEffect(() => {
+    if (product?.colors && product.colors.length > 0 && !selectedColor) {
+      setSelectedColor(product.colors[0].name);
+    }
+  }, [product, selectedColor]);
 
   if (isLoading) {
     return (
@@ -82,12 +89,12 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
 
           {/* Gallery */}
           <div className="product-gallery">
-            <div className="product-gallery-main">
+            <div className="product-gallery-main" style={{ borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
               <Image
                 src={safeImages[activeImage] || safeImages[0] || product.image}
                 alt={product.name}
                 fill
-                style={{ objectFit: 'cover', objectPosition: 'center top', transition: 'transform 1s ease' }}
+                style={{ objectFit: 'cover', objectPosition: 'center', transition: 'transform 1s ease' }}
                 priority
               />
             </div>
@@ -98,7 +105,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                   onClick={() => setActiveImage(i)}
                   className={`product-gallery-thumb ${activeImage === i ? 'active' : ''}`}
                 >
-                  <Image src={img} alt={product.name} fill style={{ objectFit: 'cover', transition: 'transform 0.7s ease' }} />
+                  <Image src={img} alt={product.name} fill style={{ objectFit: 'cover', transition: 'transform 0.7s ease', borderRadius: '8px' }} />
                 </div>
               ))}
             </div>
@@ -112,12 +119,34 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.3em' }}>
                 {product.collection}
               </span>
-              <h1 className="font-headline-lg" style={{ lineHeight: 1.1 }}>{product.name}</h1>
-              <p className="font-body-lg desktop-only" style={{ color: 'var(--on-surface-variant)' }}>{product.description}</p>
-              <div className="font-headline-md" style={{ paddingTop: '0.5rem' }}>
+              <h1 className="font-headline-lg" style={{ lineHeight: 1.1, fontSize: 'clamp(2rem, 4vw, 3rem)' }}>{product.name}</h1>
+              <p className="font-body-lg desktop-only" style={{ color: 'var(--on-surface-variant)', lineHeight: 1.6 }}>{product.description}</p>
+              <div className="font-headline-md" style={{ paddingTop: '0.5rem', fontWeight: 600 }}>
                 ₹{product.price.toLocaleString()}
               </div>
             </div>
+            {/* Color Selector */}
+            {product?.colors && product.colors.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <span className="font-label-caps">SELECT COLOR</span>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  {product.colors.map((color: any) => (
+                    <button
+                      key={color.name}
+                      onClick={() => setSelectedColor(color.name)}
+                      title={color.name}
+                      style={{
+                        width: '36px', height: '36px', borderRadius: '50%',
+                        backgroundColor: color.hex || '#000',
+                        border: selectedColor === color.name ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.2)',
+                        padding: '2px', backgroundClip: 'content-box',
+                        transition: 'all 0.3s ease', cursor: 'pointer',
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Size Selector */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -135,9 +164,10 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                     className="font-label-caps size-btn"
                     style={{
                       padding: '1rem 0',
+                      borderRadius: '9999px',
                       backgroundColor: selectedSize === size ? 'var(--primary)' : 'transparent',
                       color: selectedSize === size ? 'var(--on-primary)' : 'var(--primary)',
-                      border: selectedSize === size ? '1px solid var(--primary)' : '1px solid rgba(201,198,194,0.2)',
+                      border: selectedSize === size ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.15)',
                       transition: 'all 0.3s ease',
                     }}
                   >
@@ -150,6 +180,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
             </div>
 
             {/* CTA Buttons */}
+            <div className="mobile-sticky-cta">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <button
                 onClick={() => {
@@ -159,23 +190,28 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                     subtitle: product.subtitle,
                     price: product.price,
                     image: product.image,
-                  }, selectedSize);
+                  }, selectedSize, selectedColor || undefined);
                   setIsAdded(true);
                   setTimeout(() => setIsAdded(false), 2000);
                 }}
                 className="btn-primary add-to-bag-btn"
                 style={{
                   width: '100%',
-                  padding: '1.5rem',
-                  fontSize: '12px',
-                  letterSpacing: '0.2em',
+                  padding: '1.25rem',
+                  borderRadius: '9999px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  letterSpacing: '0.1em',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '0.75rem',
                   backgroundColor: isAdded ? 'var(--on-surface-variant)' : 'var(--primary)',
-                  transition: 'background-color 0.3s ease',
+                  transition: 'background-color 0.3s ease, transform 0.2s ease',
                 }}
+                onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.98)')}
+                onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
+                onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
               >
                 {isAdded ? 'ADDED TO BAG' : 'ADD TO BAG'}
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
@@ -184,10 +220,11 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               </button>
               <button
                 className="btn-ghost desktop-only"
-                style={{ width: '100%', padding: '1.5rem', fontSize: '12px', letterSpacing: '0.2em' }}
+                style={{ width: '100%', padding: '1.25rem', borderRadius: '9999px', fontSize: '12px', letterSpacing: '0.2em' }}
               >
                 Add to Wishlist
               </button>
+            </div>
             </div>
 
             {/* Mobile Description */}

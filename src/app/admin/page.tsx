@@ -19,6 +19,7 @@ interface Product {
   collection: string;
   material: string;
   shipping: string;
+  colors?: { name: string; hex: string }[];
 }
 
 interface OrderItem {
@@ -107,6 +108,7 @@ export default function AdminDashboard() {
     name: '', subtitle: '', price: '', category: '',
     tag: '', image: '', images: [''], description: '',
     collection: 'COLLECTION 01: NEBULA', material: '', shipping: '',
+    colors: [] as { name: string; hex: string }[],
   });
 
   // ── Inline "Create Category" panel (visible inside Add tab) ───────────────
@@ -329,6 +331,7 @@ export default function AdminDashboard() {
           name: '', subtitle: '', price: '', category: categories[0]?.value || '',
           tag: '', image: '', images: [''], description: '',
           collection: 'COLLECTION 01: NEBULA', material: '', shipping: '',
+          colors: [],
         });
         setShowCatPanel(false);
         setActiveTab('inventory');
@@ -395,6 +398,7 @@ export default function AdminDashboard() {
       collection: 'COLLECTION 02: HORIZON',
       material: '60% Rayon technical blend, 35% Recycled Spacer fiber, 5% Elastane.',
       shipping: 'Complimentary express shipping on orders over ₹500.',
+      colors: [],
     });
   };
 
@@ -683,6 +687,35 @@ export default function AdminDashboard() {
                           <input type="text" placeholder="e.g., Complimentary express shipping." value={form.shipping}
                             onChange={e => setForm({ ...form, shipping: e.target.value })} style={inputStyle} />
                         </div>
+                      </div>
+
+                      <div>
+                        <FieldLabel>COLOR VARIATIONS</FieldLabel>
+                        {form.colors && form.colors.map((color, idx) => (
+                          <div key={idx} style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
+                            <input type="text" placeholder="Color Name (e.g. White)" value={color.name}
+                              onChange={e => {
+                                const newColors = [...form.colors];
+                                newColors[idx].name = e.target.value;
+                                setForm({ ...form, colors: newColors });
+                              }} style={{ ...inputStyle, flex: 1 }} />
+                            <input type="text" placeholder="Hex (e.g. #FFFFFF)" value={color.hex}
+                              onChange={e => {
+                                const newColors = [...form.colors];
+                                newColors[idx].hex = e.target.value;
+                                setForm({ ...form, colors: newColors });
+                              }} style={{ ...inputStyle, flex: 1 }} />
+                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: color.hex || '#000', border: '1px solid rgba(255,255,255,0.2)' }}></div>
+                            <button type="button" onClick={() => {
+                              const newColors = form.colors.filter((_, i) => i !== idx);
+                              setForm({ ...form, colors: newColors });
+                            }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer' }}>✕</button>
+                          </div>
+                        ))}
+                        <button type="button" onClick={() => setForm({ ...form, colors: [...(form.colors || []), { name: '', hex: '' }] })}
+                          style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '10px', marginTop: '0.5rem', cursor: 'pointer' }}>
+                          + ADD COLOR
+                        </button>
                       </div>
 
                       <div style={{ paddingTop: '1.5rem' }}>
@@ -1074,6 +1107,34 @@ export default function AdminDashboard() {
                   <input type="text" value={editingProduct.shipping}
                     onChange={e => setEditingProduct({ ...editingProduct, shipping: e.target.value })} style={inputStyle} />
                 </div>
+              </div>
+              <div>
+                <FieldLabel>COLOR VARIATIONS</FieldLabel>
+                {editingProduct.colors && editingProduct.colors.map((color, idx) => (
+                  <div key={idx} style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
+                    <input type="text" placeholder="Color Name (e.g. White)" value={color.name}
+                      onChange={e => {
+                        const newColors = [...(editingProduct.colors || [])];
+                        newColors[idx].name = e.target.value;
+                        setEditingProduct({ ...editingProduct, colors: newColors });
+                      }} style={{ ...inputStyle, flex: 1 }} />
+                    <input type="text" placeholder="Hex (e.g. #FFFFFF)" value={color.hex}
+                      onChange={e => {
+                        const newColors = [...(editingProduct.colors || [])];
+                        newColors[idx].hex = e.target.value;
+                        setEditingProduct({ ...editingProduct, colors: newColors });
+                      }} style={{ ...inputStyle, flex: 1 }} />
+                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: color.hex || '#000', border: '1px solid rgba(255,255,255,0.2)' }}></div>
+                    <button type="button" onClick={() => {
+                      const newColors = (editingProduct.colors || []).filter((_, i) => i !== idx);
+                      setEditingProduct({ ...editingProduct, colors: newColors });
+                    }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer' }}>✕</button>
+                  </div>
+                ))}
+                <button type="button" onClick={() => setEditingProduct({ ...editingProduct, colors: [...(editingProduct.colors || []), { name: '', hex: '' }] })}
+                  style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '10px', marginTop: '0.5rem', cursor: 'pointer' }}>
+                  + ADD COLOR
+                </button>
               </div>
 
               <div style={{ display: 'flex', gap: '1.5rem', paddingTop: '1rem' }}>

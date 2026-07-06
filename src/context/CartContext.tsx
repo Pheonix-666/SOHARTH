@@ -9,13 +9,14 @@ export interface CartItem {
   image: string;
   qty: number;
   size: string;
+  color?: string;
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: { id: string; name: string; subtitle: string; price: number; image: string }, size: string, qty?: number) => void;
-  removeFromCart: (id: string, size: string) => void;
-  updateQty: (id: string, size: string, delta: number) => void;
+  addToCart: (product: { id: string; name: string; subtitle: string; price: number; image: string }, size: string, color?: string, qty?: number) => void;
+  removeFromCart: (id: string, size: string, color?: string) => void;
+  updateQty: (id: string, size: string, delta: number, color?: string) => void;
   cartCount: number;
   clearCart: () => void;
   isHydrated: boolean;
@@ -64,10 +65,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addToCart = (
     product: { id: string; name: string; subtitle: string; price: number; image: string },
     size: string,
+    color?: string,
     qty = 1
   ) => {
     setCart(prev => {
-      const existingIdx = prev.findIndex(item => item.id === product.id && item.size === size);
+      const existingIdx = prev.findIndex(item => item.id === product.id && item.size === size && item.color === color);
       if (existingIdx > -1) {
         const next = [...prev];
         next[existingIdx] = {
@@ -76,18 +78,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         };
         return next;
       }
-      return [...prev, { ...product, qty, size }];
+      return [...prev, { ...product, qty, size, color }];
     });
   };
 
-  const removeFromCart = (id: string, size: string) => {
-    setCart(prev => prev.filter(item => !(item.id === id && item.size === size)));
+  const removeFromCart = (id: string, size: string, color?: string) => {
+    setCart(prev => prev.filter(item => !(item.id === id && item.size === size && item.color === color)));
   };
 
-  const updateQty = (id: string, size: string, delta: number) => {
+  const updateQty = (id: string, size: string, delta: number, color?: string) => {
     setCart(prev =>
       prev.map(item =>
-        item.id === id && item.size === size
+        item.id === id && item.size === size && item.color === color
           ? { ...item, qty: Math.max(1, item.qty + delta) }
           : item
       )
