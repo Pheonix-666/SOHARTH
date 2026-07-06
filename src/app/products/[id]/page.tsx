@@ -89,7 +89,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
 
           {/* Gallery */}
           <div className="product-gallery">
-            <div className="product-gallery-main" style={{ borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
+            <div className="product-gallery-main">
               <Image
                 src={safeImages[activeImage] || safeImages[0] || product.image}
                 alt={product.name}
@@ -98,14 +98,20 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                 priority
               />
             </div>
-            <div className="product-gallery-thumbnails hide-scrollbar">
+            <div className="product-gallery-thumbnails hide-scrollbar" style={{ marginTop: '1rem', display: 'flex', gap: '1rem' }}>
               {safeImages.slice(0, 4).map((img: string, i: number) => (
                 <div
                   key={i}
                   onClick={() => setActiveImage(i)}
                   className={`product-gallery-thumb ${activeImage === i ? 'active' : ''}`}
+                  style={{
+                    position: 'relative', width: '80px', height: '100px', cursor: 'pointer',
+                    borderRadius: '6px', overflow: 'hidden',
+                    border: activeImage === i ? '2px solid var(--primary)' : '2px solid transparent',
+                    opacity: activeImage === i ? 1 : 0.6, transition: 'all 0.3s ease'
+                  }}
                 >
-                  <Image src={img} alt={product.name} fill style={{ objectFit: 'cover', transition: 'transform 0.7s ease', borderRadius: '8px' }} />
+                  <Image src={img} alt={product.name} fill style={{ objectFit: 'cover', transition: 'transform 0.7s ease' }} />
                 </div>
               ))}
             </div>
@@ -119,9 +125,9 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.3em' }}>
                 {product.collection}
               </span>
-              <h1 className="font-headline-lg" style={{ lineHeight: 1.1, fontSize: 'clamp(2rem, 4vw, 3rem)' }}>{product.name}</h1>
-              <p className="font-body-lg desktop-only" style={{ color: 'var(--on-surface-variant)', lineHeight: 1.6 }}>{product.description}</p>
-              <div className="font-headline-md" style={{ paddingTop: '0.5rem', fontWeight: 600 }}>
+              <h1 className="font-headline-lg" style={{ lineHeight: 1.1 }}>{product.name}</h1>
+              <p className="font-body-lg desktop-only" style={{ color: 'var(--on-surface-variant)' }}>{product.description}</p>
+              <div className="font-headline-md" style={{ paddingTop: '0.5rem' }}>
                 ₹{product.price.toLocaleString()}
               </div>
             </div>
@@ -140,7 +146,8 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                         backgroundColor: color.hex || '#000',
                         border: selectedColor === color.name ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.2)',
                         padding: '2px', backgroundClip: 'content-box',
-                        transition: 'all 0.3s ease', cursor: 'pointer',
+                        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', cursor: 'pointer',
+                        transform: selectedColor === color.name ? 'scale(1.15)' : 'scale(1)',
                       }}
                     />
                   ))}
@@ -164,67 +171,62 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                     className="font-label-caps size-btn"
                     style={{
                       padding: '1rem 0',
-                      borderRadius: '9999px',
                       backgroundColor: selectedSize === size ? 'var(--primary)' : 'transparent',
                       color: selectedSize === size ? 'var(--on-primary)' : 'var(--primary)',
-                      border: selectedSize === size ? '1px solid var(--primary)' : '1px solid rgba(255,255,255,0.15)',
-                      transition: 'all 0.3s ease',
+                      border: selectedSize === size ? '1px solid var(--primary)' : '1px solid rgba(201,198,194,0.2)',
+                      borderRadius: '8px',
+                      transform: selectedSize === size ? 'translateY(-2px)' : 'translateY(0)',
+                      boxShadow: selectedSize === size ? '0 4px 12px rgba(255,255,255,0.1)' : 'none',
+                      transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   >
                     {size}
                   </button>
                 ))}
               </div>
-
-              Back
             </div>
 
             {/* CTA Buttons */}
             <div className="mobile-sticky-cta">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <button
-                onClick={() => {
-                  addToCart({
-                    id: product.id,
-                    name: product.name,
-                    subtitle: product.subtitle,
-                    price: product.price,
-                    image: product.image,
-                  }, selectedSize, selectedColor || undefined);
-                  setIsAdded(true);
-                  setTimeout(() => setIsAdded(false), 2000);
-                }}
-                className="btn-primary add-to-bag-btn"
-                style={{
-                  width: '100%',
-                  padding: '1.25rem',
-                  borderRadius: '9999px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  letterSpacing: '0.1em',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.75rem',
-                  backgroundColor: isAdded ? 'var(--on-surface-variant)' : 'var(--primary)',
-                  transition: 'background-color 0.3s ease, transform 0.2s ease',
-                }}
-                onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.98)')}
-                onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
-                onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-              >
-                {isAdded ? 'ADDED TO BAG' : 'ADD TO BAG'}
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-                  {isAdded ? 'check_circle' : 'shopping_bag'}
-                </span>
-              </button>
-              <button
-                className="btn-ghost desktop-only"
-                style={{ width: '100%', padding: '1.25rem', borderRadius: '9999px', fontSize: '12px', letterSpacing: '0.2em' }}
-              >
-                Add to Wishlist
-              </button>
-            </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <button
+                  onClick={() => {
+                    addToCart({
+                      id: product.id,
+                      name: product.name,
+                      subtitle: product.subtitle,
+                      price: product.price,
+                      image: product.image,
+                    }, selectedSize, selectedColor || undefined);
+                    setIsAdded(true);
+                    setTimeout(() => setIsAdded(false), 2000);
+                  }}
+                  className="btn-primary add-to-bag-btn"
+                  style={{
+                    width: '100%',
+                    padding: '1.5rem',
+                    fontSize: '12px',
+                    letterSpacing: '0.2em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.75rem',
+                    backgroundColor: isAdded ? 'var(--on-surface-variant)' : 'var(--primary)',
+                    transition: 'background-color 0.3s ease',
+                  }}
+                >
+                  {isAdded ? 'ADDED TO BAG' : 'ADD TO BAG'}
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                    {isAdded ? 'check_circle' : 'shopping_bag'}
+                  </span>
+                </button>
+                <button
+                  className="btn-ghost desktop-only"
+                  style={{ width: '100%', padding: '1.5rem', fontSize: '12px', letterSpacing: '0.2em' }}
+                >
+                  Add to Wishlist
+                </button>
+              </div>
             </div>
 
             {/* Mobile Description */}

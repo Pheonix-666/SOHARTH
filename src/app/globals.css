@@ -1193,6 +1193,21 @@ details summary::-webkit-details-marker {
     gap: -4px;
   }
 
+  /* Custom utility to completely hide scrollbars while preserving touch behavior */
+  .no-scrollbar {
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+
   /* --- Brand statement --- */
   .brand-statement {
     text-align: left !important;
@@ -1536,7 +1551,7 @@ details summary::-webkit-details-marker {
     gap: 0 !important;
     padding-bottom: 0 !important;
   }
-  
+
   .product-main .container.product-detail-grid {
     padding-left: 0 !important;
     padding-right: 0 !important;
@@ -1548,12 +1563,12 @@ details summary::-webkit-details-marker {
     aspect-ratio: 4/5 !important;
     max-height: 65vh !important;
   }
-  
+
   .product-info-sticky {
     position: static !important;
     padding: 1.5rem !important;
   }
-  
+
   .mobile-sticky-cta {
     position: fixed !important;
     bottom: 0;
@@ -1563,7 +1578,7 @@ details summary::-webkit-details-marker {
     background: rgba(10, 9, 9, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(255,255,255,0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     z-index: 50;
   }
 }
