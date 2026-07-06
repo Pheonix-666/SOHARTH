@@ -467,7 +467,7 @@ export default function CartPage() {
                       className="material-symbols-outlined quick-add-btn"
                       onClick={(e) => {
                         e.preventDefault();
-                        addToCart(p, 'OS', 1);
+                        addToCart({ ...p, id: String(p.id), subtitle: p.subtitle ?? '' }, 'OS', 1);
                         showToast(`${p.name} added to cart`, 'success');
                       }}
                       style={{
