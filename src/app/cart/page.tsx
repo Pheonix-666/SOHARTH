@@ -1,24 +1,44 @@
 'use client';
-import { useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
 
+interface Product {
+  id: string | number;
+  name: string;
+  subtitle?: string;
+  price: number;
+  image: string;
+  category: string;
+  [key: string]: any; // Allow flexibility for extra properties safely
+}
+
+interface Address {
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  country: string;
+  phone: string;
+  name: string;
+  email: string;
+}
+
 export default function CartPage() {
   const { cart: items, updateQty, removeFromCart, clearCart, isHydrated, addToCart } = useCart();
   const { showToast } = useToast();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [address, setAddress] = useState({ street: '', city: '', state: '', zip: '', country: '', phone: '', name: '', email: '' });
+  const [address, setAddress] = useState<Address>({ street: '', city: '', state: '', zip: '', country: '', phone: '', name: '', email: '' });
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | 'new' | null>('new');
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState('');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     fetch('/api/products')
@@ -29,7 +49,7 @@ export default function CartPage() {
 
   const getShippingCost = () => {
     if (items.length === 0) return 0;
-    
+
     const countryClean = (address.country || '').trim().toLowerCase();
     const stateClean = (address.state || '').trim().toLowerCase();
 
@@ -37,9 +57,9 @@ export default function CartPage() {
       return 200;
     }
 
-    const isMaharashtra = 
-      stateClean === 'maharashtra' || 
-      stateClean === 'mh' || 
+    const isMaharashtra =
+      stateClean === 'maharashtra' ||
+      stateClean === 'mh' ||
       stateClean.includes('maharashtra') ||
       (stateClean.length >= 3 && 'maharashtra'.includes(stateClean));
 
@@ -56,7 +76,6 @@ export default function CartPage() {
   const total = subtotal + tax + shipping;
 
   const handleCheckout = async () => {
-    // Validate address fields
     const { street, city, state, zip, country, phone, name, email } = address;
 
     if (!name || !email) {
@@ -78,11 +97,7 @@ export default function CartPage() {
 
     setIsCheckingOut(true);
     try {
-      const customer = {
-        name: name,
-        email: email,
-        phone: phone
-      };
+      const customer = { name, email, phone };
 
       const res = await fetch('/api/orders', {
         method: 'POST',
@@ -91,7 +106,7 @@ export default function CartPage() {
           items, subtotal, tax, total,
           customer,
           shippingAddress: { street, city, state, zip, country },
-          userId: null,   // guest checkout
+          userId: null,
         }),
       });
       const data = await res.json();
@@ -166,7 +181,6 @@ export default function CartPage() {
         <div className="container">
 
           {/* Header */}
-
           <header style={{ marginBottom: '4rem' }}>
             <h1 className="font-headline-lg" style={{ color: 'var(--primary)', marginBottom: '1rem' }}>Your Selection</h1>
             <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', maxWidth: '500px' }}>
@@ -182,7 +196,7 @@ export default function CartPage() {
           ) : (
             <div className="cart-grid">
 
-              {/* Left Column: Products in Bag & Shipping Address */}
+              {/* Left Column */}
               <div className="cart-main-col" style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
 
                 {/* Products in Bag */}
@@ -196,7 +210,6 @@ export default function CartPage() {
                         animation: `fadeInUp 0.6s cubic-bezier(0.16,1,0.3,1) ${idx * 100}ms both`,
                       }}
                     >
-                      {/* Thumbnail */}
                       <Link href={`/products/${item.id}`} className="cart-item-thumb" style={{ position: 'relative', width: '192px', height: '256px', flexShrink: 0, overflow: 'hidden', backgroundColor: 'var(--surface-container)' }}>
                         <Image src={item.image} alt={item.name} fill style={{ objectFit: 'cover', transition: 'transform 0.7s ease' }}
                           onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)'}
@@ -204,7 +217,6 @@ export default function CartPage() {
                         />
                       </Link>
 
-                      {/* Details */}
                       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '0.5rem 0' }}>
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
@@ -221,7 +233,6 @@ export default function CartPage() {
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          {/* Qty Controls */}
                           <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(71,71,65,0.3)', padding: '0 0.75rem' }}>
                             <button onClick={() => updateQty(item.id, item.size, -1, item.color)} style={{ color: 'var(--on-surface-variant)', padding: '0.5rem 0', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
                               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>remove</span>
@@ -338,7 +349,6 @@ export default function CartPage() {
                     </div>
                   )}
 
-                  {/* Contact Details */}
                   <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(229,226,224,0.1)', paddingTop: '1.5rem' }}>
                     <h3 className="font-label-caps" style={{ color: 'var(--primary)', marginBottom: '1.5rem', fontSize: '11px', letterSpacing: '0.2em' }}>Contact Information</h3>
 
@@ -403,7 +413,6 @@ export default function CartPage() {
                     </div>
                   </div>
 
-                  {/* Promo Code */}
                   <div style={{ marginBottom: '1.5rem' }}>
                     <label className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.5rem' }}>PROMO CODE</label>
                     <input
@@ -418,7 +427,6 @@ export default function CartPage() {
                     />
                   </div>
 
-                  {/* Checkout CTA */}
                   <div style={{ paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <button
                       onClick={handleCheckout}
@@ -430,7 +438,6 @@ export default function CartPage() {
                       <span className="material-symbols-outlined" style={{ fontSize: '20px', transition: 'transform 0.3s' }}>arrow_forward</span>
                     </button>
 
-                    {/* Trust Badges */}
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', paddingTop: '1rem', opacity: 0.4 }}>
                       {['security', 'credit_card', 'verified_user'].map(icon => (
                         <span key={icon} className="material-symbols-outlined" style={{ fontSize: '2rem' }}>{icon}</span>
@@ -446,7 +453,7 @@ export default function CartPage() {
             </div>
           )}
 
-          {/* ─── COMPLETE YOUR ENSEMBLE ─── */}
+          {/* Complete Your Ensemble */}
           <section style={{ marginTop: 'var(--section-gap)' }}>
             <h3 className="font-label-caps" style={{ color: 'var(--on-surface-variant)', marginBottom: '2rem', letterSpacing: '0.3em' }}>
               COMPLETE YOUR ENSEMBLE
@@ -468,7 +475,8 @@ export default function CartPage() {
                         backgroundColor: 'rgba(20,19,19,0.8)', backdropFilter: 'blur(8px)',
                         padding: '0.75rem', color: 'var(--primary)', fontSize: '20px',
                         opacity: 0, transition: 'opacity 0.3s',
-                      }}>add_shopping_cart</button>
+                      }}
+                    >add_shopping_cart</button>
                   </div>
                   <h4 className="font-body-md" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{p.name}</h4>
                   <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)' }}>₹{p.price.toLocaleString()}</p>
