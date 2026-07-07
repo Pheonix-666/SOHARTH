@@ -451,7 +451,7 @@ export default function Home() {
                     style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--surface-container)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
                     onClick={(e) => {
                       e.preventDefault();
-                      addToCart(featured[0], 'OS', 1);
+                      addToCart(featured[0], 'OS');
                       showToast(`${featured[0].name} added to cart`, 'success');
                     }}
                   >
@@ -491,7 +491,7 @@ export default function Home() {
                     style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--surface-container)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
                     onClick={(e) => {
                       e.preventDefault();
-                      addToCart(p, 'OS', 1);
+                      addToCart(p, 'OS');
                       showToast(`${p.name} added to cart`, 'success');
                     }}
                   >
@@ -523,7 +523,7 @@ export default function Home() {
                     style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--surface-container)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
                     onClick={(e) => {
                       e.preventDefault();
-                      addToCart(p, 'OS', 1);
+                      addToCart(p, 'OS');
                       showToast(`${p.name} added to cart`, 'success');
                     }}
                   >
