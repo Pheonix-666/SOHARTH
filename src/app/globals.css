@@ -2295,3 +2295,339 @@ details summary::-webkit-details-marker {
     display: none !important;
   }
 }
+
+/* ==========================================================================
+   REDESIGNED MOBILE CART SECTION (Reference: Stitch SOHARTH Void Bag)
+   ========================================================================== */
+
+/* Cart Header / Title Styles */
+.void-bag-header {
+  margin-bottom: 2.5rem;
+}
+
+.void-bag-title {
+  font-family: 'Libre Caslon Text', serif;
+  font-size: 2.25rem;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.void-bag-status {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: #10B981; /* Green Accent */
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-transform: uppercase;
+}
+
+.void-bag-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10B981;
+  box-shadow: 0 0 8px #10B981;
+}
+
+/* Shipping Progress Bar */
+.void-shipping-indicator {
+  background: rgba(20, 19, 19, 0.4);
+  border: 1px solid rgba(229, 226, 224, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.void-shipping-text-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.void-shipping-remaining {
+  color: var(--on-surface-variant);
+}
+
+.void-shipping-progress-track {
+  width: 100%;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.void-shipping-progress-bar {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.void-shipping-subtext {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-style: italic;
+  font-weight: 300;
+  color: var(--on-surface-variant);
+  opacity: 0.8;
+}
+
+/* Redesigned Cart Item Card */
+.void-cart-item {
+  background: rgba(20, 19, 19, 0.3);
+  border: 1px solid rgba(229, 226, 224, 0.08);
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 1.5rem;
+  position: relative;
+  transition: border-color 0.3s ease;
+}
+
+.void-cart-item:hover {
+  border-color: rgba(229, 226, 224, 0.2);
+}
+
+.void-cart-item-image-wrapper {
+  position: relative;
+  aspect-ratio: 3/4;
+  background-color: var(--surface-container);
+  overflow: hidden;
+  border: 1px solid rgba(229, 226, 224, 0.05);
+}
+
+.void-cart-item-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.void-cart-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-right: 2rem; /* Avoid overlapping delete button */
+}
+
+.void-cart-item-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 0.25rem;
+}
+
+.void-cart-item-spec {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+  opacity: 0.7;
+  margin-bottom: 0.75rem;
+}
+
+.void-cart-item-attributes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.void-cart-item-attr {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+}
+
+.void-cart-item-attr span {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.void-cart-item-price {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--primary);
+}
+
+.void-cart-item-delete {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: none;
+  border: none;
+  color: var(--on-surface-variant);
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s, opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.void-cart-item-delete:hover {
+  color: var(--primary);
+  opacity: 1;
+}
+
+/* Actions footer inside item card */
+.void-cart-item-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  grid-column: span 2;
+  border-top: 1px solid rgba(229, 226, 224, 0.05);
+  padding-top: 1rem;
+}
+
+/* Pill Qty Selector */
+.void-qty-selector {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(229, 226, 224, 0.15);
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+.void-qty-btn {
+  background: none;
+  border: none;
+  color: var(--on-surface-variant);
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.void-qty-btn:hover {
+  color: var(--primary);
+}
+
+.void-qty-value {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 10px;
+  color: var(--primary);
+}
+
+.void-save-link {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--on-surface-variant);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.void-save-link:hover {
+  color: var(--primary);
+}
+
+/* Mobile Sticky Checkout Panel */
+.void-mobile-checkout-panel {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .void-mobile-checkout-panel {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #080808;
+    border-top: 1px solid rgba(229, 226, 224, 0.12);
+    padding: 1.25rem var(--margin-mobile);
+    z-index: 99;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .void-mobile-checkout-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .void-mobile-estimate-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .void-mobile-estimate-label {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--on-surface-variant);
+    text-transform: uppercase;
+  }
+
+  .void-mobile-estimate-amount {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .void-mobile-checkout-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: var(--primary);
+    color: var(--on-primary);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 1.15rem;
+    border-radius: 4px;
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  .void-mobile-checkout-btn:active {
+    transform: scale(0.98);
+  }
+
+  /* Padding at bottom of main to prevent overlap with sticky panel */
+  .cart-page-main {
+    padding-bottom: 120px !important;
+  }
+}

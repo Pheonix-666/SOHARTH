@@ -537,7 +537,7 @@ export default function Home() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>₹{p.price.toLocaleString()}</span>
                       <span className="font-label-caps" style={{ opacity: 0.4 }}>{p.subtitle?.split('/')[1]?.trim()}</span>
-                    </div>
+            8        </div>
                   </div>
                 </Link>
               ))}

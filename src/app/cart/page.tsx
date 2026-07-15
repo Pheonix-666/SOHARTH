@@ -29,11 +29,25 @@ interface Address {
   email: string;
 }
 
+const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa',
+  'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala',
+  'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland',
+  'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
+  'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands',
+  'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir',
+  'Ladakh', 'Lakshadweep', 'Puducherry'
+];
+
+const COUNTRIES = [
+  'India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'United Arab Emirates', 'Germany', 'Singapore', 'Other'
+];
+
 export default function CartPage() {
   const { cart: items, updateQty, removeFromCart, clearCart, isHydrated, addToCart } = useCart();
   const { showToast } = useToast();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [address, setAddress] = useState<Address>({ street: '', city: '', state: '', zip: '', country: '', phone: '', name: '', email: '' });
+  const [address, setAddress] = useState<Address>({ street: '', city: '', state: 'Maharashtra', zip: '', country: 'India', phone: '', name: '', email: '' });
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | 'new' | null>('new');
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -64,7 +78,7 @@ export default function CartPage() {
       (stateClean.length >= 3 && 'maharashtra'.includes(stateClean));
 
     if (isMaharashtra) {
-      return 60;
+      return 40;
     }
 
     return 120;
@@ -177,16 +191,49 @@ export default function CartPage() {
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: '8.75rem', paddingBottom: 'var(--section-gap)' }}>
+      <main className="cart-page-main" style={{ paddingTop: '8.75rem', paddingBottom: 'var(--section-gap)' }}>
         <div className="container">
 
           {/* Header */}
-          <header style={{ marginBottom: '4rem' }}>
-            <h1 className="font-headline-lg" style={{ color: 'var(--primary)', marginBottom: '1rem' }}>Your Selection</h1>
-            <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', maxWidth: '500px' }}>
-              Items meticulously curated from our celestial collections, waiting for their final journey.
-            </p>
-          </header>
+          <div className="void-bag-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              <Link href="/products" style={{ display: 'flex', alignItems: 'center', color: 'var(--on-surface-variant)', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--on-surface-variant)'}>
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>arrow_back</span>
+              </Link>
+              <div className="void-bag-status">
+                <span className="void-bag-status-dot"></span>
+                ACTIVE SESSION
+              </div>
+            </div>
+            <h1 className="void-bag-title">YOUR PRODUCTS</h1>
+          </div>
+
+          {/* Shipping Progress Tracker */}
+          {items.length > 0 && (
+            <div className="void-shipping-indicator">
+              <div className="void-shipping-text-row">
+                <span>VOID PRIORITY SHIPPING</span>
+                {subtotal >= 10000 ? (
+                  <span>UNLOCKED</span>
+                ) : (
+                  <span className="void-shipping-remaining">₹{(10000 - subtotal).toLocaleString('en-IN')} REMAINING</span>
+                )}
+              </div>
+              <div className="void-shipping-progress-track">
+                <div
+                  className="void-shipping-progress-bar"
+                  style={{ width: `${Math.min(100, (subtotal / 10000) * 100)}%` }}
+                />
+              </div>
+              <p className="void-shipping-subtext">
+                {subtotal >= 10000 ? (
+                  "Priority Void Transit unlocked."
+                ) : (
+                  `Spend ₹${(10000 - subtotal).toLocaleString('en-IN')} more to unlock Priority Void Transit.`
+                )}
+              </p>
+            </div>
+          )}
 
           {items.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '6rem 0' }}>
@@ -200,53 +247,88 @@ export default function CartPage() {
               <div className="cart-main-col" style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
 
                 {/* Products in Bag */}
-                <section style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <section style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                   {items.map((item, idx) => (
                     <div
-                      key={`${item.id}-${item.size}`}
+                      key={`${item.id}-${item.size}-${item.color || 'none'}`}
+                      className="void-cart-item"
                       style={{
-                        display: 'flex', gap: '2rem', paddingBottom: '2rem',
-                        borderBottom: '1px solid rgba(229,226,224,0.1)',
                         animation: `fadeInUp 0.6s cubic-bezier(0.16,1,0.3,1) ${idx * 100}ms both`,
                       }}
                     >
-                      <Link href={`/products/${item.id}`} className="cart-item-thumb" style={{ position: 'relative', width: '192px', height: '256px', flexShrink: 0, overflow: 'hidden', backgroundColor: 'var(--surface-container)' }}>
+                      {/* Image Column */}
+                      <Link href={`/products/${item.id}`} className="void-cart-item-image-wrapper">
                         <Image src={item.image} alt={item.name} fill style={{ objectFit: 'cover', transition: 'transform 0.7s ease' }}
-                          onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)'}
+                          onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1.05)'}
                           onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'scale(1)'}
                         />
                       </Link>
 
-                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '0.5rem 0' }}>
+                      {/* Details Column */}
+                      <div className="void-cart-item-details">
                         <div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                            <h3 className="font-headline-md" style={{ color: 'var(--primary)' }}>{item.name}</h3>
-                            <p className="font-body-md" style={{ color: 'var(--primary)', flexShrink: 0, marginLeft: '1rem' }}>₹{(item.price * item.qty).toLocaleString()}</p>
+                          <div className="void-cart-item-header">
+                            <h3 className="void-cart-item-title">{item.name}</h3>
+                            <button
+                              onClick={() => removeFromCart(item.id, item.size, item.color)}
+                              className="void-cart-item-delete"
+                              aria-label="Remove item"
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+                            </button>
                           </div>
-                          <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)', marginBottom: '1rem' }}>{item.subtitle}</p>
-                          <div style={{ display: 'flex', gap: '1rem' }}>
-                            <span className="font-caption" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase' }}>Size: {item.size}</span>
+
+                          {item.subtitle && (
+                            <p className="void-cart-item-spec">VOID-SPEC: {item.subtitle}</p>
+                          )}
+
+                          <div className="void-cart-item-attributes">
+                            <div className="void-cart-item-attr">
+                              SIZE: <span>{item.size}</span>
+                            </div>
                             {item.color && (
-                              <span className="font-caption" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase' }}>Color: {item.color}</span>
+                              <div className="void-cart-item-attr">
+                                COLOR: <span>{item.color}</span>
+                              </div>
                             )}
                           </div>
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', border: '1px solid rgba(71,71,65,0.3)', padding: '0 0.75rem' }}>
-                            <button onClick={() => updateQty(item.id, item.size, -1, item.color)} style={{ color: 'var(--on-surface-variant)', padding: '0.5rem 0', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
-                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>remove</span>
-                            </button>
-                            <span className="font-body-md" style={{ padding: '0 1rem' }}>{item.qty}</span>
-                            <button onClick={() => updateQty(item.id, item.size, 1, item.color)} style={{ color: 'var(--on-surface-variant)', padding: '0.5rem 0', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
-                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
-                            </button>
-                          </div>
-                          <button onClick={() => removeFromCart(item.id, item.size, item.color)} className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'color 0.3s', background: 'none', border: 'none', cursor: 'pointer' }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>delete</span>
-                            REMOVE
+                        <div className="void-cart-item-price">
+                          ₹{(item.price * item.qty).toLocaleString('en-IN')}
+                        </div>
+                      </div>
+
+                      {/* Card Footer Row */}
+                      <div className="void-cart-item-actions">
+                        {/* Pill Qty Selector */}
+                        <div className="void-qty-selector">
+                          <button
+                            onClick={() => updateQty(item.id, item.size, -1, item.color)}
+                            className="void-qty-btn"
+                            aria-label="Decrease quantity"
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>remove</span>
+                          </button>
+                          <span className="void-qty-value">{String(item.qty).padStart(2, '0')}</span>
+                          <button
+                            onClick={() => updateQty(item.id, item.size, 1, item.color)}
+                            className="void-qty-btn"
+                            aria-label="Increase quantity"
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
                           </button>
                         </div>
+
+                        {/* Save for later link */}
+                        <button
+                          onClick={() => {
+                            showToast(`${item.name} saved for later`, 'success');
+                          }}
+                          className="void-save-link"
+                        >
+                          SAVE FOR LATER
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -290,7 +372,7 @@ export default function CartPage() {
                         <input type="radio" name="saved_address" checked={selectedAddressId === 'new'}
                           onChange={() => {
                             setSelectedAddressId('new');
-                            setAddress({ street: '', city: '', state: '', zip: '', country: '', phone: '', name: '', email: '' });
+                            setAddress({ street: '', city: '', state: 'Maharashtra', zip: '', country: 'India', phone: '', name: '', email: '' });
                           }}
                           style={{ accentColor: 'var(--primary)' }}
                         />
@@ -320,13 +402,27 @@ export default function CartPage() {
                         />
                       </div>
                       <div>
-                        <input
-                          type="text"
-                          placeholder="State"
-                          value={address.state}
-                          onChange={e => setAddress({ ...address, state: e.target.value })}
-                          className="shipping-address-input"
-                        />
+                        {address.country === 'India' ? (
+                          <select
+                            value={address.state}
+                            onChange={e => setAddress({ ...address, state: e.target.value })}
+                            className="shipping-address-input"
+                            style={{ background: '#080808', color: '#e5e2e0', cursor: 'pointer' }}
+                          >
+                            <option value="" disabled style={{ background: '#161515', color: '#888' }}>Select State</option>
+                            {INDIAN_STATES.map(s => (
+                              <option key={s} value={s} style={{ background: '#161515', color: '#e5e2e0' }}>{s}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            placeholder="State / Province"
+                            value={address.state}
+                            onChange={e => setAddress({ ...address, state: e.target.value })}
+                            className="shipping-address-input"
+                          />
+                        )}
                       </div>
                       <div>
                         <input
@@ -338,13 +434,24 @@ export default function CartPage() {
                         />
                       </div>
                       <div>
-                        <input
-                          type="text"
-                          placeholder="Country"
+                        <select
                           value={address.country}
-                          onChange={e => setAddress({ ...address, country: e.target.value })}
+                          onChange={e => {
+                            const newCountry = e.target.value;
+                            setAddress({ 
+                              ...address, 
+                              country: newCountry,
+                              state: newCountry === 'India' ? 'Maharashtra' : ''
+                            });
+                          }}
                           className="shipping-address-input"
-                        />
+                          style={{ background: '#080808', color: '#e5e2e0', cursor: 'pointer' }}
+                        >
+                          <option value="" disabled style={{ background: '#161515', color: '#888' }}>Select Country</option>
+                          {COUNTRIES.map(c => (
+                            <option key={c} value={c} style={{ background: '#161515', color: '#e5e2e0' }}>{c}</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   )}
@@ -488,6 +595,35 @@ export default function CartPage() {
 
         </div>
       </main>
+
+      {/* Sticky Mobile Checkout Panel */}
+      {items.length > 0 && (
+        <div className="void-mobile-checkout-panel">
+          <div className="void-mobile-checkout-content">
+            <div className="void-mobile-estimate-col">
+              <span className="void-mobile-estimate-label">TOTAL ESTIMATE</span>
+              <span className="void-mobile-estimate-amount">
+                ₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <button
+              onClick={handleCheckout}
+              disabled={isCheckingOut}
+              className="void-mobile-checkout-btn"
+            >
+              {isCheckingOut ? (
+                'PROCESSING...'
+              ) : (
+                <>
+                  <span>ENTER THE VOID</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );
