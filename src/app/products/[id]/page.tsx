@@ -42,6 +42,10 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
     }
   }, [product, selectedColor]);
 
+  useEffect(() => {
+    setActiveImage(0);
+  }, [selectedColor]);
+
   if (isLoading) {
     return (
       <>
@@ -69,7 +73,11 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
     );
   }
 
-  const safeImages = product.images && product.images.length > 0 ? product.images : [product.image];
+  // Dynamically determine the gallery images based on the selected color
+  const selectedColorObj = product.colors?.find((c: any) => c.name === selectedColor);
+  const safeImages = selectedColorObj?.images && selectedColorObj.images.length > 0 && selectedColorObj.images.some((img: string) => img.trim() !== '')
+    ? selectedColorObj.images.filter((img: string) => img.trim() !== '')
+    : (product.images && product.images.length > 0 ? product.images : [product.image]);
 
   return (
     <>
@@ -191,12 +199,13 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <button
                   onClick={() => {
+                    const colorImage = selectedColorObj?.images?.[0] || product.image;
                     addToCart({
                       id: product.id,
                       name: product.name,
                       subtitle: product.subtitle,
                       price: product.price,
-                      image: product.image,
+                      image: colorImage,
                     }, selectedSize, selectedColor || undefined);
                     setIsAdded(true);
                     setTimeout(() => setIsAdded(false), 2000);

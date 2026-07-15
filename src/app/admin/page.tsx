@@ -6,6 +6,12 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useToast } from '@/context/ToastContext';
 
+interface ColorVariation {
+  name: string;
+  hex: string;
+  images?: string[];
+}
+
 interface Product {
   id: string;
   name: string;
@@ -19,7 +25,7 @@ interface Product {
   collection: string;
   material: string;
   shipping: string;
-  colors?: { name: string; hex: string }[];
+  colors?: ColorVariation[];
 }
 
 interface OrderItem {
@@ -108,7 +114,7 @@ export default function AdminDashboard() {
     name: '', subtitle: '', price: '', category: '',
     tag: '', image: '', images: [''], description: '',
     collection: 'COLLECTION 01: NEBULA', material: '', shipping: '',
-    colors: [] as { name: string; hex: string }[],
+    colors: [] as ColorVariation[],
   });
 
   // ── Inline "Create Category" panel (visible inside Add tab) ───────────────
@@ -125,6 +131,7 @@ export default function AdminDashboard() {
 
   // ── Image Upload ───────────────────────────────────────────────────────────
   const [uploadingIdx, setUploadingIdx] = useState<{idx: number, isEdit: boolean} | null>(null);
+  const [uploadingColorIdx, setUploadingColorIdx] = useState<{ colorIdx: number; imgIdx: number; isEdit: boolean } | null>(null);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, idx: number, isEdit: boolean) => {
     const file = e.target.files?.[0];
@@ -157,6 +164,50 @@ export default function AdminDashboard() {
       showToast('Upload failed.', 'error');
     } finally {
       setUploadingIdx(null);
+    }
+  };
+
+  const handleColorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, colorIdx: number, imgIdx: number, isEdit: boolean) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingColorIdx({ colorIdx, imgIdx, isEdit });
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.url) {
+        if (isEdit && editingProduct) {
+          const newColors = [...(editingProduct.colors || [])];
+          const newColorImages = [...(newColors[colorIdx].images || [])];
+          newColorImages[imgIdx] = data.url;
+          newColors[colorIdx] = {
+            ...newColors[colorIdx],
+            images: newColorImages,
+          };
+          setEditingProduct({ ...editingProduct, colors: newColors });
+        } else {
+          const newColors = [...form.colors];
+          const newColorImages = [...(newColors[colorIdx].images || [])];
+          newColorImages[imgIdx] = data.url;
+          newColors[colorIdx] = {
+            ...newColors[colorIdx],
+            images: newColorImages,
+          };
+          setForm({ ...form, colors: newColors });
+        }
+      } else {
+        showToast('Upload failed: ' + data.error, 'error');
+      }
+    } catch (err) {
+      showToast('Upload failed.', 'error');
+    } finally {
+      setUploadingColorIdx(null);
     }
   };
 
@@ -398,7 +449,10 @@ export default function AdminDashboard() {
       collection: 'COLLECTION 02: HORIZON',
       material: '60% Rayon technical blend, 35% Recycled Spacer fiber, 5% Elastane.',
       shipping: 'Complimentary express shipping on orders over ₹500.',
-      colors: [],
+      colors: [
+        { name: 'Cosmic Black', hex: '#0B0B0B', images: ['/WhatsApp Image 2026-05-29 at 12.50.13 PM.jpeg'] },
+        { name: 'Stardust White', hex: '#F0F0F0', images: ['/WhatsApp Image 2026-05-29 at 12.50.11 PM.jpeg'] }
+      ],
     });
   };
 
@@ -691,30 +745,60 @@ export default function AdminDashboard() {
 
                       <div>
                         <FieldLabel>COLOR VARIATIONS</FieldLabel>
-                        {form.colors && form.colors.map((color, idx) => (
-                          <div key={idx} style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
-                            <input type="text" placeholder="Color Name (e.g. White)" value={color.name}
-                              onChange={e => {
-                                const newColors = [...form.colors];
-                                newColors[idx].name = e.target.value;
+                        {form.colors && form.colors.map((color, colorIdx) => (
+                          <div key={colorIdx} className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid rgba(229,226,224,0.1)', backgroundColor: 'rgba(255,255,255,0.01)' }}>
+                            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
+                              <input type="text" placeholder="Color Name (e.g. White)" value={color.name}
+                                onChange={e => {
+                                  const newColors = [...form.colors];
+                                  newColors[colorIdx].name = e.target.value;
+                                  setForm({ ...form, colors: newColors });
+                                }} style={{ ...inputStyle, flex: 1 }} />
+                              <input type="text" placeholder="Hex (e.g. #FFFFFF)" value={color.hex}
+                                onChange={e => {
+                                  const newColors = [...form.colors];
+                                  newColors[colorIdx].hex = e.target.value;
+                                  setForm({ ...form, colors: newColors });
+                                }} style={{ ...inputStyle, flex: 1 }} />
+                              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: color.hex || '#000', border: '1px solid rgba(255,255,255,0.2)' }}></div>
+                              <button type="button" onClick={() => {
+                                const newColors = form.colors.filter((_, i) => i !== colorIdx);
                                 setForm({ ...form, colors: newColors });
-                              }} style={{ ...inputStyle, flex: 1 }} />
-                            <input type="text" placeholder="Hex (e.g. #FFFFFF)" value={color.hex}
-                              onChange={e => {
+                              }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer', fontSize: '11px', letterSpacing: '0.1em' }}>✕ REMOVE COLOR</button>
+                            </div>
+
+                            {/* Color-specific images */}
+                            <div style={{ paddingLeft: '1rem', borderLeft: '2px solid rgba(229,226,224,0.1)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                              <span className="font-label-caps" style={{ fontSize: '9px', display: 'block', opacity: 0.5, letterSpacing: '0.15em' }}>Images for {color.name || 'this color'}</span>
+                              {(color.images || []).map((img, imgIdx) => (
+                                <div key={imgIdx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                  {img && <img src={img} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />}
+                                  <div style={{ flex: 1 }}>
+                                    <input type="file" accept="image/*" onChange={e => handleColorImageUpload(e, colorIdx, imgIdx, false)} style={{ color: 'var(--primary)', fontSize: '12px' }} />
+                                    {uploadingColorIdx?.colorIdx === colorIdx && uploadingColorIdx?.imgIdx === imgIdx && !uploadingColorIdx.isEdit && <span style={{ fontSize: '10px', color: 'var(--primary)', marginLeft: '8px' }}>Uploading...</span>}
+                                  </div>
+                                  <button type="button" onClick={() => {
+                                    const newColors = [...form.colors];
+                                    const newImages = (color.images || []).filter((_, i) => i !== imgIdx);
+                                    newColors[colorIdx] = { ...color, images: newImages };
+                                    setForm({ ...form, colors: newColors });
+                                  }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer', fontSize: '14px' }}>✕</button>
+                                </div>
+                              ))}
+                              <button type="button" onClick={() => {
                                 const newColors = [...form.colors];
-                                newColors[idx].hex = e.target.value;
+                                const currentImages = color.images || [];
+                                newColors[colorIdx] = { ...color, images: [...currentImages, ''] };
                                 setForm({ ...form, colors: newColors });
-                              }} style={{ ...inputStyle, flex: 1 }} />
-                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: color.hex || '#000', border: '1px solid rgba(255,255,255,0.2)' }}></div>
-                            <button type="button" onClick={() => {
-                              const newColors = form.colors.filter((_, i) => i !== idx);
-                              setForm({ ...form, colors: newColors });
-                            }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer' }}>✕</button>
+                              }} style={{ alignSelf: 'flex-start', background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '9px', cursor: 'pointer', letterSpacing: '0.1em' }}>
+                                + ADD COLOR IMAGE
+                              </button>
+                            </div>
                           </div>
                         ))}
-                        <button type="button" onClick={() => setForm({ ...form, colors: [...(form.colors || []), { name: '', hex: '' }] })}
-                          style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '10px', marginTop: '0.5rem', cursor: 'pointer' }}>
-                          + ADD COLOR
+                        <button type="button" onClick={() => setForm({ ...form, colors: [...(form.colors || []), { name: '', hex: '', images: [''] }] })}
+                          style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '10px', marginTop: '0.5rem', cursor: 'pointer', letterSpacing: '0.1em' }}>
+                          + ADD COLOR VARIATION
                         </button>
                       </div>
 
@@ -1110,29 +1194,59 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <FieldLabel>COLOR VARIATIONS</FieldLabel>
-                {editingProduct.colors && editingProduct.colors.map((color, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
-                    <input type="text" placeholder="Color Name (e.g. White)" value={color.name}
-                      onChange={e => {
-                        const newColors = [...(editingProduct.colors || [])];
-                        newColors[idx].name = e.target.value;
+                {editingProduct.colors && editingProduct.colors.map((color, colorIdx) => (
+                  <div key={colorIdx} className="glass-panel" style={{ padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid rgba(229,226,224,0.1)', backgroundColor: 'rgba(255,255,255,0.01)' }}>
+                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
+                      <input type="text" placeholder="Color Name (e.g. White)" value={color.name}
+                        onChange={e => {
+                          const newColors = [...(editingProduct.colors || [])];
+                          newColors[colorIdx].name = e.target.value;
+                          setEditingProduct({ ...editingProduct, colors: newColors });
+                        }} style={{ ...inputStyle, flex: 1 }} />
+                      <input type="text" placeholder="Hex (e.g. #FFFFFF)" value={color.hex}
+                        onChange={e => {
+                          const newColors = [...(editingProduct.colors || [])];
+                          newColors[colorIdx].hex = e.target.value;
+                          setEditingProduct({ ...editingProduct, colors: newColors });
+                        }} style={{ ...inputStyle, flex: 1 }} />
+                      <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: color.hex || '#000', border: '1px solid rgba(255,255,255,0.2)' }}></div>
+                      <button type="button" onClick={() => {
+                        const newColors = (editingProduct.colors || []).filter((_, i) => i !== colorIdx);
                         setEditingProduct({ ...editingProduct, colors: newColors });
-                      }} style={{ ...inputStyle, flex: 1 }} />
-                    <input type="text" placeholder="Hex (e.g. #FFFFFF)" value={color.hex}
-                      onChange={e => {
+                      }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer', fontSize: '11px', letterSpacing: '0.1em' }}>✕ REMOVE COLOR</button>
+                    </div>
+
+                    {/* Color-specific images */}
+                    <div style={{ paddingLeft: '1rem', borderLeft: '2px solid rgba(229,226,224,0.1)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <span className="font-label-caps" style={{ fontSize: '9px', display: 'block', opacity: 0.5, letterSpacing: '0.15em' }}>Images for {color.name || 'this color'}</span>
+                      {(color.images || []).map((img, imgIdx) => (
+                        <div key={imgIdx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          {img && <img src={img} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />}
+                          <div style={{ flex: 1 }}>
+                            <input type="file" accept="image/*" onChange={e => handleColorImageUpload(e, colorIdx, imgIdx, true)} style={{ color: 'var(--primary)', fontSize: '12px' }} />
+                            {uploadingColorIdx?.colorIdx === colorIdx && uploadingColorIdx?.imgIdx === imgIdx && uploadingColorIdx.isEdit && <span style={{ fontSize: '10px', color: 'var(--primary)', marginLeft: '8px' }}>Uploading...</span>}
+                          </div>
+                          <button type="button" onClick={() => {
+                            const newColors = [...(editingProduct.colors || [])];
+                            const newImages = (color.images || []).filter((_, i) => i !== imgIdx);
+                            newColors[colorIdx] = { ...color, images: newImages };
+                            setEditingProduct({ ...editingProduct, colors: newColors });
+                          }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer', fontSize: '14px' }}>✕</button>
+                        </div>
+                      ))}
+                      <button type="button" onClick={() => {
                         const newColors = [...(editingProduct.colors || [])];
-                        newColors[idx].hex = e.target.value;
+                        const currentImages = color.images || [];
+                        newColors[colorIdx] = { ...color, images: [...currentImages, ''] };
                         setEditingProduct({ ...editingProduct, colors: newColors });
-                      }} style={{ ...inputStyle, flex: 1 }} />
-                    <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: color.hex || '#000', border: '1px solid rgba(255,255,255,0.2)' }}></div>
-                    <button type="button" onClick={() => {
-                      const newColors = (editingProduct.colors || []).filter((_, i) => i !== idx);
-                      setEditingProduct({ ...editingProduct, colors: newColors });
-                    }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer' }}>✕</button>
+                      }} style={{ alignSelf: 'flex-start', background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '9px', cursor: 'pointer', letterSpacing: '0.1em' }}>
+                        + ADD COLOR IMAGE
+                      </button>
+                    </div>
                   </div>
                 ))}
-                <button type="button" onClick={() => setEditingProduct({ ...editingProduct, colors: [...(editingProduct.colors || []), { name: '', hex: '' }] })}
-                  style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '10px', marginTop: '0.5rem', cursor: 'pointer' }}>
+                <button type="button" onClick={() => setEditingProduct({ ...editingProduct, colors: [...(editingProduct.colors || []), { name: '', hex: '', images: [''] }] })}
+                  style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.25rem 0.5rem', fontSize: '10px', marginTop: '0.5rem', cursor: 'pointer', letterSpacing: '0.1em' }}>
                   + ADD COLOR
                 </button>
               </div>
