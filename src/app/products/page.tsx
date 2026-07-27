@@ -119,7 +119,7 @@ export default function ProductsPage({
           : [];
 
         // Ensure default key categories exist if missing
-        const defaultOrder = ['ethnic', 'heroic', 'quotes', 'outerwear', 'essentials'];
+        const defaultOrder = ['ethnic', 'heroic', 'quotes'];
         const existingValues = new Set(formattedCats.map((c) => c.value));
 
         defaultOrder.forEach((val) => {
@@ -192,19 +192,14 @@ export default function ProductsPage({
     });
 
     // Ensure all defined categories have entries if products exist or default placeholders
-    const categoryOrder = ['ethnic', 'heroic', 'quotes', 'outerwear', 'essentials'];
+    const categoryOrder = ['ethnic', 'heroic', 'quotes'];
 
     // Add any other dynamic categories found in products or categories API
     categories.forEach((c) => {
-      if (c.value && !categoryOrder.includes(c.value)) {
+      if (c.value && !categoryOrder.includes(c.value) && c.value !== 'new') {
         categoryOrder.push(c.value);
       }
     });
-
-    // Include 'other' if products exist in unknown categories
-    if (map['other'] && map['other'].length > 0) {
-      categoryOrder.push('other');
-    }
 
     return categoryOrder.map((catKey) => {
       const rawProducts = map[catKey] || [];
@@ -406,7 +401,7 @@ export default function ProductsPage({
               <p className="font-body-lg" style={{ color: 'var(--on-surface-variant, #888)', fontSize: '14px', maxWidth: '640px', margin: 0, lineHeight: 1.6 }}>
                 {category
                   ? (activeCategoryMeta?.description || `Discover our ${category} pieces designed with precision and dark celestial elegance.`)
-                  : 'Navigate through our signature collections including Ethnic, Heroic, Quotes, Outerwear, and Essentials.'}
+                  : 'Navigate through our signature collections including Ethnic, Heroic, Quotes, and New Arrivals.'}
               </p>
             </div>
           </div>
