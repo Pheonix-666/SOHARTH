@@ -49,20 +49,6 @@ const CATEGORY_META: Record<string, { label: string; subtitle: string; descripti
     badge: 'STATEMENT TEES',
     banner: '/WhatsApp Image 2026-05-29 at 12.50.13 PM.jpeg',
   },
-  outerwear: {
-    label: 'STREETWEAR & HEAVY TEES',
-    subtitle: 'Heavyweight Cotton & Oversized Drops',
-    description: 'Architectural heavyweight t-shirts and drop-shoulder streetwear fits.',
-    badge: 'HEAVY TEES',
-    banner: '/WhatsApp Image 2026-05-29 at 12.50.12 PM.jpeg',
-  },
-  essentials: {
-    label: 'ESSENTIALS',
-    subtitle: 'Premium Everyday Base Tees',
-    description: 'Clean, minimalist t-shirts crafted for everyday comfort and durability.',
-    badge: 'CORE TEES',
-    banner: '/709526651_18100526473869171_34782773961128010_n.jpg',
-  },
   new: {
     label: 'NEW ARRIVALS',
     subtitle: 'Latest T-Shirt Transmissions',
@@ -122,20 +108,20 @@ export default function ProductsPage({
     ])
       .then(([productsData, categoriesData]) => {
         setProductsList(Array.isArray(productsData) ? productsData : []);
-        
+
         // Format categories list dynamically
         const formattedCats: CategoryFilter[] = Array.isArray(categoriesData)
           ? categoriesData.map((c: any) =>
-              typeof c === 'string'
-                ? { label: c.toUpperCase(), value: c.toLowerCase() }
-                : { label: c.label.toUpperCase(), value: c.value.toLowerCase() }
-            )
+            typeof c === 'string'
+              ? { label: c.toUpperCase(), value: c.toLowerCase() }
+              : { label: c.label.toUpperCase(), value: c.value.toLowerCase() }
+          )
           : [];
 
         // Ensure default key categories exist if missing
         const defaultOrder = ['ethnic', 'heroic', 'quotes', 'outerwear', 'essentials'];
         const existingValues = new Set(formattedCats.map((c) => c.value));
-        
+
         defaultOrder.forEach((val) => {
           if (!existingValues.has(val)) {
             formattedCats.push({ label: val.toUpperCase(), value: val });
@@ -207,7 +193,7 @@ export default function ProductsPage({
 
     // Ensure all defined categories have entries if products exist or default placeholders
     const categoryOrder = ['ethnic', 'heroic', 'quotes', 'outerwear', 'essentials'];
-    
+
     // Add any other dynamic categories found in products or categories API
     categories.forEach((c) => {
       if (c.value && !categoryOrder.includes(c.value)) {
@@ -546,7 +532,7 @@ export default function ProductsPage({
                   }}
                 >
                   <div className="container" style={{ padding: '0 1rem' }}>
-                    
+
                     {/* Section Banner Header */}
                     <div style={{
                       position: 'relative',
