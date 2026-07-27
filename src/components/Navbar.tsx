@@ -68,9 +68,10 @@ export default function Navbar() {
         >
           {/* Left Area: Links (Desktop) / Logo (Mobile) */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-            <div className="nav-left desktop-only" style={{ display: 'flex', gap: '2.5rem' }}>
+            <div className="nav-left desktop-only" style={{ display: 'flex', gap: '2rem' }}>
               <Link href="/products?category=new" className={`nav-link ${isActive('/products?category=new') ? 'active' : ''}`}>New Arrivals</Link>
-              <Link href="/products" className={`nav-link ${isActive('/products') && pathname !== '/products?category=new' ? 'active' : ''}`}>Collections</Link>
+              <Link href="/products?category=ethnic" className={`nav-link ${isActive('/products?category=ethnic') ? 'active' : ''}`}>Ethnic</Link>
+              <Link href="/products" className={`nav-link ${isActive('/products') && pathname === '/products' ? 'active' : ''}`}>Collections</Link>
             </div>
             <Link href="/" className="nav-logo-link mobile-flex" style={{ display: 'flex', alignItems: 'center', zIndex: 51, position: 'relative' }}>
               <Image src="/logo.jpg" alt="Soharth" width={36} height={36} priority style={{ objectFit: 'contain', borderRadius: '50%' }} />
@@ -153,8 +154,9 @@ export default function Navbar() {
         }}>
           {[
             { href: '/',                    label: 'Home' },
+            { href: '/products?category=ethnic', label: 'Ethnic Collection' },
             { href: '/products?category=new', label: 'New Arrivals' },
-            { href: '/products',            label: 'Collections' },
+            { href: '/products',            label: 'All Collections' },
             { href: '/about',               label: 'Our Story' },
           ].map((item, i) => (
             <Link
