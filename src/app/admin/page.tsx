@@ -369,11 +369,20 @@ export default function AdminDashboard() {
       showToast('Please configure the mandatory fields (Name, Price, Category).', 'error');
       return;
     }
+    const cleanedImages = form.images.filter(img => img && img.trim() !== '');
+    const primaryImage = form.image || cleanedImages[0] || '';
+    const payload = {
+      ...form,
+      price: parseFloat(form.price) || 0,
+      image: primaryImage,
+      images: cleanedImages.length > 0 ? cleanedImages : (primaryImage ? [primaryImage] : []),
+    };
+
     try {
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (data.success) {
