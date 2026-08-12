@@ -417,7 +417,7 @@ export default function Home() {
               Born from the silence of the void, crafted for the movement of light.
             </h2>
             <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)' }}>
-              Soharth bridges the gap between high-fashion editorial and cosmic wonder. Every piece is a quiet luxury, echoing the precision of astronomical phenomena and the stillness of deep space.
+              <span className="soharth-font" style={{ fontWeight: 700 }}>Soharth</span> bridges the gap between high-fashion editorial and cosmic wonder. Every piece is a quiet luxury, echoing the precision of astronomical phenomena and the stillness of deep space.
             </p>
           </div>
         </section>

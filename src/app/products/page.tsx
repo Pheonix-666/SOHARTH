@@ -321,7 +321,7 @@ export default function ProductsPage({
               <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: '2rem' }}>
                 <div>
                   <span className="font-label-caps" style={{ color: 'var(--primary, #fff)', letterSpacing: '0.4em', fontSize: '11px', opacity: 0.6, marginBottom: '0.75rem', display: 'block' }}>
-                    SOHARTH CATALOGUE · {productsList.length} PIECES
+                    <span className="soharth-font">SOHARTH</span> CATALOGUE · {productsList.length} PIECES
                   </span>
                   <h1 className="font-headline-lg" style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: 300, letterSpacing: '-0.02em', margin: 0, lineHeight: 1.1 }}>
                     {category ? (activeCategoryMeta?.label || `${category.toUpperCase()} SELECTION`) : 'EXPLORE ALL SECTIONS'}

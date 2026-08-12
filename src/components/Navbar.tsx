@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useEffect, useState, useRef } from 'react';
 import { useCart } from '@/context/CartContext';
 import { usePathname } from 'next/navigation';
+import SoharthLogo from '@/components/SoharthLogo';
 
 export default function Navbar() {
   const [scrolled, setScrolled]   = useState(false);
@@ -74,14 +75,14 @@ export default function Navbar() {
               <Link href="/products" className={`nav-link ${isActive('/products') && pathname === '/products' ? 'active' : ''}`}>Collections</Link>
             </div>
             <Link href="/" className="nav-logo-link mobile-flex" style={{ display: 'flex', alignItems: 'center', zIndex: 51, position: 'relative' }}>
-              <Image src="/logo.jpg" alt="Soharth" width={36} height={36} priority style={{ objectFit: 'contain', borderRadius: '50%' }} />
+              <SoharthLogo variant="image" height={22} />
             </Link>
           </div>
 
           {/* Center Area: Logo (Desktop) / Empty (Mobile) */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Link href="/" className="nav-logo-link desktop-only" style={{ display: 'flex', alignItems: 'center' }}>
-              <Image src="/logo.jpg" alt="Soharth" width={48} height={48} priority style={{ objectFit: 'contain', borderRadius: '50%', transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)' }} className="nav-logo-desktop" />
+              <SoharthLogo variant="image" height={28} className="nav-logo-desktop" />
             </Link>
           </div>
 

@@ -485,7 +485,7 @@ export default function AdminDashboard() {
           {/* Header */}
           <header style={{ marginBottom: '4rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '2rem' }}>
             <div>
-              <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em', display: 'block', marginBottom: '0.5rem' }}>SOHARTH MANAGEMENT CONSOLE</span>
+              <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em', display: 'block', marginBottom: '0.5rem' }}><span className="soharth-font">SOHARTH</span> MANAGEMENT CONSOLE</span>
               <h1 className="font-headline-lg" style={{ color: 'var(--primary)' }}>Control Relay</h1>
             </div>
             <div style={{ display: 'flex', border: '1px solid rgba(229,226,224,0.15)', padding: '4px', flexWrap: 'wrap', gap: '2px' }}>

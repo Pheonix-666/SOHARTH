@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import SoharthLogo from '@/components/SoharthLogo';
 
 export default function Footer() {
   return (
@@ -11,8 +12,8 @@ export default function Footer() {
     }}>
       <div className="container">
         {/* Brand Heading */}
-        <div className="font-headline-lg" style={{ letterSpacing: '0.3em', color: 'var(--primary)', marginBottom: '3rem' }}>
-          SOHARTH
+        <div style={{ marginBottom: '3rem' }}>
+          <SoharthLogo variant="image" height={44} />
         </div>
 
         <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 'var(--gutter)', marginBottom: '5rem' }}>
@@ -51,7 +52,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="footer-bottom" style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <span className="font-label-caps" style={{ opacity: 0.5, fontSize: '10px' }}>
-            © {new Date().getFullYear()} SOHARTH. CELESTIAL MINIMALISM.
+            © {new Date().getFullYear()} <span className="soharth-font">SOHARTH</span>. CELESTIAL MINIMALISM.
           </span>
           <div style={{ display: 'flex', gap: '2rem' }}>
             <a href="#" className="nav-link">Privacy Policy</a>

@@ -3,7 +3,7 @@
    Design Token System
    =========================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Manrope:wght@200;300;400;500;600;700;800&family=Orbitron:wght@700;800;900&family=Unbounded:wght@700;800;900&family=Syncopate:wght@700&display=swap');
 
 :root {
   /* Color Tokens */
@@ -26,6 +26,7 @@
   /* Typography */
   --font-display: var(--font-manrope), 'Helvetica Neue', sans-serif;
   --font-body: var(--font-manrope), 'Helvetica Neue', sans-serif;
+  --font-soharth: 'Orbitron', 'Unbounded', 'Syncopate', 'Helvetica Neue', sans-serif;
 
   /* Spacing */
   --margin-desktop: 64px;
