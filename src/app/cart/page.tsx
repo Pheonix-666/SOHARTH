@@ -81,7 +81,7 @@ export default function CartPage() {
       return 40;
     }
 
-    return 120;
+    return 80;
   };
 
   const shipping = getShippingCost();
@@ -438,8 +438,8 @@ export default function CartPage() {
                           value={address.country}
                           onChange={e => {
                             const newCountry = e.target.value;
-                            setAddress({ 
-                              ...address, 
+                            setAddress({
+                              ...address,
                               country: newCountry,
                               state: newCountry === 'India' ? 'Maharashtra' : ''
                             });
