@@ -14,7 +14,7 @@ export const products = [
     description: 'A masterclass in celestial minimalism. Engineered from carbon-infused stretch wool, designed to move like shadows across a lunar landscape. Features hidden magnetic closures and lunar-reflective lining.',
     collection: 'COLLECTION 01: NEBULA',
     material: '85% Virgin Wool, 12% Polyamide, 3% Elastane. Dry clean only.',
-    shipping: 'Complimentary express shipping on orders over $500. 30-day return window.',
+    shipping: 'Complimentary express shipping on all orders. 30-day return window.',
   },
   {
     id: '2',
@@ -31,7 +31,7 @@ export const products = [
     description: 'Close-up detail of a high-quality, textured cream-colored knit sweater. Soft and side-lit, highlighting the intricate waffle-weave texture of the organic cotton. Tactile luxury and comfort.',
     collection: 'COLLECTION 01: NEBULA',
     material: '100% Organic Cotton. Machine wash cold.',
-    shipping: 'Complimentary express shipping on orders over $500. 30-day return window.',
+    shipping: 'Complimentary express shipping on all orders. 30-day return window.',
   },
   {
     id: '3',
@@ -48,7 +48,7 @@ export const products = [
     description: 'Conceived during a winter transit through the Arctic Circle. Sharp, peak lapels inspired by the jagged horizon of lunar craters. Carbon-filament wool that absorbs light, creating the deepest black possible.',
     collection: 'COLLECTION 02: HORIZON',
     material: '70% Alpaca, 30% Merino Wool. Dry clean only.',
-    shipping: 'Complimentary express shipping on orders over $500. 30-day return window.',
+    shipping: 'Complimentary express shipping on all orders. 30-day return window.',
   },
   {
     id: '4',
@@ -65,7 +65,7 @@ export const products = [
     description: 'A cinematic piece for the cosmic traveler. Wide silhouette, obsidian drape, technical crepe that whispers as you move. The Eclipse is not worn — it is inhabited.',
     collection: 'COLLECTION 02: HORIZON',
     material: '100% Technical Crepe. Dry clean only.',
-    shipping: 'Complimentary express shipping on orders over $500. 30-day return window.',
+    shipping: 'Complimentary express shipping on all orders. 30-day return window.',
   },
   {
     id: '5',
@@ -82,7 +82,7 @@ export const products = [
     description: 'The essential foundation of the Soharth wardrobe. A slim silhouette in starlight silver silk, designed to layer beneath any piece in the collection.',
     collection: 'COLLECTION 01: NEBULA',
     material: '100% Mulberry Silk. Hand wash only.',
-    shipping: 'Complimentary express shipping on orders over $500. 30-day return window.',
+    shipping: 'Complimentary express shipping on all orders. 30-day return window.',
   },
   {
     id: '6',
@@ -99,6 +99,6 @@ export const products = [
     description: 'The Monolith Tee distills everything Soharth stands for into a single garment. Structured black wool jersey, architectural drop-shoulder, and invisible side seams.',
     collection: 'ESSENTIALS',
     material: '100% Wool Jersey. Machine wash cold, gentle cycle.',
-    shipping: 'Complimentary express shipping on orders over $500. 30-day return window.',
+    shipping: 'Complimentary express shipping on all orders. 30-day return window.',
   },
 ];

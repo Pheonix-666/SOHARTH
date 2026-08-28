@@ -62,32 +62,13 @@ export default function CartPage() {
   }, []);
 
   const getShippingCost = () => {
-    if (items.length === 0) return 0;
-
-    const countryClean = (address.country || '').trim().toLowerCase();
-    const stateClean = (address.state || '').trim().toLowerCase();
-
-    if (countryClean && countryClean !== 'india' && countryClean !== 'in') {
-      return 200;
-    }
-
-    const isMaharashtra =
-      stateClean === 'maharashtra' ||
-      stateClean === 'mh' ||
-      stateClean.includes('maharashtra') ||
-      (stateClean.length >= 3 && 'maharashtra'.includes(stateClean));
-
-    if (isMaharashtra) {
-      return 40;
-    }
-
-    return 80;
+    return 0;
   };
 
   const shipping = getShippingCost();
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-  const tax = subtotal * 0.05;
-  const total = subtotal + tax + shipping;
+  const tax = 0;
+  const total = subtotal;
 
   const handleCheckout = async () => {
     const { street, city, state, zip, country, phone, name, email } = address;
@@ -212,25 +193,17 @@ export default function CartPage() {
           {items.length > 0 && (
             <div className="void-shipping-indicator">
               <div className="void-shipping-text-row">
-                <span>VOID PRIORITY SHIPPING</span>
-                {subtotal >= 10000 ? (
-                  <span>UNLOCKED</span>
-                ) : (
-                  <span className="void-shipping-remaining">₹{(10000 - subtotal).toLocaleString('en-IN')} REMAINING</span>
-                )}
+                <span>CELESTIAL SHIPPING</span>
+                <span>FREE</span>
               </div>
               <div className="void-shipping-progress-track">
                 <div
                   className="void-shipping-progress-bar"
-                  style={{ width: `${Math.min(100, (subtotal / 10000) * 100)}%` }}
+                  style={{ width: '100%' }}
                 />
               </div>
               <p className="void-shipping-subtext">
-                {subtotal >= 10000 ? (
-                  "Priority Void Transit unlocked."
-                ) : (
-                  `Spend ₹${(10000 - subtotal).toLocaleString('en-IN')} more to unlock Priority Void Transit.`
-                )}
+                Complimentary delivery & zero tax applied on all orders.
               </p>
             </div>
           )}
@@ -506,8 +479,8 @@ export default function CartPage() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2.5rem' }}>
                     {[
                       { label: 'Subtotal', value: `₹${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}` },
-                      { label: 'Celestial Shipping', value: `₹${shipping.toFixed(2)}` },
-                      { label: 'Tax (Estimated)', value: `₹${tax.toFixed(2)}` },
+                      { label: 'Celestial Shipping', value: 'FREE' },
+                      { label: 'Tax (Estimated)', value: '₹0.00' },
                     ].map(row => (
                       <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span className="font-body-md" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{row.label}</span>

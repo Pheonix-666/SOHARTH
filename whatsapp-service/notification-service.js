@@ -87,7 +87,7 @@ ${itemLines}
 
 💰 *Order Summary*
 Subtotal: ₹${subtotalStr}
-Tax (5%): ₹${taxStr}
+Tax: ₹${taxStr}
 Shipping: ₹${shippingStr}
 *Total: ₹${totalStr}*
 
