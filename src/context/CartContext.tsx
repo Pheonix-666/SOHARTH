@@ -36,13 +36,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     async function initCart() {
       // 1. Get local cart
       let localCart: CartItem[] = [];
-      const stored = localStorage.getItem('soharth_cart');
-      if (stored) {
-        try {
+      try {
+        const stored = localStorage.getItem('soharth_cart');
+        if (stored) {
           localCart = JSON.parse(stored);
-        } catch (e) {
-          console.error('Failed to parse cart from localStorage:', e);
         }
+      } catch (e) {
+        console.warn('Failed to access or parse cart from localStorage:', e);
       }
 
       setCart(localCart);
@@ -57,8 +57,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Save cart to localStorage and DB whenever it changes
   useEffect(() => {
     if (isHydrated && initialLoadDone.current) {
-      // 1. Always save to local
-      localStorage.setItem('soharth_cart', JSON.stringify(cart));
+      // 1. Always save to local safely (Safari private browsing protection)
+      try {
+        localStorage.setItem('soharth_cart', JSON.stringify(cart));
+      } catch (e) {
+        console.warn('Unable to access localStorage:', e);
+      }
     }
   }, [cart, isHydrated]);
 
