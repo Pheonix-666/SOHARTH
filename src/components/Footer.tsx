@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import SoharthLogo from '@/components/SoharthLogo';
 
 export default function Footer() {
   return (
@@ -12,8 +11,8 @@ export default function Footer() {
     }}>
       <div className="container">
         {/* Brand Heading */}
-        <div style={{ marginBottom: '3rem' }}>
-          <SoharthLogo variant="image" height={44} />
+        <div className="font-headline-lg" style={{ letterSpacing: '0.3em', color: 'var(--primary)', marginBottom: '3rem' }}>
+          SOHARTH
         </div>
 
         <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 'var(--gutter)', marginBottom: '5rem' }}>
