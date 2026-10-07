@@ -5,6 +5,7 @@ import { useState, use, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
+import { getProductPricing } from '@/lib/pricing';
 
 export default function ProductDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -129,63 +130,162 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
           <div className="product-info-sticky" style={{ position: 'sticky', top: '140px', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
             {/* Title Block */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.3em' }}>
-                {product.collection}
-              </span>
-              <h1 className="font-headline-lg" style={{ lineHeight: 1.1 }}>{product.name}</h1>
-              <p className="font-body-lg desktop-only" style={{ color: 'var(--on-surface-variant)' }}>{product.description}</p>
-              <div className="font-headline-md" style={{ paddingTop: '0.5rem' }}>
-                ₹{product.price.toLocaleString()}
-              </div>
-            </div>
+            {(() => {
+              const pricing = getProductPricing(product);
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.3em' }}>
+                      {product.collection || 'COLLECTION 01: SOHARTH'}
+                    </span>
+                    <span style={{
+                      background: 'linear-gradient(135deg, rgba(235, 195, 75, 0.25) 0%, rgba(200, 150, 40, 0.15) 100%)',
+                      border: '1px solid rgba(235, 195, 75, 0.55)',
+                      color: '#fde047',
+                      fontSize: '10px',
+                      fontWeight: 800,
+                      letterSpacing: '0.1em',
+                      padding: '3px 8px',
+                      borderRadius: '5px',
+                      textTransform: 'uppercase',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      boxShadow: '0 2px 10px rgba(235, 195, 75, 0.2)'
+                    }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>local_fire_department</span>
+                      {pricing.discountPercent}% OFF OFFER
+                    </span>
+                  </div>
+
+                  <h1 className="font-headline-lg" style={{ lineHeight: 1.1, fontSize: 'clamp(2rem, 3.5vw, 2.75rem)' }}>{product.name}</h1>
+                  <p className="font-body-lg desktop-only" style={{ color: 'var(--on-surface-variant)', lineHeight: 1.7 }}>{product.description}</p>
+                  
+                  {/* Luxury Price Container */}
+                  <div style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '12px',
+                    padding: '1.25rem 1.5rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.75rem',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', flexWrap: 'wrap' }}>
+                      <span className="font-headline-md" style={{ color: '#fff', fontSize: '32px', fontWeight: 800, letterSpacing: '-0.02em' }}>
+                        ₹{pricing.discountedPrice.toLocaleString()}
+                      </span>
+                      <span style={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '20px', textDecoration: 'line-through' }}>
+                        ₹{pricing.originalPrice.toLocaleString()}
+                      </span>
+                      <span style={{
+                        backgroundColor: 'rgba(52, 211, 153, 0.15)',
+                        border: '1px solid rgba(52, 211, 153, 0.4)',
+                        color: '#34d399',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        letterSpacing: '0.08em',
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        textTransform: 'uppercase'
+                      }}>
+                        SAVE ₹{pricing.savings.toLocaleString()}
+                      </span>
+                    </div>
+
+                    {/* Delivery & Tax Perks */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.06)', paddingTop: '0.75rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--on-surface-variant)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '14px', color: '#fde047' }}>local_shipping</span>
+                        ₹40 Delivery in Maharashtra (₹80 All-India)
+                      </span>
+                      <span style={{ fontSize: '11px', color: 'var(--on-surface-variant)', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '14px', color: '#34d399' }}>check_circle</span>
+                        3% GST at Checkout
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
             {/* Color Selector */}
             {product?.colors && product.colors.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <span className="font-label-caps">SELECT COLOR</span>
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <span className="font-label-caps" style={{ letterSpacing: '0.15em', fontSize: '11px' }}>
+                  SELECT COLOR: <strong style={{ color: '#fff' }}>{selectedColor}</strong>
+                </span>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   {product.colors.map((color: any) => (
                     <button
                       key={color.name}
                       onClick={() => setSelectedColor(color.name)}
                       title={color.name}
                       style={{
-                        width: '36px', height: '36px', borderRadius: '50%',
-                        backgroundColor: color.hex || '#000',
-                        border: selectedColor === color.name ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.2)',
-                        padding: '2px', backgroundClip: 'content-box',
-                        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)', cursor: 'pointer',
-                        transform: selectedColor === color.name ? 'scale(1.15)' : 'scale(1)',
+                        width: '44px',
+                        height: '44px',
+                        minWidth: '44px',
+                        minHeight: '44px',
+                        borderRadius: '50%',
+                        backgroundColor: 'transparent',
+                        border: selectedColor === color.name ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        padding: 0,
+                        transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                        transform: selectedColor === color.name ? 'scale(1.1)' : 'scale(1)',
+                        boxShadow: selectedColor === color.name ? '0 0 12px rgba(255,255,255,0.3)' : 'none',
                       }}
-                    />
+                    >
+                      <span style={{
+                        width: '30px',
+                        height: '30px',
+                        borderRadius: '50%',
+                        backgroundColor: color.hex || '#000',
+                        display: 'block',
+                      }} />
+                    </button>
                   ))}
                 </div>
               </div>
             )}
 
             {/* Size Selector */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                <span className="font-label-caps">SELECT SIZE</span>
-                <a href="#" className="font-caption" style={{ textDecoration: 'underline', textUnderlineOffset: '4px', opacity: 0.6, transition: 'opacity 0.3s' }}>
-                  Size Guide
-                </a>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="font-label-caps" style={{ fontWeight: 700, letterSpacing: '0.15em' }}>SELECT SIZE</span>
+                  <span style={{ fontSize: '11px', color: '#fde047', backgroundColor: 'rgba(253, 224, 71, 0.1)', padding: '2px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    {selectedSize}
+                  </span>
+                </div>
+                <span className="font-caption" style={{ opacity: 0.6, fontSize: '11px' }}>
+                  Standard Fit
+                </span>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.6rem' }}>
                 {sizes.map(size => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
                     className="font-label-caps size-btn"
                     style={{
-                      padding: '1rem 0',
-                      backgroundColor: selectedSize === size ? 'var(--primary)' : 'transparent',
+                      minHeight: '52px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: selectedSize === size ? 'var(--primary)' : 'rgba(255, 255, 255, 0.05)',
                       color: selectedSize === size ? 'var(--on-primary)' : 'var(--primary)',
-                      border: selectedSize === size ? '1px solid var(--primary)' : '1px solid rgba(201,198,194,0.2)',
-                      borderRadius: '8px',
-                      transform: selectedSize === size ? 'translateY(-2px)' : 'translateY(0)',
-                      boxShadow: selectedSize === size ? '0 4px 12px rgba(255,255,255,0.1)' : 'none',
-                      transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                      border: selectedSize === size ? '2px solid var(--primary)' : '1px solid rgba(255, 255, 255, 0.15)',
+                      borderRadius: '12px',
+                      fontSize: '14px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      transform: selectedSize === size ? 'scale(1.02)' : 'scale(1)',
+                      boxShadow: selectedSize === size ? '0 4px 16px rgba(255,255,255,0.25)' : 'none',
+                      transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                      touchAction: 'manipulation',
                     }}
                   >
                     {size}
@@ -194,48 +294,67 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               </div>
             </div>
 
-            {/* CTA Buttons */}
+            {/* CTA Buttons (Desktop & Sticky Mobile) */}
             <div className="mobile-sticky-cta">
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <button
-                  onClick={() => {
-                    const colorImage = selectedColorObj?.images?.[0] || product.image;
-                    addToCart({
-                      id: product.id,
-                      name: product.name,
-                      subtitle: product.subtitle,
-                      price: product.price,
-                      image: colorImage,
-                    }, selectedSize, selectedColor || undefined);
-                    setIsAdded(true);
-                    setTimeout(() => setIsAdded(false), 2000);
-                  }}
-                  className="btn-primary add-to-bag-btn"
-                  style={{
-                    width: '100%',
-                    padding: '1.5rem',
-                    fontSize: '12px',
-                    letterSpacing: '0.2em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.75rem',
-                    backgroundColor: isAdded ? 'var(--on-surface-variant)' : 'var(--primary)',
-                    transition: 'background-color 0.3s ease',
-                  }}
-                >
-                  {isAdded ? 'ADDED TO BAG' : 'ADD TO BAG'}
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-                    {isAdded ? 'check_circle' : 'shopping_bag'}
-                  </span>
-                </button>
-                <button
-                  className="btn-ghost desktop-only"
-                  style={{ width: '100%', padding: '1.5rem', fontSize: '12px', letterSpacing: '0.2em' }}
-                >
-                  Add to Wishlist
-                </button>
-              </div>
+              {(() => {
+                const pricing = getProductPricing(product);
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', width: '100%' }}>
+                    {/* Mobile Price & Size summary on the sticky bar */}
+                    <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', minWidth: '90px' }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                        <span style={{ fontSize: '18px', fontWeight: 800, color: '#fff' }}>
+                          ₹{pricing.discountedPrice.toLocaleString()}
+                        </span>
+                        <span style={{ fontSize: '12px', textDecoration: 'line-through', color: 'rgba(255,255,255,0.4)' }}>
+                          ₹{pricing.originalPrice.toLocaleString()}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '10px', color: '#fde047', fontWeight: 700, letterSpacing: '0.05em' }}>
+                        SIZE: {selectedSize} • {pricing.discountPercent}% OFF
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        const colorImage = selectedColorObj?.images?.[0] || product.image;
+                        addToCart({
+                          id: product.id,
+                          name: product.name,
+                          subtitle: product.subtitle,
+                          price: pricing.discountedPrice,
+                          image: colorImage,
+                        }, selectedSize, selectedColor || undefined);
+                        setIsAdded(true);
+                        setTimeout(() => setIsAdded(false), 2000);
+                      }}
+                      className="btn-primary add-to-bag-btn"
+                      style={{
+                        flex: 1,
+                        minHeight: '52px',
+                        padding: '0.85rem 1.5rem',
+                        fontSize: '12px',
+                        fontWeight: 800,
+                        letterSpacing: '0.15em',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.75rem',
+                        backgroundColor: isAdded ? '#10b981' : 'var(--primary)',
+                        color: isAdded ? '#fff' : 'var(--on-primary)',
+                        borderRadius: '10px',
+                        boxShadow: '0 6px 20px rgba(0,0,0,0.4)',
+                        transition: 'background-color 0.3s ease, transform 0.15s ease',
+                      }}
+                    >
+                      {isAdded ? 'ADDED TO BAG' : 'ADD TO BAG'}
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+                        {isAdded ? 'check_circle' : 'shopping_bag'}
+                      </span>
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Mobile Description */}
@@ -318,20 +437,33 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
               <Link href="/products" className="btn-primary" style={{ padding: '0.75rem 1.5rem', letterSpacing: '0.1em', whiteSpace: 'nowrap', flexShrink: 0 }}>View All</Link>
             </div>
             <div style={{ display: 'flex', gap: 'var(--gutter)', overflowX: 'auto', paddingBottom: '1rem' }} className="hide-scrollbar">
-              {related.map(p => (
-                <Link href={`/products/${p.id}`} key={p.id} className="product-card scrolling-product-card">
-                  <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container)' }}>
-                    <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <h5 className="font-label-caps" style={{ marginBottom: '0.25rem', transition: 'color 0.3s' }}>{p.name}</h5>
-                      <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>{p.subtitle}</p>
+              {related.map(p => {
+                const pricing = getProductPricing(p);
+                return (
+                  <Link href={`/products/${p.id}`} key={p.id} className="product-card scrolling-product-card" style={{ position: 'relative' }}>
+                    <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container)' }}>
+                      <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
+                      <span style={{
+                        position: 'absolute', top: '10px', right: '10px',
+                        backgroundColor: 'rgba(212, 175, 55, 0.2)', border: '1px solid rgba(212, 175, 55, 0.45)',
+                        color: '#f3d978', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '3px'
+                      }}>
+                        {pricing.discountPercent}% OFF
+                      </span>
                     </div>
-                    <span className="font-body-md">₹{p.price.toLocaleString()}</span>
-                  </div>
-                </Link>
-              ))}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <div>
+                        <h5 className="font-label-caps" style={{ marginBottom: '0.25rem', transition: 'color 0.3s' }}>{p.name}</h5>
+                        <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>{p.subtitle}</p>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+                        <span className="font-body-md" style={{ fontWeight: 700, color: 'var(--primary)' }}>₹{pricing.discountedPrice.toLocaleString()}</span>
+                        <span style={{ color: 'var(--on-surface-variant)', fontSize: '11px', textDecoration: 'line-through', opacity: 0.6 }}>₹{pricing.originalPrice.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -348,20 +480,33 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                 <Link href={`/products?category=${product.category}`} className="btn-primary" style={{ padding: '0.75rem 1.5rem', letterSpacing: '0.1em', whiteSpace: 'nowrap', flexShrink: 0 }}>View All</Link>
               </div>
               <div style={{ display: 'flex', gap: 'var(--gutter)', overflowX: 'auto', paddingBottom: '1rem' }} className="hide-scrollbar">
-                {sameCategory.map(p => (
-                  <Link href={`/products/${p.id}`} key={p.id} className="product-card scrolling-product-card">
-                    <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container)' }}>
-                      <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div>
-                        <h5 className="font-label-caps" style={{ marginBottom: '0.25rem', transition: 'color 0.3s' }}>{p.name}</h5>
-                        <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>{p.subtitle}</p>
+                {sameCategory.map(p => {
+                  const pricing = getProductPricing(p);
+                  return (
+                    <Link href={`/products/${p.id}`} key={p.id} className="product-card scrolling-product-card" style={{ position: 'relative' }}>
+                      <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container)' }}>
+                        <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
+                        <span style={{
+                          position: 'absolute', top: '10px', right: '10px',
+                          backgroundColor: 'rgba(212, 175, 55, 0.2)', border: '1px solid rgba(212, 175, 55, 0.45)',
+                          color: '#f3d978', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '3px'
+                        }}>
+                          {pricing.discountPercent}% OFF
+                        </span>
                       </div>
-                      <span className="font-body-md">₹{p.price.toLocaleString()}</span>
-                    </div>
-                  </Link>
-                ))}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <div>
+                          <h5 className="font-label-caps" style={{ marginBottom: '0.25rem', transition: 'color 0.3s' }}>{p.name}</h5>
+                          <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>{p.subtitle}</p>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+                          <span className="font-body-md" style={{ fontWeight: 700, color: 'var(--primary)' }}>₹{pricing.discountedPrice.toLocaleString()}</span>
+                          <span style={{ color: 'var(--on-surface-variant)', fontSize: '11px', textDecoration: 'line-through', opacity: 0.6 }}>₹{pricing.originalPrice.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </section>

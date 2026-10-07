@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
+import { getProductPricing } from '@/lib/pricing';
 
 interface Product {
   id: string | number;
@@ -62,13 +63,22 @@ export default function CartPage() {
   }, []);
 
   const getShippingCost = () => {
-    return 0;
+    if (items.length === 0) return 0;
+    const country = (address.country || 'India').trim().toLowerCase();
+    if (country !== 'india') {
+      return 500;
+    }
+    const state = (address.state || '').trim().toLowerCase();
+    if (state === 'maharashtra') {
+      return 40;
+    }
+    return 80;
   };
 
   const shipping = getShippingCost();
   const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-  const tax = 0;
-  const total = subtotal;
+  const tax = Math.round((subtotal * 0.03) * 100) / 100;
+  const total = subtotal + tax + shipping;
 
   const handleCheckout = async () => {
     const { street, city, state, zip, country, phone, name, email } = address;
@@ -193,8 +203,10 @@ export default function CartPage() {
           {items.length > 0 && (
             <div className="void-shipping-indicator">
               <div className="void-shipping-text-row">
-                <span>CELESTIAL SHIPPING</span>
-                <span>FREE</span>
+                <span>ESTIMATED DELIVERY</span>
+                <span style={{ color: 'var(--primary)', fontWeight: 600 }}>
+                  ₹{shipping} ({address.country?.toLowerCase() !== 'india' ? 'International' : address.state})
+                </span>
               </div>
               <div className="void-shipping-progress-track">
                 <div
@@ -203,7 +215,7 @@ export default function CartPage() {
                 />
               </div>
               <p className="void-shipping-subtext">
-                Complimentary delivery & zero tax applied on all orders.
+                Standard Shipping: ₹40 (Maharashtra) • ₹80 (Other Indian States) • ₹500 (International) | 3% GST on subtotal
               </p>
             </div>
           )}
@@ -247,7 +259,7 @@ export default function CartPage() {
                               className="void-cart-item-delete"
                               aria-label="Remove item"
                             >
-                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+                              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
                             </button>
                           </div>
 
@@ -281,7 +293,7 @@ export default function CartPage() {
                             className="void-qty-btn"
                             aria-label="Decrease quantity"
                           >
-                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>remove</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>remove</span>
                           </button>
                           <span className="void-qty-value">{String(item.qty).padStart(2, '0')}</span>
                           <button
@@ -289,7 +301,7 @@ export default function CartPage() {
                             className="void-qty-btn"
                             aria-label="Increase quantity"
                           >
-                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
+                            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
                           </button>
                         </div>
 
@@ -299,6 +311,7 @@ export default function CartPage() {
                             showToast(`${item.name} saved for later`, 'success');
                           }}
                           className="void-save-link"
+                          style={{ minHeight: '44px', display: 'inline-flex', alignItems: 'center', padding: '0 8px' }}
                         >
                           SAVE FOR LATER
                         </button>
@@ -478,9 +491,12 @@ export default function CartPage() {
                   <h2 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '2rem', letterSpacing: '0.3em', textTransform: 'uppercase' }}>Order Summary</h2>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2.5rem' }}>
                     {[
-                      { label: 'Subtotal', value: `₹${subtotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}` },
-                      { label: 'Celestial Shipping', value: 'FREE' },
-                      { label: 'Tax (Estimated)', value: '₹0.00' },
+                      { label: 'Subtotal', value: `₹${subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
+                      {
+                        label: `Shipping (${(address.country || 'India').toLowerCase() !== 'india' ? 'International' : (address.state || 'Maharashtra')})`,
+                        value: `₹${shipping.toFixed(2)}`
+                      },
+                      { label: 'Estimated Tax (3% GST)', value: `₹${tax.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
                     ].map(row => (
                       <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span className="font-body-md" style={{ color: 'var(--on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{row.label}</span>
@@ -489,7 +505,7 @@ export default function CartPage() {
                     ))}
                     <div style={{ borderTop: '1px solid rgba(71,71,65,0.2)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                       <span className="font-label-caps" style={{ color: 'var(--primary)' }}>ESTIMATED TOTAL</span>
-                      <span className="font-headline-md" style={{ color: 'var(--primary)' }}>₹{total.toFixed(2)}</span>
+                      <span className="font-headline-md" style={{ color: 'var(--primary)' }}>₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                   </div>
 
@@ -539,30 +555,42 @@ export default function CartPage() {
               COMPLETE YOUR ENSEMBLE
             </h3>
             <div className="cross-sell-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--gutter)' }}>
-              {crossSell.map(p => (
-                <Link href={`/products/${p.id}`} key={p.id} className="product-card" style={{ display: 'block' }}>
-                  <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1rem', backgroundColor: 'var(--surface-container)' }}>
-                    <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
-                    <button
-                      className="material-symbols-outlined quick-add-btn"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        addToCart({ ...p, id: String(p.id), subtitle: p.subtitle ?? '' }, 'OS');
-                        showToast(`${p.name} added to cart`, 'success');
-                      }}
-
-                      style={{
-                        position: 'absolute', bottom: '1rem', right: '1rem',
-                        backgroundColor: 'rgba(20,19,19,0.8)', backdropFilter: 'blur(8px)',
-                        padding: '0.75rem', color: 'var(--primary)', fontSize: '20px',
-                        opacity: 0, transition: 'opacity 0.3s',
-                      }}
-                    >add_shopping_cart</button>
-                  </div>
-                  <h4 className="font-body-md" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{p.name}</h4>
-                  <p className="font-label-caps" style={{ color: 'var(--on-surface-variant)' }}>₹{p.price.toLocaleString()}</p>
-                </Link>
-              ))}
+              {crossSell.map(p => {
+                const pricing = getProductPricing(p);
+                return (
+                  <Link href={`/products/${p.id}`} key={p.id} className="product-card" style={{ display: 'block', position: 'relative' }}>
+                    <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1rem', backgroundColor: 'var(--surface-container)' }}>
+                      <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
+                      <span style={{
+                        position: 'absolute', top: '8px', right: '8px',
+                        backgroundColor: 'rgba(212, 175, 55, 0.2)', border: '1px solid rgba(212, 175, 55, 0.4)',
+                        color: '#f3d978', fontSize: '8px', fontWeight: 700, padding: '2px 6px', borderRadius: '3px'
+                      }}>
+                        {pricing.discountPercent}% OFF
+                      </span>
+                      <button
+                        className="material-symbols-outlined quick-add-btn"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          addToCart({ ...p, id: String(p.id), subtitle: p.subtitle ?? '', price: pricing.discountedPrice }, 'OS');
+                          showToast(`${p.name} added to cart`, 'success');
+                        }}
+                        style={{
+                          position: 'absolute', bottom: '1rem', right: '1rem',
+                          backgroundColor: 'rgba(20,19,19,0.8)', backdropFilter: 'blur(8px)',
+                          padding: '0.75rem', color: 'var(--primary)', fontSize: '20px',
+                          opacity: 0, transition: 'opacity 0.3s',
+                        }}
+                      >add_shopping_cart</button>
+                    </div>
+                    <h4 className="font-body-md" style={{ color: 'var(--primary)', marginBottom: '0.25rem' }}>{p.name}</h4>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                      <span className="font-label-caps" style={{ color: 'var(--primary)', fontWeight: 700 }}>₹{pricing.discountedPrice.toLocaleString()}</span>
+                      <span style={{ color: 'var(--on-surface-variant)', fontSize: '11px', textDecoration: 'line-through', opacity: 0.6 }}>₹{pricing.originalPrice.toLocaleString()}</span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
 

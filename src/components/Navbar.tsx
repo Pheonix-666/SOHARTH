@@ -114,15 +114,28 @@ export default function Navbar() {
               className="nav-burger mobile-only"
               aria-label="Toggle navigation"
               onClick={() => setMenuOpen(o => !o)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', zIndex: 51, position: 'relative' }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '10px',
+                minWidth: '48px',
+                minHeight: '48px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 51,
+                position: 'relative',
+                touchAction: 'manipulation'
+              }}
             >
-              <div style={{ position: 'relative', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ position: 'relative', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                  <span className="material-symbols-outlined" style={{ 
-                    position: 'absolute', color: 'var(--primary)', fontSize: '28px',
+                    position: 'absolute', color: 'var(--primary)', fontSize: '30px',
                     opacity: menuOpen ? 0 : 1, transform: menuOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
                  }}>menu</span>
                  <span className="material-symbols-outlined" style={{ 
-                    position: 'absolute', color: 'var(--primary)', fontSize: '28px',
+                    position: 'absolute', color: 'var(--primary)', fontSize: '30px',
                     opacity: menuOpen ? 1 : 0, transform: menuOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
                  }}>close</span>
               </div>
@@ -136,48 +149,116 @@ export default function Navbar() {
         className="mobile-drawer"
         style={{
           position: 'fixed', inset: 0, zIndex: 49,
-          backgroundColor: 'rgba(20,19,19,0.98)',
-          backdropFilter: 'blur(32px)',
-          WebkitBackdropFilter: 'blur(32px)',
+          backgroundColor: 'rgba(14,13,13,0.98)',
+          backdropFilter: 'blur(36px)',
+          WebkitBackdropFilter: 'blur(36px)',
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
+          alignItems: 'center', justifyContent: 'space-between',
+          padding: '6rem 1.5rem calc(2rem + env(safe-area-inset-bottom)) 1.5rem',
           opacity: menuOpen ? 1 : 0,
           pointerEvents: menuOpen ? 'auto' : 'none',
-          transition: 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+          transition: 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
         <div style={{
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', gap: '2.5rem',
+          alignItems: 'center', gap: '0.75rem',
+          width: '100%', maxWidth: '340px',
           transform: menuOpen ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+          transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         }}>
           {[
-            { href: '/',                    label: 'Home' },
-            { href: '/products?category=ethnic', label: 'Ethnic Collection' },
-            { href: '/products?category=new', label: 'New Arrivals' },
-            { href: '/products',            label: 'All Collections' },
-            { href: '/about',               label: 'Our Story' },
+            { href: '/', label: 'Home', icon: 'home' },
+            { href: '/products?category=ethnic', label: 'Ethnic Collection', icon: 'auto_awesome' },
+            { href: '/products?category=new', label: 'New Arrivals', icon: 'local_fire_department' },
+            { href: '/products', label: 'All Collections', icon: 'grid_view' },
+            { href: '/about', label: 'Our Story', icon: 'history_edu' },
+            { href: '/cart', label: 'My Bag', icon: 'shopping_bag', badge: cartCount },
           ].map((item, i) => (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setMenuOpen(false)}
-              className={`font-headline-md mobile-nav-link ${isActive(item.href) ? 'active' : ''}`}
+              className="mobile-nav-link"
               style={{
-                color: isActive(item.href) ? 'var(--primary)' : 'var(--on-surface-variant)',
-                letterSpacing: '0.25em',
+                width: '100%',
+                minHeight: '52px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0.85rem 1.25rem',
+                borderRadius: '12px',
+                backgroundColor: isActive(item.href) ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.02)',
+                border: '1px solid',
+                borderColor: isActive(item.href) ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.05)',
+                color: isActive(item.href) ? '#ffffff' : 'var(--on-surface-variant)',
+                letterSpacing: '0.15em',
                 textTransform: 'uppercase',
-                fontSize: '22px',
-                position: 'relative',
+                fontSize: '14px',
+                fontWeight: 600,
+                textDecoration: 'none',
                 opacity: menuOpen ? 1 : 0,
-                transform: menuOpen ? 'translateY(0)' : 'translateY(20px)',
-                transition: `opacity 0.4s ease ${0.1 + i * 0.05}s, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${0.1 + i * 0.05}s, color 0.3s ease, letter-spacing 0.3s ease`,
+                transform: menuOpen ? 'translateY(0)' : 'translateY(15px)',
+                transition: `opacity 0.3s ease ${0.05 + i * 0.04}s, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) ${0.05 + i * 0.04}s, background 0.2s`,
               }}
             >
-              {item.label}
+              <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '20px', color: isActive(item.href) ? '#fde047' : 'inherit' }}>
+                  {item.icon}
+                </span>
+                {item.label}
+              </span>
+              {item.badge !== undefined && item.badge > 0 && (
+                <span style={{
+                  backgroundColor: '#fde047',
+                  color: '#000',
+                  fontSize: '10px',
+                  fontWeight: 800,
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                }}>
+                  {item.badge}
+                </span>
+              )}
             </Link>
           ))}
+        </div>
+
+        {/* Drawer Footer with Instagram */}
+        <div style={{
+          width: '100%', maxWidth: '340px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem',
+          paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.08)',
+          opacity: menuOpen ? 1 : 0,
+          transition: 'opacity 0.4s ease 0.3s',
+        }}>
+          <a
+            href="https://www.instagram.com/soharth.in/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              width: '100%',
+              minHeight: '48px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '24px',
+              color: '#fff',
+              fontSize: '12px',
+              fontWeight: 600,
+              letterSpacing: '0.1em',
+              textDecoration: 'none',
+            }}
+          >
+            <span>Follow @soharth.in on Instagram</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>open_in_new</span>
+          </a>
+          <span style={{ fontSize: '10px', color: 'var(--on-surface-variant)', letterSpacing: '0.2em' }}>
+            CELESTIAL APPAREL CO.
+          </span>
         </div>
       </div>
     </>

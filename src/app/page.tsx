@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
+import { getProductPricing } from '@/lib/pricing';
 
 /* ─── COUNTER ITEM ─── */
 function CounterItem({ icon, end, suffix, label, decimal }: { icon: string; end: number; suffix: string; label: string; decimal?: boolean }) {
@@ -393,20 +394,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ─── INTERACTIVE MARQUEE ─── */}
-        <section className="marquee-container reveal-on-scroll">
-          <div className="marquee-content">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} style={{ display: 'contents' }}>
-                <span className="marquee-item">CELESTIAL <span className="material-symbols-outlined marquee-star">flare</span></span>
-                <span className="marquee-item">MINIMALIST <span className="material-symbols-outlined marquee-star">flare</span></span>
-                <span className="marquee-item">PREMIUM <span className="material-symbols-outlined marquee-star">flare</span></span>
-                <span className="marquee-item">ARCHITECTURAL <span className="material-symbols-outlined marquee-star">flare</span></span>
-              </div>
-            ))}
-          </div>
-        </section>
-
         {/* ─── BRAND STATEMENT ─── */}
         <section className="reveal-on-scroll" style={{ padding: 'calc(var(--section-gap) / 2) 0 var(--section-gap) 0' }}>
           <div className="container brand-statement" style={{ maxWidth: '760px', textAlign: 'center' }}>
@@ -440,108 +427,151 @@ export default function Home() {
             {/* Bento Grid — Row 1: hero (8 cols) + 2 small (4 cols each) */}
             <div className="product-grid home-bento-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 'var(--gutter)' }}>
               {/* Hero Card */}
-              {featured[0] && (
-                <Link
-                  href={`/products/${featured[0].id}`}
-                  className="product-card product-card-enhanced featured-card"
-                  style={{ gridColumn: 'span 8', gridRow: 'span 1', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--surface-container-low)', borderRadius: '16px', minHeight: '560px' }}
-                >
-                  <button
-                    className="quick-add-hover"
-                    style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--surface-container)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      addToCart(featured[0], 'OS');
-                      showToast(`${featured[0].name} added to cart`, 'success');
+              {featured[0] && (() => {
+                const p0 = featured[0];
+                const pricing0 = getProductPricing(p0);
+                return (
+                  <Link
+                    href={`/products/${p0.id}`}
+                    className="product-card product-card-enhanced featured-card"
+                    style={{ gridColumn: 'span 8', gridRow: 'span 1', position: 'relative', overflow: 'hidden', backgroundColor: 'var(--surface-container-low)', borderRadius: '16px', minHeight: '560px' }}
+                  >
+                    <span style={{
+                      position: 'absolute', top: '16px', left: '16px',
+                      backgroundColor: 'rgba(212, 175, 55, 0.2)', border: '1px solid rgba(212, 175, 55, 0.45)',
+                      color: '#f3d978', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em',
+                      padding: '4px 10px', borderRadius: '4px', zIndex: 20, textTransform: 'uppercase'
+                    }}>
+                      {pricing0.discountPercent}% OFF • SPECIAL OFFER
+                    </span>
+                    <button
+                      className="quick-add-hover"
+                      style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--surface-container)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        addToCart({ ...p0, price: pricing0.discountedPrice }, 'OS');
+                        showToast(`${p0.name} added to cart`, 'success');
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--primary)' }}>add_shopping_cart</span>
+                    </button>
+                    <div className="card-image" style={{ height: '100%', borderRadius: '16px' }}>
+                      <Image src={p0.image} alt={p0.name} fill style={{ objectFit: 'cover', transition: 'transform 1s ease' }} />
+                    </div>
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%)',
+                      display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                      padding: '3rem', opacity: 0, transition: 'opacity 0.5s ease',
                     }}
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--primary)' }}>add_shopping_cart</span>
-                  </button>
-                  <div className="card-image" style={{ height: '100%', borderRadius: '16px' }}>
-                    <Image src={featured[0].image} alt={featured[0].name} fill style={{ objectFit: 'cover', transition: 'transform 1s ease' }} />
-                  </div>
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%)',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-                    padding: '3rem', opacity: 0, transition: 'opacity 0.5s ease',
-                  }}
-                    onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                    onMouseLeave={e => (e.currentTarget.style.opacity = '0')}
-                  >
-                    <h3 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '1rem' }}>{featured[0].name}</h3>
-                    <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', maxWidth: '380px', marginBottom: '1.5rem' }}>
-                      {featured[0].description?.slice(0, 100)}...
-                    </p>
-                    <button className="btn-primary" style={{ width: 'fit-content' }}>Quick View</button>
-                  </div>
-                </Link>
-              )}
+                      onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                      onMouseLeave={e => (e.currentTarget.style.opacity = '0')}
+                    >
+                      <h3 className="font-headline-md" style={{ color: 'var(--primary)', marginBottom: '0.5rem' }}>{p0.name}</h3>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '1rem' }}>
+                        <span className="font-headline-md" style={{ color: 'var(--primary)', fontSize: '20px', fontWeight: 700 }}>₹{pricing0.discountedPrice.toLocaleString()}</span>
+                        <span style={{ color: 'var(--on-surface-variant)', fontSize: '15px', textDecoration: 'line-through', opacity: 0.7 }}>₹{pricing0.originalPrice.toLocaleString()}</span>
+                      </div>
+                      <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', maxWidth: '380px', marginBottom: '1.5rem' }}>
+                        {p0.description?.slice(0, 100)}...
+                      </p>
+                      <button className="btn-primary" style={{ width: 'fit-content' }}>Quick View</button>
+                    </div>
+                  </Link>
+                );
+              })()}
 
               {/* Side cards: products 2 & 3 */}
-              {featured.slice(1, 3).map(p => (
-                <Link
-                  href={`/products/${p.id}`}
-                  key={p.id}
-                  className="product-card product-card-enhanced"
-                  style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', position: 'relative' }}
-                >
-                  <button
-                    className="quick-add-hover"
-                    style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--surface-container)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      addToCart(p, 'OS');
-                      showToast(`${p.name} added to cart`, 'success');
-                    }}
+              {featured.slice(1, 3).map(p => {
+                const pricing = getProductPricing(p);
+                return (
+                  <Link
+                    href={`/products/${p.id}`}
+                    key={p.id}
+                    className="product-card product-card-enhanced"
+                    style={{ gridColumn: 'span 4', display: 'flex', flexDirection: 'column', position: 'relative' }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--primary)' }}>add_shopping_cart</span>
-                  </button>
-                  <div className="card-image" style={{ flex: 1, position: 'relative', minHeight: '260px', borderRadius: '16px', overflow: 'hidden' }}>
-                    <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
-                  </div>
-                  <div style={{ paddingTop: '1.25rem' }}>
-                    <h3 className="font-headline-md" style={{ marginBottom: '0.5rem' }}>{p.name}</h3>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>₹{p.price.toLocaleString()}</span>
-                      <span className="font-label-caps" style={{ opacity: 0.4 }}>{p.subtitle?.split('/')[1]?.trim()}</span>
+                    <span style={{
+                      position: 'absolute', top: '12px', left: '12px',
+                      backgroundColor: 'rgba(212, 175, 55, 0.2)', border: '1px solid rgba(212, 175, 55, 0.45)',
+                      color: '#f3d978', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em',
+                      padding: '3px 8px', borderRadius: '4px', zIndex: 20, textTransform: 'uppercase'
+                    }}>
+                      {pricing.discountPercent}% OFF
+                    </span>
+                    <button
+                      className="quick-add-hover"
+                      style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--surface-container)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        addToCart({ ...p, price: pricing.discountedPrice }, 'OS');
+                        showToast(`${p.name} added to cart`, 'success');
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--primary)' }}>add_shopping_cart</span>
+                    </button>
+                    <div className="card-image" style={{ flex: 1, position: 'relative', minHeight: '260px', borderRadius: '16px', overflow: 'hidden' }}>
+                      <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
                     </div>
-                  </div>
-                </Link>
-              ))}
+                    <div style={{ paddingTop: '1.25rem' }}>
+                      <h3 className="font-headline-md" style={{ marginBottom: '0.5rem' }}>{p.name}</h3>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                          <span className="font-body-md" style={{ color: 'var(--primary)', fontWeight: 700 }}>₹{pricing.discountedPrice.toLocaleString()}</span>
+                          <span style={{ color: 'var(--on-surface-variant)', fontSize: '12px', textDecoration: 'line-through', opacity: 0.65 }}>₹{pricing.originalPrice.toLocaleString()}</span>
+                        </div>
+                        <span className="font-label-caps" style={{ opacity: 0.4 }}>{p.subtitle?.split('/')[1]?.trim()}</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
 
               {/* Row 2: 2 equal cards (products 4–5) */}
-              {featured.slice(3, 5).map(p => (
-                <Link
-                  href={`/products/${p.id}`}
-                  key={p.id}
-                  className="product-card product-card-enhanced"
-                  style={{ gridColumn: 'span 6', display: 'flex', flexDirection: 'column', position: 'relative', marginTop: '2rem' }}
-                >
-                  <button
-                    className="quick-add-hover"
-                    style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--surface-container)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      addToCart(p, 'OS');
-                      showToast(`${p.name} added to cart`, 'success');
-                    }}
+              {featured.slice(3, 5).map(p => {
+                const pricing = getProductPricing(p);
+                return (
+                  <Link
+                    href={`/products/${p.id}`}
+                    key={p.id}
+                    className="product-card product-card-enhanced"
+                    style={{ gridColumn: 'span 6', display: 'flex', flexDirection: 'column', position: 'relative', marginTop: '2rem' }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--primary)' }}>add_shopping_cart</span>
-                  </button>
-                  <div className="card-image" style={{ position: 'relative', height: '360px', borderRadius: '16px', overflow: 'hidden' }}>
-                    <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
-                  </div>
-                  <div style={{ paddingTop: '1.25rem' }}>
-                    <h3 className="font-headline-md" style={{ marginBottom: '0.5rem' }}>{p.name}</h3>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>₹{p.price.toLocaleString()}</span>
-                      <span className="font-label-caps" style={{ opacity: 0.4 }}>{p.subtitle?.split('/')[1]?.trim()}</span>
-            8        </div>
-                  </div>
-                </Link>
-              ))}
-
+                    <span style={{
+                      position: 'absolute', top: '12px', left: '12px',
+                      backgroundColor: 'rgba(212, 175, 55, 0.2)', border: '1px solid rgba(212, 175, 55, 0.45)',
+                      color: '#f3d978', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em',
+                      padding: '3px 8px', borderRadius: '4px', zIndex: 20, textTransform: 'uppercase'
+                    }}>
+                      {pricing.discountPercent}% OFF
+                    </span>
+                    <button
+                      className="quick-add-hover"
+                      style={{ position: 'absolute', top: '12px', right: '12px', background: 'var(--surface-container)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20, border: 'none', transition: 'transform 0.3s' }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        addToCart({ ...p, price: pricing.discountedPrice }, 'OS');
+                        showToast(`${p.name} added to cart`, 'success');
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--primary)' }}>add_shopping_cart</span>
+                    </button>
+                    <div className="card-image" style={{ position: 'relative', height: '360px', borderRadius: '16px', overflow: 'hidden' }}>
+                      <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
+                    </div>
+                    <div style={{ paddingTop: '1.25rem' }}>
+                      <h3 className="font-headline-md" style={{ marginBottom: '0.5rem' }}>{p.name}</h3>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+                          <span className="font-body-md" style={{ color: 'var(--primary)', fontWeight: 700 }}>₹{pricing.discountedPrice.toLocaleString()}</span>
+                          <span style={{ color: 'var(--on-surface-variant)', fontSize: '12px', textDecoration: 'line-through', opacity: 0.65 }}>₹{pricing.originalPrice.toLocaleString()}</span>
+                        </div>
+                        <span className="font-label-caps" style={{ opacity: 0.4 }}>{p.subtitle?.split('/')[1]?.trim()}</span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>

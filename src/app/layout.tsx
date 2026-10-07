@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 
 import { CartProvider } from "@/context/CartContext";
 import { ToastProvider } from "@/context/ToastContext";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import './globals.css';
 const manrope = Manrope({
   subsets: ["latin"],
@@ -35,6 +36,7 @@ export default function RootLayout({
         <ToastProvider>
           <CartProvider>
             {children}
+            <MobileBottomNav />
           </CartProvider>
         </ToastProvider>
         <Analytics />

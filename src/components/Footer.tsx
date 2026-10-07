@@ -34,7 +34,7 @@ export default function Footer() {
           {/* Client Service */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <h4 className="font-label-caps" style={{ color: 'var(--primary)', opacity: 0.5, marginBottom: '0.5rem' }}>CLIENT SERVICE</h4>
-            {['Shipping & Returns', 'Retail Locations', 'Contact Us', 'Terms of Service'].map(l => (
+            {['Contact Us', 'Terms of Service'].map(l => (
               <a key={l} href="#" className="nav-link" style={{ letterSpacing: '0.15em' }}>{l}</a>
             ))}
           </div>
@@ -42,9 +42,15 @@ export default function Footer() {
           {/* Social */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <h4 className="font-label-caps" style={{ color: 'var(--primary)', opacity: 0.5, marginBottom: '0.5rem' }}>SOCIAL</h4>
-            {['Instagram', 'Vogue Business', 'Editorial Archive'].map(l => (
-              <a key={l} href="#" className="nav-link" style={{ letterSpacing: '0.15em' }}>{l}</a>
-            ))}
+            <a
+              href="https://www.instagram.com/soharth.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nav-link"
+              style={{ letterSpacing: '0.15em', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              Instagram (@soharth.in)
+            </a>
           </div>
         </div>
 

@@ -2631,4 +2631,178 @@ details summary::-webkit-details-marker {
   .cart-page-main {
     padding-bottom: 120px !important;
   }
-}
+}
+
+/* ==========================================================================
+   HIGH-END LUXURY MOBILE UI/UX ENHANCEMENTS (SOHARTH)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Prevent horizontal scroll jank & configure touch manipulation */
+  html, body {
+    overflow-x: hidden;
+    touch-action: manipulation;
+  }
+
+  /* Interactive Tap Feedback on Mobile */
+  button, a, .product-card-group, .size-btn, .quick-add-btn, .void-qty-btn, .void-cart-item-delete {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  button:active, a.btn-primary:active, .size-btn:active, .quick-add-btn:active, .void-qty-btn:active {
+    transform: scale(0.94) !important;
+    transition: transform 0.1s ease !important;
+  }
+
+  /* Mobile Inputs: Ensure font-size >= 16px to completely eliminate annoying iOS Safari auto-zoom */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="number"],
+  select,
+  textarea,
+  .shipping-address-input {
+    font-size: 16px !important;
+    min-height: 48px !important;
+    padding: 10px 14px !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  /* Cart Item Quantity Selector: Finger-Friendly 44px Touch Targets */
+  .void-qty-selector {
+    display: flex !important;
+    align-items: center !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 30px !important;
+    padding: 2px !important;
+  }
+
+  .void-qty-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #fff !important;
+    background: transparent !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+  }
+
+  .void-qty-value {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    padding: 0 10px !important;
+    min-width: 32px !important;
+    text-align: center !important;
+  }
+
+  /* Cart Item Delete Button Touch Target */
+  .void-cart-item-delete {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    top: 8px !important;
+    right: 8px !important;
+  }
+
+  /* Address Option Card: Full thumb hit zone */
+  .address-option-label {
+    min-height: 56px !important;
+    padding: 14px 16px !important;
+    border-radius: 12px !important;
+    cursor: pointer !important;
+  }
+
+  /* Catalog & Products Grid for Mobile (2 Columns with perfect luxury gutters) */
+  .product-grid-mobile-2col {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Mobile Sticky Product Action Bar */
+  .mobile-sticky-cta {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 80 !important;
+    background: rgba(14, 14, 14, 0.94) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .mobile-sticky-cta .add-to-bag-btn {
+    border-radius: 12px !important;
+    min-height: 54px !important;
+    padding: 14px 20px !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.15em !important;
+    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.15) !important;
+  }
+
+  /* Mobile Category Pills */
+  .mobile-category-scroller {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    gap: 8px !important;
+    padding: 4px 16px 12px 16px !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .mobile-category-scroller::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .mobile-category-pill {
+    flex-shrink: 0 !important;
+    scroll-snap-align: start !important;
+    min-height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 8px 18px !important;
+    border-radius: 30px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.1em !important;
+    transition: all 0.25s ease !important;
+  }
+
+  /* Safe space for pages that have floating bottom nav */
+  main {
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* Product details page bottom spacing for sticky buy bar */
+  .product-detail-main,
+  .product-main {
+    padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  /* Cart Mobile spacing */
+  .void-mobile-checkout-panel {
+    padding: 14px var(--margin-mobile) calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .void-mobile-checkout-btn {
+    min-height: 52px !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    border-radius: 8px !important;
+  }
+}
+
+

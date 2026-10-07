@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import { use, useState, useEffect, useRef, useMemo } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
+import { getProductPricing } from '@/lib/pricing';
 
 interface Product {
   id: string | number;
@@ -267,12 +268,13 @@ export default function ProductsPage({
   const handleQuickAdd = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
+    const pricing = getProductPricing(product);
     addToCart(
       {
         id: String(product.id),
         name: product.name,
         subtitle: product.subtitle || '',
-        price: product.price,
+        price: pricing.discountedPrice,
         image: product.image,
       },
       'OS'
@@ -448,18 +450,20 @@ export default function ProductsPage({
                     color: isActive ? '#000' : 'var(--on-surface-variant, #aaa)',
                     backgroundColor: isActive ? '#fff' : 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid',
-                    borderColor: isActive ? '#fff' : 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: '20px',
-                    padding: '0.45rem 1.25rem',
+                    borderColor: isActive ? '#fff' : 'rgba(255, 255, 255, 0.12)',
+                    borderRadius: '24px',
+                    padding: '0.65rem 1.4rem',
+                    minHeight: '42px',
                     fontSize: '11px',
-                    fontWeight: isActive ? 600 : 400,
+                    fontWeight: isActive ? 700 : 500,
                     letterSpacing: '0.15em',
-                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                    transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
                     whiteSpace: 'nowrap',
                     textDecoration: 'none',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.4rem'
+                    gap: '0.4rem',
+                    boxShadow: isActive ? '0 4px 14px rgba(255, 255, 255, 0.2)' : 'none'
                   }}
                 >
                   {f.value === 'ethnic' && <span>✨</span>}
@@ -697,6 +701,8 @@ function ProductCard({
   product: Product;
   onQuickAdd: (e: React.MouseEvent, p: Product) => void;
 }) {
+  const pricing = getProductPricing(product);
+
   return (
     <Link
       href={`/products/${product.id}`}
@@ -716,8 +722,10 @@ function ProductCard({
         marginBottom: '1.25rem',
         backgroundColor: 'var(--surface-container-low, #141414)',
         overflow: 'hidden',
-        border: '1px solid rgba(255, 255, 255, 0.05)',
-        borderRadius: '12px',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: '16px',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+        transition: 'transform 0.4s ease, border-color 0.4s, box-shadow 0.4s',
       }}>
         {/* Product Image */}
         <Image
@@ -728,57 +736,86 @@ function ProductCard({
           className="product-image-hover"
           style={{
             objectFit: 'cover',
-            transition: 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
+            transition: 'transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
         />
 
-        {/* Tag Badge */}
+        {/* Tag Badge (Left) */}
         {product.tag && (
           <span style={{
             position: 'absolute',
             top: '12px',
             left: '12px',
             backgroundColor: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,0.2)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255,255,255,0.25)',
             color: '#fff',
             fontSize: '9px',
-            fontWeight: 600,
+            fontWeight: 700,
             letterSpacing: '0.15em',
-            padding: '3px 8px',
-            borderRadius: '4px',
+            padding: '4px 10px',
+            borderRadius: '6px',
             zIndex: 10,
-            textTransform: 'uppercase'
+            textTransform: 'uppercase',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
           }}>
             {product.tag}
           </span>
         )}
 
-        {/* Quick Add Button */}
+        {/* Offer Discount Badge (Right - Glowing Gold) */}
+        <span style={{
+          position: 'absolute',
+          top: '12px',
+          right: '12px',
+          background: 'linear-gradient(135deg, rgba(235, 195, 75, 0.25) 0%, rgba(200, 150, 40, 0.15) 100%)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(235, 195, 75, 0.55)',
+          color: '#fde047',
+          fontSize: '10px',
+          fontWeight: 800,
+          letterSpacing: '0.08em',
+          padding: '4px 10px',
+          borderRadius: '6px',
+          zIndex: 10,
+          textTransform: 'uppercase',
+          boxShadow: '0 4px 14px rgba(235, 195, 75, 0.25), inset 0 1px 0 rgba(255,255,255,0.3)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '3px',
+        }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '11px', color: '#fde047' }}>local_fire_department</span>
+          {pricing.discountPercent}% OFF
+        </span>
+
+        {/* Quick Add Button — Finger-friendly 44px target */}
         <button
           onClick={(e) => onQuickAdd(e, product)}
           className="quick-add-btn"
           title="Quick Add to Cart"
           style={{
             position: 'absolute',
-            bottom: '12px',
-            right: '12px',
-            backgroundColor: 'rgba(20,20,20,0.85)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255,255,255,0.2)',
+            bottom: '10px',
+            right: '10px',
+            backgroundColor: 'rgba(18, 18, 18, 0.92)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 255, 255, 0.28)',
             color: '#fff',
-            width: '36px',
-            height: '36px',
+            width: '44px',
+            height: '44px',
+            minWidth: '44px',
+            minHeight: '44px',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
             zIndex: 10,
-            transition: 'all 0.3s ease',
+            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+            boxShadow: '0 6px 18px rgba(0,0,0,0.65)',
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
             shopping_bag
           </span>
         </button>
@@ -786,29 +823,53 @@ function ProductCard({
 
       {/* Meta details */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '1rem' }}>
-          <h3 className="font-headline-md" style={{
-            color: 'var(--primary, #fff)',
-            fontSize: '15px',
-            fontWeight: 500,
-            letterSpacing: '0.02em',
-            margin: 0
-          }}>{product.name}</h3>
-          <span className="font-body-md" style={{
-            color: 'var(--primary, #fff)',
-            fontSize: '14px',
-            fontWeight: 600
-          }}>₹{product.price.toLocaleString()}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+          <div>
+            <h3 className="font-headline-md" style={{
+              color: 'var(--primary, #fff)',
+              fontSize: '15px',
+              fontWeight: 600,
+              letterSpacing: '0.02em',
+              margin: 0,
+              lineHeight: 1.3
+            }}>{product.name}</h3>
+            {product.subtitle && (
+              <p className="font-label-caps" style={{
+                color: 'var(--on-surface-variant, #888)',
+                fontSize: '10px',
+                letterSpacing: '0.15em',
+                marginTop: '3px',
+                marginBottom: 0,
+                textTransform: 'uppercase'
+              }}>{product.subtitle}</p>
+            )}
+          </div>
+          
+          {/* Price Stack */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.45rem' }}>
+              <span className="font-body-md" style={{
+                color: '#fff',
+                fontSize: '16px',
+                fontWeight: 700,
+                letterSpacing: '-0.01em',
+              }}>₹{pricing.discountedPrice.toLocaleString()}</span>
+              <span style={{
+                color: 'rgba(255,255,255,0.4)',
+                fontSize: '12px',
+                textDecoration: 'line-through',
+              }}>₹{pricing.originalPrice.toLocaleString()}</span>
+            </div>
+            <span style={{
+              fontSize: '9px',
+              color: '#34d399',
+              fontWeight: 600,
+              letterSpacing: '0.05em',
+            }}>
+              SAVE ₹{pricing.savings.toLocaleString()}
+            </span>
+          </div>
         </div>
-        {product.subtitle && (
-          <p className="font-label-caps" style={{
-            color: 'var(--on-surface-variant, #888)',
-            fontSize: '10px',
-            letterSpacing: '0.15em',
-            margin: 0,
-            textTransform: 'uppercase'
-          }}>{product.subtitle}</p>
-        )}
       </div>
     </Link>
   );
