@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, use, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import SizeChartModal from '@/components/SizeChartModal';
 import { useCart } from '@/context/CartContext';
 import { getProductPricing } from '@/lib/pricing';
 
@@ -36,6 +37,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
   const [activeImage, setActiveImage] = useState(0);
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
   const [isAdded, setIsAdded] = useState(false);
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
 
   useEffect(() => {
     if (product?.colors && product.colors.length > 0 && !selectedColor) {
@@ -59,7 +61,7 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
     );
   }
 
-  const sizes = ['XS', 'S', 'M', 'L', 'XL'];
+  const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
 
   if (!product) {
     return (
@@ -249,9 +251,36 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                     {selectedSize}
                   </span>
                 </div>
-                <span className="font-caption" style={{ opacity: 0.6, fontSize: '11px' }}>
-                  Standard Fit
-                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsSizeChartOpen(true)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    color: '#fde047',
+                    background: 'rgba(253, 224, 71, 0.08)',
+                    border: '1px solid rgba(253, 224, 71, 0.25)',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(253, 224, 71, 0.18)';
+                    e.currentTarget.style.borderColor = 'rgba(253, 224, 71, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(253, 224, 71, 0.08)';
+                    e.currentTarget.style.borderColor = 'rgba(253, 224, 71, 0.25)';
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>straighten</span>
+                  SIZE CHART
+                </button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.6rem' }}>
                 {sizes.map(size => (
@@ -352,26 +381,61 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
             {/* Accordion Details */}
             <div style={{ borderTop: '1px solid rgba(71,71,65,0.3)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0' }}>
               {[
+                {
+                  key: 'size-fit',
+                  label: 'SIZE & FIT GUIDE',
+                  isSizeGuide: true,
+                },
                 { key: 'materials', label: 'MATERIALS & CARE', content: product.material },
                 { key: 'shipping', label: 'SHIPPING & RETURNS', content: product.shipping },
-              ].map(({ key, label, content }) => (
-                <div key={key} style={{ borderBottom: '1px solid rgba(71,71,65,0.3)' }}>
+              ].map((item) => (
+                <div key={item.key} style={{ borderBottom: '1px solid rgba(71,71,65,0.3)' }}>
                   <button
-                    onClick={() => setOpenAccordion(openAccordion === key ? null : key)}
+                    onClick={() => setOpenAccordion(openAccordion === item.key ? null : item.key)}
                     style={{
                       width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                       padding: '1rem 0', color: 'var(--primary)',
                     }}
                   >
-                    <span className="font-label-caps">{label}</span>
-                    <span className="material-symbols-outlined" style={{ fontSize: '20px', transition: 'transform 0.3s', transform: openAccordion === key ? 'rotate(180deg)' : 'rotate(0)' }}>
+                    <span className="font-label-caps">{item.label}</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px', transition: 'transform 0.3s', transform: openAccordion === item.key ? 'rotate(180deg)' : 'rotate(0)' }}>
                       expand_more
                     </span>
                   </button>
-                  {openAccordion === key && (
-                    <p className="font-caption" style={{ color: 'var(--on-surface-variant)', paddingBottom: '1.5rem', lineHeight: 1.8 }}>
-                      {content}
-                    </p>
+                  {openAccordion === item.key && (
+                    item.isSizeGuide ? (
+                      <div style={{ paddingBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <p className="font-caption" style={{ color: 'var(--on-surface-variant)', lineHeight: 1.8 }}>
+                          Engineered with an architectural streetwear silhouette. Fits true to size with a relaxed drop-shoulder cut. Check our complete size chart for chest and length dimensions.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => setIsSizeChartOpen(true)}
+                          style={{
+                            alignSelf: 'flex-start',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            background: 'rgba(255,255,255,0.06)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            color: '#ffffff',
+                            padding: '6px 14px',
+                            borderRadius: '8px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            letterSpacing: '0.08em',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '15px', color: '#fde047' }}>straighten</span>
+                          VIEW OFFICIAL SIZE CHART
+                        </button>
+                      </div>
+                    ) : (
+                      <p className="font-caption" style={{ color: 'var(--on-surface-variant)', paddingBottom: '1.5rem', lineHeight: 1.8 }}>
+                        {item.content}
+                      </p>
+                    )
                   )}
                 </div>
               ))}
@@ -512,6 +576,13 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
         )}
       </main>
       <Footer />
+      <SizeChartModal
+        isOpen={isSizeChartOpen}
+        onClose={() => setIsSizeChartOpen(false)}
+        selectedSize={selectedSize}
+        onSelectSize={(s) => setSelectedSize(s)}
+        productName={product.name}
+      />
     </>
   );
 }

@@ -1,43 +1,66 @@
+'use client';
+import { useState } from 'react';
 import Link from 'next/link';
+import SizeChartModal from './SizeChartModal';
 
 export default function Footer() {
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
+
   return (
-    <footer style={{
-      width: '100%',
-      paddingTop: 'var(--section-gap)',
-      paddingBottom: 'var(--section-gap)',
-      backgroundColor: 'var(--surface-dim)',
-      borderTop: '1px solid rgba(71, 71, 65, 0.2)'
-    }}>
-      <div className="container">
-        {/* Brand Heading */}
-        <div className="font-headline-lg" style={{ letterSpacing: '0.3em', color: 'var(--primary)', marginBottom: '3rem' }}>
-          SOHARTH
-        </div>
-
-        <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 'var(--gutter)', marginBottom: '5rem' }}>
-          {/* About */}
-          <div>
-            <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', maxWidth: '240px', lineHeight: '1.8' }}>
-              Celestial minimalism for the discerning modern observer.
-            </p>
+    <>
+      <footer style={{
+        width: '100%',
+        paddingTop: 'var(--section-gap)',
+        paddingBottom: 'var(--section-gap)',
+        backgroundColor: 'var(--surface-dim)',
+        borderTop: '1px solid rgba(71, 71, 65, 0.2)'
+      }}>
+        <div className="container">
+          {/* Brand Heading */}
+          <div className="font-headline-lg" style={{ letterSpacing: '0.3em', color: 'var(--primary)', marginBottom: '3rem' }}>
+            SOHARTH
           </div>
 
-          {/* Collections */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <h4 className="font-label-caps" style={{ color: 'var(--primary)', opacity: 0.5, marginBottom: '0.5rem' }}>COLLECTIONS</h4>
-            {['The Void', 'Starlight Tech', 'Lunar Essentials', 'New Arrivals'].map(l => (
-              <Link key={l} href="/products" className="nav-link" style={{ letterSpacing: '0.15em' }}>{l}</Link>
-            ))}
-          </div>
+          <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 'var(--gutter)', marginBottom: '5rem' }}>
+            {/* About */}
+            <div>
+              <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', maxWidth: '240px', lineHeight: '1.8' }}>
+                Celestial minimalism for the discerning modern observer.
+              </p>
+            </div>
 
-          {/* Client Service */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <h4 className="font-label-caps" style={{ color: 'var(--primary)', opacity: 0.5, marginBottom: '0.5rem' }}>CLIENT SERVICE</h4>
-            {['Contact Us', 'Terms of Service'].map(l => (
-              <a key={l} href="#" className="nav-link" style={{ letterSpacing: '0.15em' }}>{l}</a>
-            ))}
-          </div>
+            {/* Collections */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <h4 className="font-label-caps" style={{ color: 'var(--primary)', opacity: 0.5, marginBottom: '0.5rem' }}>COLLECTIONS</h4>
+              {['The Void', 'Starlight Tech', 'Lunar Essentials', 'New Arrivals'].map(l => (
+                <Link key={l} href="/products" className="nav-link" style={{ letterSpacing: '0.15em' }}>{l}</Link>
+              ))}
+            </div>
+
+            {/* Client Service */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'flex-start' }}>
+              <h4 className="font-label-caps" style={{ color: 'var(--primary)', opacity: 0.5, marginBottom: '0.5rem' }}>CLIENT SERVICE</h4>
+              <button
+                type="button"
+                onClick={() => setIsSizeChartOpen(true)}
+                className="nav-link"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  font: 'inherit',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                  letterSpacing: '0.15em',
+                  textAlign: 'left',
+                }}
+              >
+                Size Guide
+              </button>
+              {['Contact Us', 'Terms of Service'].map(l => (
+                <a key={l} href="#" className="nav-link" style={{ letterSpacing: '0.15em' }}>{l}</a>
+              ))}
+            </div>
 
           {/* Social */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -66,5 +89,10 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+      <SizeChartModal
+        isOpen={isSizeChartOpen}
+        onClose={() => setIsSizeChartOpen(false)}
+      />
+    </>
   );
 }
