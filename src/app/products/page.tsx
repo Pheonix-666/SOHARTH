@@ -763,28 +763,16 @@ function ProductCard({
           </span>
         )}
 
-        {/* Offer Discount Badge (Right - Glowing Gold) */}
-        <span style={{
-          position: 'absolute',
-          top: '12px',
-          right: '12px',
-          background: 'linear-gradient(135deg, rgba(235, 195, 75, 0.25) 0%, rgba(200, 150, 40, 0.15) 100%)',
-          backdropFilter: 'blur(12px)',
-          border: '1px solid rgba(235, 195, 75, 0.55)',
-          color: '#fde047',
-          fontSize: '10px',
-          fontWeight: 800,
-          letterSpacing: '0.08em',
-          padding: '4px 10px',
-          borderRadius: '6px',
-          zIndex: 10,
-          textTransform: 'uppercase',
-          boxShadow: '0 4px 14px rgba(235, 195, 75, 0.25), inset 0 1px 0 rgba(255,255,255,0.3)',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '3px',
-        }}>
-          <span className="material-symbols-outlined" style={{ fontSize: '11px', color: '#fde047' }}>local_fire_department</span>
+        {/* Offer Discount Badge (Right - High-Visibility Radiant Gold Pill) */}
+        <span
+          className="product-discount-badge"
+          style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+          }}
+        >
+          <span className="material-symbols-outlined badge-fire-icon">local_fire_department</span>
           {pricing.discountPercent}% OFF
         </span>
 
@@ -860,14 +848,19 @@ function ProductCard({
                 textDecoration: 'line-through',
               }}>₹{pricing.originalPrice.toLocaleString()}</span>
             </div>
-            <span style={{
-              fontSize: '9px',
-              color: '#34d399',
-              fontWeight: 600,
-              letterSpacing: '0.05em',
-            }}>
-              SAVE ₹{pricing.savings.toLocaleString()}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+              <span className="product-discount-tag-inline">
+                {pricing.discountPercent}% OFF
+              </span>
+              <span style={{
+                fontSize: '9px',
+                color: '#34d399',
+                fontWeight: 600,
+                letterSpacing: '0.04em',
+              }}>
+                SAVE ₹{pricing.savings.toLocaleString()}
+              </span>
+            </div>
           </div>
         </div>
       </div>

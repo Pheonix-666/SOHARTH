@@ -5,14 +5,17 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    const { orderStatus, paymentStatus, trackingNumber, internalNotes } = body;
+    const { orderStatus, paymentStatus, trackingNumber, internalNotes, shippingMethod, customer, shippingAddress } = body;
 
     // Build only the fields that were provided
-    const updates: Record<string, string> = {};
+    const updates: Record<string, any> = {};
     if (orderStatus !== undefined) updates.order_status = orderStatus;
     if (paymentStatus !== undefined) updates.payment_status = paymentStatus;
     if (trackingNumber !== undefined) updates.tracking_number = trackingNumber;
     if (internalNotes !== undefined) updates.internal_notes = internalNotes;
+    if (shippingMethod !== undefined) updates.shipping_method = shippingMethod;
+    if (customer !== undefined) updates.customer = customer;
+    if (shippingAddress !== undefined) updates.shipping_address = shippingAddress;
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ success: false, error: 'No fields to update' }, { status: 400 });

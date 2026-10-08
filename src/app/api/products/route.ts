@@ -20,6 +20,11 @@ export async function POST(req: NextRequest) {
       : [];
     const image = body.image || images[0] || '';
 
+    const originalPriceRaw = body.original_price ?? body.originalPrice;
+    const original_price = originalPriceRaw !== undefined && originalPriceRaw !== null && originalPriceRaw !== ''
+      ? (typeof originalPriceRaw === 'number' ? originalPriceRaw : (parseFloat(originalPriceRaw) || null))
+      : null;
+
     const productPayload: Record<string, any> = {
       name: body.name || '',
       subtitle: body.subtitle || '',
@@ -33,6 +38,10 @@ export async function POST(req: NextRequest) {
       material: body.material || '',
       shipping: body.shipping || '',
     };
+
+    if (original_price !== null && !isNaN(original_price)) {
+      productPayload.original_price = original_price;
+    }
 
     if (body.id) {
       productPayload.id = body.id;
@@ -74,7 +83,7 @@ export async function PATCH(req: NextRequest) {
     if (!id) return NextResponse.json({ error: 'No ID provided' }, { status: 400 });
 
     const allowedKeys = [
-      'name', 'subtitle', 'price', 'category', 'tag',
+      'name', 'subtitle', 'price', 'original_price', 'originalPrice', 'category', 'tag',
       'image', 'images', 'description', 'collection',
       'material', 'shipping'
     ];
@@ -84,6 +93,11 @@ export async function PATCH(req: NextRequest) {
       if (key in rawUpdates) {
         if (key === 'price') {
           updates.price = typeof rawUpdates.price === 'number' ? rawUpdates.price : (parseFloat(rawUpdates.price) || 0);
+        } else if (key === 'original_price' || key === 'originalPrice') {
+          const val = rawUpdates[key];
+          updates.original_price = (val !== '' && val !== null && val !== undefined)
+            ? (typeof val === 'number' ? val : (parseFloat(val) || null))
+            : null;
         } else if (key === 'images' && Array.isArray(rawUpdates.images)) {
           updates.images = rawUpdates.images.filter((img: any) => typeof img === 'string' && img.trim() !== '');
         } else {

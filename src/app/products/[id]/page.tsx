@@ -138,22 +138,8 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                     <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.3em' }}>
                       {product.collection || 'COLLECTION 01: SOHARTH'}
                     </span>
-                    <span style={{
-                      background: 'linear-gradient(135deg, rgba(235, 195, 75, 0.25) 0%, rgba(200, 150, 40, 0.15) 100%)',
-                      border: '1px solid rgba(235, 195, 75, 0.55)',
-                      color: '#fde047',
-                      fontSize: '10px',
-                      fontWeight: 800,
-                      letterSpacing: '0.1em',
-                      padding: '3px 8px',
-                      borderRadius: '5px',
-                      textTransform: 'uppercase',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      boxShadow: '0 2px 10px rgba(235, 195, 75, 0.2)'
-                    }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>local_fire_department</span>
+                    <span className="product-discount-badge" style={{ fontSize: '11px', padding: '5px 11px' }}>
+                      <span className="material-symbols-outlined badge-fire-icon">local_fire_department</span>
                       {pricing.discountPercent}% OFF OFFER
                     </span>
                   </div>
@@ -171,12 +157,15 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                     flexDirection: 'column',
                     gap: '0.75rem',
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', flexWrap: 'wrap' }}>
                       <span className="font-headline-md" style={{ color: '#fff', fontSize: '32px', fontWeight: 800, letterSpacing: '-0.02em' }}>
                         ₹{pricing.discountedPrice.toLocaleString()}
                       </span>
                       <span style={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '20px', textDecoration: 'line-through' }}>
                         ₹{pricing.originalPrice.toLocaleString()}
+                      </span>
+                      <span className="product-discount-badge" style={{ fontSize: '11px', padding: '4px 9px' }}>
+                        {pricing.discountPercent}% OFF
                       </span>
                       <span style={{
                         backgroundColor: 'rgba(52, 211, 153, 0.15)',
@@ -443,11 +432,11 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                   <Link href={`/products/${p.id}`} key={p.id} className="product-card scrolling-product-card" style={{ position: 'relative' }}>
                     <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container)' }}>
                       <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
-                      <span style={{
+                      <span className="product-discount-badge" style={{
                         position: 'absolute', top: '10px', right: '10px',
-                        backgroundColor: 'rgba(212, 175, 55, 0.2)', border: '1px solid rgba(212, 175, 55, 0.45)',
-                        color: '#f3d978', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '3px'
+                        fontSize: '10px', padding: '4px 8px'
                       }}>
+                        <span className="material-symbols-outlined badge-fire-icon" style={{ fontSize: '11px' }}>local_fire_department</span>
                         {pricing.discountPercent}% OFF
                       </span>
                     </div>
@@ -456,9 +445,14 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                         <h5 className="font-label-caps" style={{ marginBottom: '0.25rem', transition: 'color 0.3s' }}>{p.name}</h5>
                         <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>{p.subtitle}</p>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
-                        <span className="font-body-md" style={{ fontWeight: 700, color: 'var(--primary)' }}>₹{pricing.discountedPrice.toLocaleString()}</span>
-                        <span style={{ color: 'var(--on-surface-variant)', fontSize: '11px', textDecoration: 'line-through', opacity: 0.6 }}>₹{pricing.originalPrice.toLocaleString()}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+                          <span className="font-body-md" style={{ fontWeight: 700, color: 'var(--primary)' }}>₹{pricing.discountedPrice.toLocaleString()}</span>
+                          <span style={{ color: 'var(--on-surface-variant)', fontSize: '11px', textDecoration: 'line-through', opacity: 0.6 }}>₹{pricing.originalPrice.toLocaleString()}</span>
+                        </div>
+                        <span className="product-discount-tag-inline" style={{ fontSize: '9px', padding: '1px 5px' }}>
+                          {pricing.discountPercent}% OFF
+                        </span>
                       </div>
                     </div>
                   </Link>
@@ -486,11 +480,11 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                     <Link href={`/products/${p.id}`} key={p.id} className="product-card scrolling-product-card" style={{ position: 'relative' }}>
                       <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1.5rem', backgroundColor: 'var(--surface-container)' }}>
                         <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
-                        <span style={{
+                        <span className="product-discount-badge" style={{
                           position: 'absolute', top: '10px', right: '10px',
-                          backgroundColor: 'rgba(212, 175, 55, 0.2)', border: '1px solid rgba(212, 175, 55, 0.45)',
-                          color: '#f3d978', fontSize: '9px', fontWeight: 700, padding: '2px 6px', borderRadius: '3px'
+                          fontSize: '10px', padding: '4px 8px'
                         }}>
+                          <span className="material-symbols-outlined badge-fire-icon" style={{ fontSize: '11px' }}>local_fire_department</span>
                           {pricing.discountPercent}% OFF
                         </span>
                       </div>
@@ -499,9 +493,14 @@ export default function ProductDetails({ params }: { params: Promise<{ id: strin
                           <h5 className="font-label-caps" style={{ marginBottom: '0.25rem', transition: 'color 0.3s' }}>{p.name}</h5>
                           <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>{p.subtitle}</p>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
-                          <span className="font-body-md" style={{ fontWeight: 700, color: 'var(--primary)' }}>₹{pricing.discountedPrice.toLocaleString()}</span>
-                          <span style={{ color: 'var(--on-surface-variant)', fontSize: '11px', textDecoration: 'line-through', opacity: 0.6 }}>₹{pricing.originalPrice.toLocaleString()}</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem' }}>
+                            <span className="font-body-md" style={{ fontWeight: 700, color: 'var(--primary)' }}>₹{pricing.discountedPrice.toLocaleString()}</span>
+                            <span style={{ color: 'var(--on-surface-variant)', fontSize: '11px', textDecoration: 'line-through', opacity: 0.6 }}>₹{pricing.originalPrice.toLocaleString()}</span>
+                          </div>
+                          <span className="product-discount-tag-inline" style={{ fontSize: '9px', padding: '1px 5px' }}>
+                            {pricing.discountPercent}% OFF
+                          </span>
                         </div>
                       </div>
                     </Link>

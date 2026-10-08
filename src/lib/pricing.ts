@@ -5,9 +5,9 @@
  */
 
 export interface PricingDetails {
-  originalPrice: number;    // Doubled MRP strictly ending in 49 or 99 (e.g. ₹699, ₹799, ₹1399)
-  discountedPrice: number;  // Selling price strictly ending in 49 or 99 (e.g. ₹399, ₹499, ₹549)
-  discountPercent: number;  // 30 or 40 (approx real percentage displayed cleanly)
+  originalPrice: number;    // Real MRP (e.g. ₹999)
+  discountedPrice: number;  // Selling price (e.g. ₹699)
+  discountPercent: number;  // Real calculated percentage (e.g. 30%)
   savings: number;          // Total savings amount (e.g. ₹300)
 }
 
@@ -30,7 +30,13 @@ export function roundTo49or99(num: number): number {
   return candidates[0];
 }
 
-export function getProductPricing(product: { id?: string | number; name?: string; price?: number } | null | undefined): PricingDetails {
+export function getProductPricing(product: {
+  id?: string | number;
+  name?: string;
+  price?: number;
+  original_price?: number | string | null;
+  originalPrice?: number | string | null;
+} | null | undefined): PricingDetails {
   if (!product) {
     return {
       originalPrice: 0,
@@ -41,6 +47,23 @@ export function getProductPricing(product: { id?: string | number; name?: string
   }
 
   const basePrice = Number(product.price) || 0;
+  const rawOriginalPrice = Number(product.original_price ?? product.originalPrice);
+
+  // If real original price (MRP) is explicitly provided and greater than selling price
+  if (rawOriginalPrice && rawOriginalPrice > basePrice && basePrice > 0) {
+    const originalPrice = Math.round(rawOriginalPrice);
+    const discountedPrice = Math.round(basePrice);
+    const savings = Math.max(0, originalPrice - discountedPrice);
+    const discountPercent = Math.round((savings / originalPrice) * 100);
+
+    return {
+      originalPrice,
+      discountedPrice,
+      discountPercent,
+      savings,
+    };
+  }
+
   if (basePrice <= 0) {
     return {
       originalPrice: 0,
@@ -50,7 +73,7 @@ export function getProductPricing(product: { id?: string | number; name?: string
     };
   }
 
-  // Stable deterministic assignment based on product id / name
+  // Fallback deterministic assignment for legacy products
   const key = String(product.id || product.name || '');
   const charSum = key.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const targetPercent = charSum % 2 === 0 ? 40 : 30;

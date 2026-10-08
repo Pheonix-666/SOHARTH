@@ -12,7 +12,7 @@ export async function PUT(
     if (!id) return NextResponse.json({ error: 'No ID provided' }, { status: 400 });
 
     const allowedKeys = [
-      'name', 'subtitle', 'price', 'category', 'tag',
+      'name', 'subtitle', 'price', 'original_price', 'originalPrice', 'category', 'tag',
       'image', 'images', 'description', 'collection',
       'material', 'shipping'
     ];
@@ -22,6 +22,11 @@ export async function PUT(
       if (key in body) {
         if (key === 'price') {
           updates.price = typeof body.price === 'number' ? body.price : (parseFloat(body.price) || 0);
+        } else if (key === 'original_price' || key === 'originalPrice') {
+          const val = body[key];
+          updates.original_price = (val !== '' && val !== null && val !== undefined)
+            ? (typeof val === 'number' ? val : (parseFloat(val) || null))
+            : null;
         } else if (key === 'images' && Array.isArray(body.images)) {
           updates.images = body.images.filter((img: any) => typeof img === 'string' && img.trim() !== '');
         } else {

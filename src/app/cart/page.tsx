@@ -561,11 +561,11 @@ export default function CartPage() {
                   <Link href={`/products/${p.id}`} key={p.id} className="product-card" style={{ display: 'block', position: 'relative' }}>
                     <div className="card-image" style={{ aspectRatio: '3/4', position: 'relative', marginBottom: '1rem', backgroundColor: 'var(--surface-container)' }}>
                       <Image src={p.image} alt={p.name} fill style={{ objectFit: 'cover' }} />
-                      <span style={{
+                      <span className="product-discount-badge" style={{
                         position: 'absolute', top: '8px', right: '8px',
-                        backgroundColor: 'rgba(212, 175, 55, 0.2)', border: '1px solid rgba(212, 175, 55, 0.4)',
-                        color: '#f3d978', fontSize: '8px', fontWeight: 700, padding: '2px 6px', borderRadius: '3px'
+                        fontSize: '9px', padding: '3px 7px'
                       }}>
+                        <span className="material-symbols-outlined badge-fire-icon" style={{ fontSize: '10px' }}>local_fire_department</span>
                         {pricing.discountPercent}% OFF
                       </span>
                       <button
