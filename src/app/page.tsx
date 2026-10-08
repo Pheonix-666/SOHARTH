@@ -373,41 +373,15 @@ export default function Home() {
               margin: '0 auto',
             }}
           >
-            {/* Glowing Brand Pill */}
-            <div className="fade-in-up" style={{ animationDelay: '0.1s' }}>
-              <div className="hero-pill-badge">
-                <span className="material-symbols-outlined" style={{ fontSize: '14px', color: '#fde047' }}>
-                  auto_awesome
-                </span>
-                <span>AUTUMN / WINTER 2026 • CELESTIAL LUXURY APPAREL</span>
-              </div>
-            </div>
-
             {/* Title with Metallic Stardust Shimmer */}
-            <h1 className="hero-title-metallic fade-in-up" style={{ animationDelay: '0.25s' }}>
+            <h1 className="hero-title-metallic fade-in-up" style={{ animationDelay: '0.1s' }}>
               SOHARTH
             </h1>
 
             {/* Subhead Narrative */}
-            <p className="hero-subhead-text fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <p className="hero-subhead-text fade-in-up" style={{ animationDelay: '0.25s', marginBottom: '2.5rem' }}>
               BORN IN THE VOID. CRAFTED IN LIGHT.
             </p>
-
-            {/* Value Highlights Ribbon */}
-            <div className="hero-features-ribbon fade-in-up" style={{ animationDelay: '0.55s' }}>
-              <span className="hero-feature-item">
-                <span className="hero-feature-dot" />
-                Heavyweight 320 GSM Crepe
-              </span>
-              <span className="hero-feature-item">
-                <span className="hero-feature-dot" />
-                Zero-Distortion Architectural Cuts
-              </span>
-              <span className="hero-feature-item">
-                <span className="hero-feature-dot" />
-                Limited Studio Drops
-              </span>
-            </div>
 
             {/* Interactive CTAs */}
             <div
@@ -758,6 +732,36 @@ export default function Home() {
                 );
               })}
             </div>
+
+            {/* ─── VIEW ALL CTA STRIP (Right after Curated Drops Showcase) ─── */}
+            <div style={{ textAlign: 'center', marginTop: '4.5rem', marginBottom: '1rem' }}>
+              <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em', marginBottom: '1.5rem', display: 'block', fontSize: '11px', opacity: 0.85 }}>
+                ✦ {productsList.length > 0 ? `${productsList.length} AVANT-GARDE PIECES AVAILABLE` : 'EXPLORE THE FULL COLLECTION'} ✦
+              </span>
+              <Link
+                href="/products"
+                className="btn-flashy"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '14px',
+                  padding: '1.25rem 3.5rem',
+                  fontSize: '13px',
+                  fontWeight: 900,
+                  letterSpacing: '0.24em',
+                  borderRadius: '999px',
+                  boxShadow: '0 0 40px rgba(253, 224, 71, 0.35), 0 12px 32px rgba(0, 0, 0, 0.7)',
+                  transform: 'scale(1.06)',
+                  transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
+              >
+                <span className="btn-flashy-shimmer" />
+                <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#000', fontVariationSettings: "'FILL' 1" }}>grid_view</span>
+                <span style={{ color: '#000', fontWeight: 900 }}>VIEW ALL PIECES</span>
+                <span className="material-symbols-outlined btn-flashy-icon" style={{ fontSize: '20px', color: '#000', fontWeight: 900 }}>arrow_forward</span>
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -865,18 +869,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
-
-        {/* ─── VIEW ALL CTA STRIP ─── */}
-        <section className="reveal-on-scroll" style={{ padding: '4rem 0 var(--section-gap)', textAlign: 'center' }}>
-          <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.4em', marginBottom: '2rem', display: 'block', opacity: 0.7 }}>
-            {productsList.length > 0 ? `${productsList.length} AVANT-GARDE PIECES AVAILABLE` : 'EXPLORE THE FULL COLLECTION'}
-          </span>
-          <Link href="/products" className="btn-flashy">
-            <span className="btn-flashy-shimmer" />
-            <span>View All Pieces</span>
-            <span className="material-symbols-outlined btn-flashy-icon">arrow_forward</span>
-          </Link>
         </section>
 
         {/* ─── SOCIAL PROOF COUNTER STRIP ─── */}

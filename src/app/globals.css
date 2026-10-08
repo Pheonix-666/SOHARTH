@@ -3416,7 +3416,7 @@ details summary::-webkit-details-marker {
   position: absolute;
   inset: 0;
   z-index: 2;
-  background: radial-gradient(circle at center 40%, rgba(5,5,5,0.05) 0%, rgba(5,5,5,0.45) 55%, rgba(8,8,8,0.92) 100%);
+  background: radial-gradient(circle at center 40%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.18) 55%, rgba(0,0,0,0.45) 100%);
   pointer-events: none;
 }
 
@@ -3425,9 +3425,9 @@ details summary::-webkit-details-marker {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 220px;
+  height: 180px;
   z-index: 3;
-  background: linear-gradient(to bottom, transparent 0%, #080808 100%);
+  background: linear-gradient(to top, rgba(5,5,5,0.7) 0%, rgba(5,5,5,0.2) 50%, transparent 100%);
   pointer-events: none;
 }
 
@@ -3436,9 +3436,9 @@ details summary::-webkit-details-marker {
   top: 0;
   left: 0;
   right: 0;
-  height: 140px;
+  height: 120px;
   z-index: 3;
-  background: linear-gradient(to top, transparent 0%, rgba(8,8,8,0.9) 100%);
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.15) 50%, transparent 100%);
   pointer-events: none;
 }
 
@@ -3684,19 +3684,21 @@ details summary::-webkit-details-marker {
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
-  height: 100vh;
-  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
   background-color: #050505;
   padding: 5rem 1rem 3rem 1rem;
+  overflow: hidden;
+  clip-path: inset(0);
 }
 
 .hero-eclipse-bg {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   z-index: 1;
   pointer-events: none;
   overflow: hidden;
@@ -3734,7 +3736,7 @@ details summary::-webkit-details-marker {
   position: absolute;
   inset: 0;
   z-index: 3;
-  background: radial-gradient(circle at center, rgba(5, 5, 5, 0.2) 0%, rgba(5, 5, 5, 0.65) 60%, rgba(5, 5, 5, 0.95) 100%);
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 55%, rgba(0, 0, 0, 0.45) 100%);
   pointer-events: none;
 }
 
@@ -3743,9 +3745,9 @@ details summary::-webkit-details-marker {
   top: 0;
   left: 0;
   right: 0;
-  height: 140px;
+  height: 120px;
   z-index: 4;
-  background: linear-gradient(to bottom, #000000 0%, rgba(0,0,0,0.8) 40%, transparent 100%);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.15) 50%, transparent 100%);
   pointer-events: none;
 }
 
@@ -3754,9 +3756,9 @@ details summary::-webkit-details-marker {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 180px;
+  height: 160px;
   z-index: 4;
-  background: linear-gradient(to top, #000000 0%, rgba(0,0,0,0.8) 50%, transparent 100%);
+  background: linear-gradient(to top, rgba(5, 5, 5, 0.75) 0%, rgba(5, 5, 5, 0.2) 55%, transparent 100%);
   pointer-events: none;
 }
 
