@@ -62,17 +62,25 @@ const CATEGORY_META: Record<string, { label: string; subtitle: string; descripti
 export default function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; q?: string; search?: string }>;
 }) {
-  const { category } = use(searchParams);
+  const resolvedParams = use(searchParams);
+  const category = resolvedParams?.category;
+  const initialQuery = resolvedParams?.q || resolvedParams?.search || '';
   const [productsList, setProductsList] = useState<Product[]>([]);
   const [categories, setCategories] = useState<CategoryFilter[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [navHidden, setNavHidden] = useState(false);
   const [navHeight, setNavHeight] = useState(64);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'newest' | 'name'>('featured');
   const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    if (resolvedParams?.q !== undefined || resolvedParams?.search !== undefined) {
+      setSearchQuery(resolvedParams.q || resolvedParams.search || '');
+    }
+  }, [resolvedParams?.q, resolvedParams?.search]);
 
   const { addToCart } = useCart();
   const { showToast } = useToast();
@@ -228,6 +236,10 @@ export default function ProductsPage({
       };
     });
   }, [productsList, categories, searchQuery, sortBy]);
+
+  const totalMultiSectionResults = useMemo(() => {
+    return categorizedSections.reduce((acc, sec) => acc + sec.products.length, 0);
+  }, [categorizedSections]);
 
   // Single category filter view
   const singleCategoryProducts = useMemo(() => {
@@ -518,6 +530,38 @@ export default function ProductsPage({
         ) : (
           /* ─── MULTI-SECTION CATALOG VIEW (ALL SECTIONS) ─── */
           <div style={{ display: 'flex', flexDirection: 'column', gap: '5rem', paddingBottom: '6rem' }}>
+            {searchQuery && totalMultiSectionResults === 0 ? (
+              <div style={{ textAlign: 'center', padding: '6rem 1rem', opacity: 0.85 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '3.5rem', display: 'block', marginBottom: '1rem', opacity: 0.4 }}>
+                  search_off
+                </span>
+                <p className="font-headline-md" style={{ marginBottom: '0.5rem', fontSize: '20px' }}>
+                  No pieces found matching &ldquo;{searchQuery}&rdquo;
+                </p>
+                <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '1.5rem', fontSize: '14px' }}>
+                  Try a different search term or clear the filter to browse the complete catalog.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  style={{
+                    padding: '10px 24px',
+                    borderRadius: '24px',
+                    backgroundColor: '#ffffff',
+                    color: '#000000',
+                    border: 'none',
+                    fontWeight: 700,
+                    fontSize: '11px',
+                    cursor: 'pointer',
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Clear Search Filter
+                </button>
+              </div>
+            ) : null}
+
             {categorizedSections.map((section) => {
               if (section.products.length === 0 && searchQuery) return null;
 

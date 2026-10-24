@@ -25,6 +25,8 @@ export async function POST(req: NextRequest) {
       ? (typeof originalPriceRaw === 'number' ? originalPriceRaw : (parseFloat(originalPriceRaw) || null))
       : null;
 
+    const colors = Array.isArray(body.colors) ? body.colors : [];
+
     const productPayload: Record<string, any> = {
       name: body.name || '',
       subtitle: body.subtitle || '',
@@ -43,18 +45,44 @@ export async function POST(req: NextRequest) {
       productPayload.original_price = original_price;
     }
 
+    if (colors.length > 0) {
+      productPayload.colors = colors;
+    }
+
     if (body.id) {
       productPayload.id = body.id;
     }
 
-    const { data, error } = await supabaseAdmin
+    let { data, error } = await supabaseAdmin
       .from('products')
       .insert(productPayload)
       .select()
       .single();
 
+    let warning: string | undefined;
+
+    // If Supabase schema lacks optional columns (like original_price or colors), fallback gracefully
+    if (error && (error.code === 'PGRST204' || error.message?.includes('schema cache'))) {
+      const fallbackPayload = { ...productPayload };
+      delete fallbackPayload.original_price;
+      delete fallbackPayload.colors;
+
+      const retryResult = await supabaseAdmin
+        .from('products')
+        .insert(fallbackPayload)
+        .select()
+        .single();
+
+      data = retryResult.data;
+      error = retryResult.error;
+
+      if (!error && (productPayload.original_price !== undefined || productPayload.colors !== undefined)) {
+        warning = 'Registered product, but original_price / colors columns are missing in Supabase. Run the SQL migration in Supabase SQL editor to persist MRP and color variants.';
+      }
+    }
+
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ success: true, product: data });
+    return NextResponse.json({ success: true, product: data, warning });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create product' }, { status: 500 });
   }
@@ -85,7 +113,7 @@ export async function PATCH(req: NextRequest) {
     const allowedKeys = [
       'name', 'subtitle', 'price', 'original_price', 'originalPrice', 'category', 'tag',
       'image', 'images', 'description', 'collection',
-      'material', 'shipping'
+      'material', 'shipping', 'colors'
     ];
 
     const updates: Record<string, any> = {};
@@ -100,21 +128,43 @@ export async function PATCH(req: NextRequest) {
             : null;
         } else if (key === 'images' && Array.isArray(rawUpdates.images)) {
           updates.images = rawUpdates.images.filter((img: any) => typeof img === 'string' && img.trim() !== '');
+        } else if (key === 'colors' && Array.isArray(rawUpdates.colors)) {
+          updates.colors = rawUpdates.colors;
         } else {
           updates[key] = rawUpdates[key];
         }
       }
     }
 
-    const { data, error } = await supabaseAdmin
+    let { data, error } = await supabaseAdmin
       .from('products')
       .update(updates)
       .eq('id', id)
       .select()
       .single();
 
+    let warning: string | undefined;
+
+    // Fallback if schema lacks optional columns (original_price, colors)
+    if (error && (error.code === 'PGRST204' || error.message?.includes('schema cache'))) {
+      const fallbackUpdates = { ...updates };
+      delete fallbackUpdates.original_price;
+      delete fallbackUpdates.colors;
+      const retryResult = await supabaseAdmin
+        .from('products')
+        .update(fallbackUpdates)
+        .eq('id', id)
+        .select()
+        .single();
+      data = retryResult.data;
+      error = retryResult.error;
+      if (!error && (updates.original_price !== undefined || updates.colors !== undefined)) {
+        warning = 'Saved product details, but original_price or colors column is missing in Supabase. Run the SQL migration in Supabase SQL editor to persist MRP.';
+      }
+    }
+
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ success: true, product: data });
+    return NextResponse.json({ success: true, product: data, warning });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to update product' }, { status: 500 });
   }

@@ -4,15 +4,38 @@ import Image from 'next/image';
 import { useEffect, useState, useRef } from 'react';
 import { useCart } from '@/context/CartContext';
 import { usePathname } from 'next/navigation';
+import SearchModal from '@/components/SearchModal';
 
 export default function Navbar() {
   const [scrolled, setScrolled]   = useState(false);
   const [menuOpen, setMenuOpen]   = useState(false);
   const [hidden, setHidden]       = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const lastScrollY               = useRef(0);
 
   const { cartCount, isHydrated } = useCart();
   const pathname = usePathname();
+
+  // Global search shortcut (Cmd+K / Ctrl+K / /)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || e.key === '/') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Scroll: track direction + scrolled state
   useEffect(() => {
@@ -86,11 +109,33 @@ export default function Navbar() {
           </div>
 
           {/* Right Area: Actions */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '2rem' }}>
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1.25rem' }}>
             <Link href="/about" className={`nav-link nav-right-link desktop-only ${isActive('/about') ? 'active' : ''}`}>Our Story</Link>
 
+            {/* Search Button (Desktop & Mobile) */}
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Search all products"
+              className="nav-search-button"
+              title="Search products (Ctrl+K or /)"
+              style={{
+                zIndex: 51,
+                position: 'relative',
+                padding: '6px 1px',
+                margin: '0 1px',
+                minWidth: '38px',
+                minHeight: '38px',
+                touchAction: 'manipulation',
+              }}
+            >
+              <span className="material-symbols-outlined nav-search-icon" style={{ fontSize: '28px', color: 'var(--primary)' }}>
+                search
+              </span>
+            </button>
+
             {/* Cart */}
-            <Link href="/cart" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', zIndex: 51 }}>
+            <Link href="/cart" style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', zIndex: 51 }} aria-label="Shopping bag">
               <span className="material-symbols-outlined nav-cart-icon" style={{ color: 'var(--primary)', fontSize: '24px', transition: 'transform 0.3s ease' }}>
                 shopping_bag
               </span>
@@ -167,6 +212,51 @@ export default function Navbar() {
           transform: menuOpen ? 'translateY(0)' : 'translateY(20px)',
           transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         }}>
+          {/* Quick Search Launcher inside Mobile Drawer */}
+          <button
+            type="button"
+            onClick={() => {
+              setMenuOpen(false);
+              setSearchOpen(true);
+            }}
+            style={{
+              width: '100%',
+              minHeight: '48px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.75rem 1.25rem',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              color: 'var(--on-surface-variant)',
+              fontSize: '13px',
+              cursor: 'pointer',
+              marginBottom: '0.25rem',
+              fontFamily: 'var(--font-body)',
+              transition: 'background 0.2s ease',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#fde047' }}>
+                search
+              </span>
+              <span style={{ letterSpacing: '0.05em', color: '#fff' }}>Search Products...</span>
+            </span>
+            <span
+              style={{
+                fontSize: '10px',
+                opacity: 0.6,
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                padding: '2px 6px',
+                borderRadius: '4px',
+                color: '#fff',
+              }}
+            >
+              FIND
+            </span>
+          </button>
+
           {[
             { href: '/', label: 'Home', icon: 'home' },
             { href: '/products?category=ethnic', label: 'Ethnic Collection', icon: 'auto_awesome' },
@@ -261,6 +351,9 @@ export default function Navbar() {
           </span>
         </div>
       </div>
+
+      {/* Global Interactive Search Modal */}
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }

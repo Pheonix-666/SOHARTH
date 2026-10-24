@@ -781,8 +781,19 @@ export default function AdminDashboard() {
     }
     const cleanedImages = form.images.filter(img => img && img.trim() !== '');
     const primaryImage = form.image || cleanedImages[0] || '';
+
+    if (primaryImage && primaryImage.match(/^[a-zA-Z]:\\/)) {
+      showToast('Error: Please provide a valid web URL (http/https) or upload an image file, not a local file path.', 'error');
+      return;
+    }
+
     const origNum = parseFloat(form.original_price);
     const discNum = parseFloat(form.price) || 0;
+
+    const cleanedColors = (form.colors || []).map(c => ({
+      ...c,
+      images: (c.images || []).filter(img => img && img.trim() !== '')
+    })).filter(c => c.name.trim() !== '');
 
     const payload = {
       ...form,
@@ -790,6 +801,7 @@ export default function AdminDashboard() {
       original_price: !isNaN(origNum) && origNum > 0 ? origNum : null,
       image: primaryImage,
       images: cleanedImages.length > 0 ? cleanedImages : (primaryImage ? [primaryImage] : []),
+      colors: cleanedColors,
     };
 
     try {
@@ -800,7 +812,11 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (data.success) {
-        showToast(`${data.product.name} successfully registered in the catalogue!`, 'success');
+        if (data.warning) {
+          showToast(`${data.product.name} registered! (${data.warning})`, 'info');
+        } else {
+          showToast(`${data.product.name} successfully registered in the catalogue!`, 'success');
+        }
         setForm({
           name: '', subtitle: '', original_price: '', price: '', category: categories[0]?.value || '',
           tag: '', image: '', images: [''], description: '',
@@ -837,7 +853,11 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (data.success) {
-        showToast('Product successfully updated!', 'success');
+        if (data.warning) {
+          showToast(data.warning, 'info');
+        } else {
+          showToast('Product successfully updated!', 'success');
+        }
         setEditingProduct(null);
         fetchData();
       } else {
@@ -1234,17 +1254,30 @@ export default function AdminDashboard() {
                         <div>
                           <FieldLabel>IMAGES (PRIMARY FIRST)</FieldLabel>
                           {form.images.map((img, idx) => (
-                            <div key={idx} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
-                              {img && <img src={img} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />}
-                              <div style={{ flex: 1 }}>
-                                <input type="file" accept="image/*" onChange={e => handleImageUpload(e, idx, false)} style={{ color: 'var(--primary)', fontSize: '12px' }} />
-                                {uploadingIdx?.idx === idx && !uploadingIdx.isEdit && <span style={{ fontSize: '10px', color: 'var(--primary)', marginLeft: '8px' }}>Uploading...</span>}
+                            <div key={idx} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', alignItems: 'center' }}>
+                              {img && <img src={img} alt="" style={{ width: '44px', height: '44px', objectFit: 'cover', borderRadius: '4px', border: '1px solid rgba(229,226,224,0.2)' }} />}
+                              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                <input
+                                  type="text"
+                                  placeholder="Paste image web URL or upload below..."
+                                  value={img}
+                                  onChange={e => {
+                                    const newImages = [...form.images];
+                                    newImages[idx] = e.target.value;
+                                    setForm({ ...form, images: newImages, image: newImages[0] || '' });
+                                  }}
+                                  style={{ ...inputStyle, padding: '0.4rem 0.75rem', fontSize: '11px' }}
+                                />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                  <input type="file" accept="image/*" onChange={e => handleImageUpload(e, idx, false)} style={{ color: 'var(--primary)', fontSize: '11px' }} />
+                                  {uploadingIdx?.idx === idx && !uploadingIdx.isEdit && <span style={{ fontSize: '10px', color: 'var(--primary)' }}>Uploading...</span>}
+                                </div>
                               </div>
                               {form.images.length > 1 && (
                                 <button type="button" onClick={() => {
                                   const newImages = form.images.filter((_, i) => i !== idx);
                                   setForm({ ...form, images: newImages, image: newImages[0] || '' });
-                                }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer' }}>✕</button>
+                                }} style={{ background: 'transparent', border: 'none', color: '#ff4b4b', cursor: 'pointer', fontSize: '14px', padding: '4px 8px' }}>✕</button>
                               )}
                             </div>
                           ))}

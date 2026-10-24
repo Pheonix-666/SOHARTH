@@ -3886,8 +3886,54 @@ a[style*="fde047"],
 }
 
 
+/* Search Modal & Navbar Button Styles */
+.nav-search-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 1px;
+  margin: 0 1px;
+  color: var(--primary, #ffffff);
+  border-radius: 50%;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease, color 0.25s ease;
+}
 
+.nav-search-button .nav-search-icon {
+  font-size: 28px;
+}
 
+.nav-search-button:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  transform: scale(1.08);
+}
+
+.nav-search-button:active {
+  transform: scale(0.95);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
 
 

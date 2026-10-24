@@ -14,12 +14,15 @@ CREATE TABLE IF NOT EXISTS products (
     description TEXT,
     material TEXT,
     shipping TEXT,
+    colors JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Migration for existing databases:
--- ALTER TABLE products ADD COLUMN IF NOT EXISTS original_price NUMERIC DEFAULT NULL;
--- ALTER TABLE products DROP COLUMN IF EXISTS collection;
+-- Migration for existing databases (Run this block in Supabase Dashboard -> SQL Editor):
+ALTER TABLE products ADD COLUMN IF NOT EXISTS original_price NUMERIC DEFAULT NULL;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS colors JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS collection TEXT DEFAULT '';
+NOTIFY pgrst, 'reload schema';
 
 -- 2. Categories Table
 CREATE TABLE IF NOT EXISTS categories (
