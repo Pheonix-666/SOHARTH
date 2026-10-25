@@ -1,16 +1,35 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET() {
-  const { data, error } = await supabaseAdmin
+  // Try querying reviews
+  let { data, error } = await supabaseAdmin
     .from('reviews')
     .select('*')
     .eq('approved', true)
     .order('created_at', { ascending: false })
     .limit(30);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data ?? []);
+  // Fallback if 'approved' column is not in existing schema
+  if (error && (error.code === 'PGRST204' || error.message?.includes('approved'))) {
+    const fallback = await supabaseAdmin
+      .from('reviews')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(30);
+    data = fallback.data;
+    error = fallback.error;
+  }
+
+  if (error) {
+    return NextResponse.json([]);
+  }
+
+  return NextResponse.json(data ?? [], {
+    headers: {
+      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+    },
+  });
 }
 
 export async function POST(req: NextRequest) {

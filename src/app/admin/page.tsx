@@ -1840,11 +1840,29 @@ export default function AdminDashboard() {
                                 </div>
 
                                 <div>
-                                  <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', fontSize: '9px', letterSpacing: '0.15em' }}>STATUS</span>
+                                  <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', fontSize: '9px', letterSpacing: '0.15em' }}>DELIVERY</span>
                                   <span className={`order-status-badge ${
                                     isGiven ? 'status-delivered' : isShipped ? 'status-shipped' : isCancelled ? 'status-cancelled' : 'status-pending'
                                   }`}>
                                     ● {order.orderStatus || 'Pending'}
+                                  </span>
+                                </div>
+
+                                <div>
+                                  <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', display: 'block', fontSize: '9px', letterSpacing: '0.15em' }}>PAYMENT</span>
+                                  <span style={{
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    padding: '2px 8px',
+                                    borderRadius: '4px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    background: order.paymentStatus === 'Paid' ? 'rgba(16, 185, 129, 0.15)' : (order.paymentMethod?.includes('UPI') ? 'rgba(253, 224, 71, 0.15)' : 'rgba(255, 255, 255, 0.05)'),
+                                    color: order.paymentStatus === 'Paid' ? '#34d399' : (order.paymentMethod?.includes('UPI') ? '#fde047' : '#9ca3af'),
+                                    border: `1px solid ${order.paymentStatus === 'Paid' ? 'rgba(16, 185, 129, 0.3)' : (order.paymentMethod?.includes('UPI') ? 'rgba(253, 224, 71, 0.3)' : 'rgba(255, 255, 255, 0.1)')}`
+                                  }}>
+                                    {order.paymentMethod?.includes('UPI') ? '⚡ UPI' : 'COD'} · {order.paymentStatus || 'Pending'}
                                   </span>
                                 </div>
                               </div>
@@ -2076,15 +2094,36 @@ export default function AdminDashboard() {
                                   </div>
 
                                   <div>
-                                    <label className="font-caption" style={{ color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.35rem', fontSize: '11px' }}>
-                                      Payment Status (Method: {order.paymentMethod || 'Cash on Delivery'})
-                                    </label>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                                      <label className="font-caption" style={{ color: 'var(--on-surface-variant)', fontSize: '11px' }}>
+                                        Payment Status ({order.paymentMethod || 'UPI / COD'})
+                                      </label>
+                                      {order.paymentStatus !== 'Paid' && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleUpdateOrder(order.id, { paymentStatus: 'Paid' })}
+                                          style={{
+                                            background: 'rgba(16, 185, 129, 0.15)',
+                                            border: '1px solid rgba(16, 185, 129, 0.4)',
+                                            color: '#34d399',
+                                            fontSize: '10px',
+                                            fontWeight: 700,
+                                            padding: '2px 8px',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer'
+                                          }}
+                                        >
+                                          ✓ Mark Paid
+                                        </button>
+                                      )}
+                                    </div>
                                     <select 
                                       value={order.paymentStatus || 'Pending'} 
                                       onChange={e => handleUpdateOrder(order.id, { paymentStatus: e.target.value })}
                                       style={{ ...selectStyle, padding: '0.65rem', background: '#1c1b1b', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)' }}
                                     >
                                       <option value="Pending">Payment Pending</option>
+                                      <option value="Verification Pending">Verification Pending (Awaiting UTR Match)</option>
                                       <option value="Paid">Paid ✅</option>
                                       <option value="Failed">Failed ❌</option>
                                       <option value="Refunded">Refunded</option>

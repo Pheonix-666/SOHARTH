@@ -60,5 +60,5 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     console.error('Error updating order:', error);
     return NextResponse.json({ success: false, error: 'Failed to update order' }, { status: 500 });
   }
-}
+}export { PUT as PATCH };
 

@@ -91,10 +91,11 @@ export default function Navbar() {
         >
           {/* Left Area: Links (Desktop) / Logo (Mobile) */}
           <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-            <div className="nav-left desktop-only" style={{ display: 'flex', gap: '2rem' }}>
-              <Link href="/products?category=new" className={`nav-link ${isActive('/products?category=new') ? 'active' : ''}`}>New Arrivals</Link>
-              <Link href="/products?category=ethnic" className={`nav-link ${isActive('/products?category=ethnic') ? 'active' : ''}`}>Ethnic</Link>
-              <Link href="/products" className={`nav-link ${isActive('/products') && pathname === '/products' ? 'active' : ''}`}>Collections</Link>
+            <div className="nav-left desktop-only" style={{ display: 'flex', gap: '1.75rem' }}>
+              <Link href="/products" className={`nav-link ${isActive('/products') && !pathname.includes('category') ? 'active' : ''}`}>All T-Shirts</Link>
+              <Link href="/products?category=heroic" className={`nav-link ${isActive('/products?category=heroic') ? 'active' : ''}`}>Oversized Tees</Link>
+              <Link href="/products?category=ethnic" className={`nav-link ${isActive('/products?category=ethnic') ? 'active' : ''}`}>Ethnic Tees</Link>
+              <Link href="/products?category=new" className={`nav-link ${isActive('/products?category=new') ? 'active' : ''}`}>New Drops</Link>
             </div>
             <Link href="/" className="nav-logo-link mobile-flex" style={{ display: 'flex', alignItems: 'center', zIndex: 51, position: 'relative' }}>
               <Image src="/logo.jpg" alt="Soharth" width={36} height={36} priority style={{ objectFit: 'contain', borderRadius: '50%' }} />
@@ -259,10 +260,13 @@ export default function Navbar() {
 
           {[
             { href: '/', label: 'Home', icon: 'home' },
-            { href: '/products?category=ethnic', label: 'Ethnic Collection', icon: 'auto_awesome' },
-            { href: '/products?category=new', label: 'New Arrivals', icon: 'local_fire_department' },
-            { href: '/products', label: 'All Collections', icon: 'grid_view' },
+            { href: '/products', label: 'All T-Shirts', icon: 'grid_view' },
+            { href: '/products?category=heroic', label: 'Oversized Tees', icon: 'checkroom' },
+            { href: '/products?category=ethnic', label: 'Ethnic Tees', icon: 'auto_awesome' },
+            { href: '/products?category=quotes', label: 'Graphic Tees', icon: 'format_quote' },
+            { href: '/products?category=new', label: 'New Drops', icon: 'local_fire_department' },
             { href: '/about', label: 'Our Story', icon: 'history_edu' },
+            { href: '/shipping-policy', label: 'Shipping & COD', icon: 'local_shipping' },
             { href: '/cart', label: 'My Bag', icon: 'shopping_bag', badge: cartCount },
           ].map((item, i) => (
             <Link

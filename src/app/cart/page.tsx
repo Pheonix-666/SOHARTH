@@ -53,7 +53,16 @@ export default function CartPage() {
   const [selectedAddressId, setSelectedAddressId] = useState<string | 'new' | null>('new');
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'cod'>('upi');
+  const [upiModalOpen, setUpiModalOpen] = useState(false);
+  const [utrNumber, setUtrNumber] = useState('');
+  const [tempRef, setTempRef] = useState('');
+  const [submittedMethod, setSubmittedMethod] = useState('');
+  const [submittedUtr, setSubmittedUtr] = useState('');
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+
+  const upiId = process.env.NEXT_PUBLIC_UPI_ID || 'payments@soharth';
+  const upiName = process.env.NEXT_PUBLIC_UPI_NAME || 'SOHARTH ATELIER';
 
   useEffect(() => {
     fetch('/api/products')
@@ -80,48 +89,85 @@ export default function CartPage() {
   const tax = Math.round((subtotal * 0.03) * 100) / 100;
   const total = subtotal + tax + shipping;
 
-  const handleCheckout = async () => {
+  // Initialize or re-use active payment transaction reference
+  const currentRef = tempRef || ('SOH' + Math.random().toString(36).substring(2, 8).toUpperCase());
+
+  const upiDeepLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiName)}&am=${total.toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Order ${currentRef}`)}`;
+  const gpayLink = `gpay://upi/pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiName)}&am=${total.toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Order ${currentRef}`)}`;
+  const phonepeLink = `phonepe://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiName)}&am=${total.toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Order ${currentRef}`)}`;
+  const paytmLink = `paytmmp://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiName)}&am=${total.toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Order ${currentRef}`)}`;
+
+  const validateAddressAndContact = () => {
     const { street, city, state, zip, country, phone, name, email } = address;
 
     if (!name || !email) {
       showToast('Please fill out your name and email address.', 'error');
-      return;
+      return false;
     }
 
     if (selectedAddressId === 'new') {
       if (!street || !city || !state || !zip || !country || !phone) {
-        showToast('Please complete your shipping address.', 'error');
-        return;
+        showToast('Please complete your shipping address and contact phone.', 'error');
+        return false;
       }
     }
 
     if (items.length === 0) {
       showToast('Your bag is empty.', 'error');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleInitiateCheckout = () => {
+    if (!validateAddressAndContact()) return;
+
+    if (paymentMethod === 'upi') {
+      if (!tempRef) setTempRef(currentRef);
+      setUpiModalOpen(true);
       return;
     }
 
+    // Cash on Delivery direct placement
+    executeOrderPlacement('Cash on Delivery', 'Pending', '');
+  };
+
+  const executeOrderPlacement = async (selectedMethod: string, status: string, utr: string) => {
     setIsCheckingOut(true);
     try {
+      const { street, city, state, zip, country, phone, name, email } = address;
       const customer = { name, email, phone };
 
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items, subtotal, tax, total,
+          items,
+          subtotal,
+          tax,
+          total,
           customer,
           shippingAddress: { street, city, state, zip, country },
           userId: null,
+          paymentMethod: selectedMethod,
+          paymentStatus: status,
+          transactionId: utr,
+          internalNotes: utr ? `UPI UTR: ${utr} | Ref: ${currentRef}` : 'Cash on Delivery Order',
         }),
       });
+
       const data = await res.json();
       if (data.success) {
         setOrderId(data.orderId);
+        setSubmittedMethod(selectedMethod);
+        setSubmittedUtr(utr);
+        setUpiModalOpen(false);
         setOrderPlaced(true);
         clearCart();
-        showToast('Order placed successfully!', 'success');
+        showToast(selectedMethod.toLowerCase().includes('online') || selectedMethod.includes('UPI') ? 'Online payment reference registered! Order placed.' : 'Order placed successfully!', 'success');
       } else {
-        showToast('Order processing failed. Please try again.', 'error');
+        showToast(data.error || 'Order processing failed. Please try again.', 'error');
       }
     } catch (err) {
       console.error(err);
@@ -129,6 +175,15 @@ export default function CartPage() {
     } finally {
       setIsCheckingOut(false);
     }
+  };
+
+  const handleConfirmUpiPayment = () => {
+    const cleanUtr = utrNumber.trim().replace(/\s+/g, '');
+    if (cleanUtr.length < 10) {
+      showToast('Please enter a valid 12-digit transaction UTR reference number from your payment app.', 'error');
+      return;
+    }
+    executeOrderPlacement('Online Payment Option (GPay / PhonePe / Paytm / UPI)', 'Verification Pending', cleanUtr);
   };
 
   const crossSell = allProducts.filter(p => !items.find(i => i.id === p.id)).slice(0, 4);
@@ -146,28 +201,83 @@ export default function CartPage() {
   }
 
   if (orderPlaced) {
+    const isOnlineOrder = submittedMethod.toLowerCase().includes('online') || submittedMethod.toLowerCase().includes('upi');
+    const waVerificationText = encodeURIComponent(`Hi SOHARTH Atelier, I have placed Order #${orderId} for ₹${total.toFixed(2)} via Online Payment. My 12-digit UTR is: ${submittedUtr || 'N/A'}. Please confirm dispatch!`);
+    const waVerificationUrl = `https://wa.me/919137773967?text=${waVerificationText}`;
+
     return (
       <>
         <Navbar />
         <main style={{ paddingTop: '10rem', paddingBottom: 'var(--section-gap)', minHeight: '80vh', display: 'flex', alignItems: 'center' }}>
-          <div className="container" style={{ textAlign: 'center', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '4rem', color: 'var(--primary)', animation: 'scaleIn 0.8s cubic-bezier(0.16,1,0.3,1)' }}>
-              task_alt
+          <div className="container" style={{ textAlign: 'center', maxWidth: '640px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '4.5rem', color: isOnlineOrder ? '#10b981' : 'var(--primary)', animation: 'scaleIn 0.8s cubic-bezier(0.16,1,0.3,1)' }}>
+              {isOnlineOrder ? 'verified' : 'task_alt'}
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <span className="font-label-caps" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.3em' }}>ORDER CONFIRMED</span>
+              <span className="font-label-caps" style={{ color: isOnlineOrder ? '#34d399' : 'var(--on-surface-variant)', letterSpacing: '0.3em', fontSize: '11px' }}>
+                {isOnlineOrder ? '● ONLINE PAYMENT SUBMITTED · ORDER REGISTERED' : 'ORDER CONFIRMED'}
+              </span>
               <h1 className="font-headline-lg" style={{ color: 'var(--primary)' }}>THANK YOU FOR YOUR PATRONAGE</h1>
             </div>
-            <p className="font-body-lg" style={{ color: 'var(--on-surface-variant)', lineHeight: 1.8 }}>
-              Your order <strong style={{ color: 'var(--primary)' }}>#{orderId}</strong> has been successfully broadcast to our fulfillment hub.
-              A dispatch confirmation along with transit metrics will be transmitted shortly.
-            </p>
-            <div className="glass-panel" style={{ padding: '1.5rem', border: '1px solid rgba(229,226,224,0.1)' }}>
-              <p className="font-caption" style={{ color: 'var(--on-surface-variant)' }}>
-                Fulfillment Estimate: 3-5 standard Solar cycles.
-              </p>
+
+            {/* Order & Payment Summary Card */}
+            <div className="glass-panel" style={{ padding: '2rem', border: '1px solid rgba(229,226,224,0.12)', textAlign: 'left', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
+                <span className="font-caption" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.1em' }}>ORDER REFERENCE</span>
+                <strong style={{ color: '#fde047', fontFamily: 'monospace', fontSize: '14px' }}>#{orderId}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
+                <span className="font-caption" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.1em' }}>PAYMENT METHOD</span>
+                <span style={{ color: '#fff', fontSize: '13px', fontWeight: 600 }}>{submittedMethod}</span>
+              </div>
+              {submittedUtr && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
+                  <span className="font-caption" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.1em' }}>SUBMITTED UTR NO.</span>
+                  <strong style={{ color: '#34d399', fontFamily: 'monospace', fontSize: '13px', letterSpacing: '0.05em' }}>{submittedUtr}</strong>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span className="font-caption" style={{ color: 'var(--on-surface-variant)', letterSpacing: '0.1em' }}>FULFILLMENT STATUS</span>
+                <span style={{ color: isOnlineOrder ? '#fde047' : 'var(--primary)', fontSize: '12px', fontWeight: 600 }}>
+                  {isOnlineOrder ? 'Verification Pending · Priority Queue Active' : 'Processing for Dispatch'}
+                </span>
+              </div>
             </div>
-            <div style={{ marginTop: '1rem' }}>
+
+            <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', lineHeight: 1.8 }}>
+              {isOnlineOrder
+                ? 'Your 12-digit transaction UTR reference has been transmitted to our accounts desk. Once verified against our bank statement, your express AWB courier link will be triggered via SMS/WhatsApp.'
+                : `Your order #${orderId} has been successfully broadcast to our fulfillment hub. Please keep exact cash or payment app ready upon doorstep delivery.`}
+            </p>
+
+            {isOnlineOrder && (
+              <a
+                href={waVerificationUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  background: 'rgba(37, 211, 102, 0.15)',
+                  border: '1px solid rgba(37, 211, 102, 0.35)',
+                  color: '#25D366',
+                  padding: '0.85rem 1.5rem',
+                  borderRadius: '100px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textDecoration: 'none',
+                  transition: 'background 0.2s',
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>chat</span>
+                OPTIONAL: SEND PAYMENT RECEIPT ON WHATSAPP (+91 91377 73967)
+              </a>
+            )}
+
+            <div style={{ marginTop: '0.5rem' }}>
               <Link href="/products" className="btn-primary" style={{ padding: '1.25rem 2.5rem' }}>
                 RETURN TO PRODUCTS
               </Link>
@@ -482,6 +592,100 @@ export default function CartPage() {
                       />
                     </div>
                   </div>
+
+                  {/* ─── PAYMENT METHOD SELECTION ─── */}
+                  <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(229,226,224,0.1)', paddingTop: '1.75rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                      <h3 className="font-label-caps" style={{ color: 'var(--primary)', fontSize: '11px', letterSpacing: '0.2em' }}>
+                        SELECT PAYMENT METHOD
+                      </h3>
+                      <span style={{ fontSize: '10px', color: '#10b981', fontWeight: 700, letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }}></span>
+                        DIRECT BANK ENCRYPTION
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                      {/* Option 1: Online Payment Option */}
+                      <div
+                        onClick={() => setPaymentMethod('upi')}
+                        style={{
+                          padding: '1.25rem',
+                          borderRadius: '12px',
+                          border: paymentMethod === 'upi' ? '2px solid #fde047' : '1px solid rgba(255,255,255,0.08)',
+                          backgroundColor: paymentMethod === 'upi' ? 'rgba(253, 224, 71, 0.04)' : 'rgba(255,255,255,0.02)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{
+                              width: '18px', height: '18px', borderRadius: '50%',
+                              border: paymentMethod === 'upi' ? '5px solid #fde047' : '2px solid rgba(255,255,255,0.3)',
+                              backgroundColor: paymentMethod === 'upi' ? '#080808' : 'transparent',
+                              display: 'inline-block'
+                            }}></span>
+                            <div>
+                              <span style={{ color: '#fff', fontSize: '14px', fontWeight: 700, letterSpacing: '0.05em' }}>
+                                ⚡ ONLINE PAYMENT OPTION
+                              </span>
+                              <span style={{ marginLeft: '8px', fontSize: '9px', fontWeight: 800, color: '#fde047', background: 'rgba(253, 224, 71, 0.15)', border: '1px solid rgba(253, 224, 71, 0.3)', padding: '2px 6px', borderRadius: '4px' }}>
+                                RECOMMENDED · 0% FEES
+                              </span>
+                            </div>
+                          </div>
+                          <span style={{ color: '#34d399', fontSize: '11px', fontWeight: 700 }}>PRIORITY DISPATCH</span>
+                        </div>
+
+                        <p style={{ color: 'var(--on-surface-variant)', fontSize: '12px', lineHeight: 1.5, margin: '0 0 0.75rem 28px' }}>
+                          Pay securely online with Google Pay, PhonePe, Paytm, or any UPI app. Scan dynamic QR or tap to open app directly.
+                        </p>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '28px', flexWrap: 'wrap' }}>
+                          {['Google Pay', 'PhonePe', 'Paytm', 'Any UPI App'].map(app => (
+                            <span key={app} style={{ fontSize: '10px', color: '#e5e2e0', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                              {app}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Option 2: Cash on Delivery */}
+                      <div
+                        onClick={() => setPaymentMethod('cod')}
+                        style={{
+                          padding: '1.25rem',
+                          borderRadius: '12px',
+                          border: paymentMethod === 'cod' ? '2px solid #fde047' : '1px solid rgba(255,255,255,0.08)',
+                          backgroundColor: paymentMethod === 'cod' ? 'rgba(253, 224, 71, 0.04)' : 'rgba(255,255,255,0.02)',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{
+                              width: '18px', height: '18px', borderRadius: '50%',
+                              border: paymentMethod === 'cod' ? '5px solid #fde047' : '2px solid rgba(255,255,255,0.3)',
+                              backgroundColor: paymentMethod === 'cod' ? '#080808' : 'transparent',
+                              display: 'inline-block'
+                            }}></span>
+                            <div>
+                              <span style={{ color: '#fff', fontSize: '14px', fontWeight: 700, letterSpacing: '0.05em' }}>
+                                CASH ON DELIVERY (COD)
+                              </span>
+                            </div>
+                          </div>
+                          <span style={{ color: 'var(--on-surface-variant)', fontSize: '11px' }}>DOORSTEP VERIFICATION</span>
+                        </div>
+
+                        <p style={{ color: 'var(--on-surface-variant)', fontSize: '12px', lineHeight: 1.5, margin: '0 0 0 28px' }}>
+                          Pay upon delivery at your doorstep via cash or courier-assisted UPI scan.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -525,12 +729,18 @@ export default function CartPage() {
 
                   <div style={{ paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <button
-                      onClick={handleCheckout}
+                      onClick={handleInitiateCheckout}
                       disabled={isCheckingOut || items.length === 0}
                       className="btn-primary"
-                      style={{ width: '100%', padding: '1.25rem', letterSpacing: '0.3em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', opacity: isCheckingOut || items.length === 0 ? 0.5 : 1, cursor: isCheckingOut || items.length === 0 ? 'not-allowed' : 'pointer' }}
+                      style={{ width: '100%', padding: '1.25rem', letterSpacing: '0.2em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', opacity: isCheckingOut || items.length === 0 ? 0.5 : 1, cursor: isCheckingOut || items.length === 0 ? 'not-allowed' : 'pointer' }}
                     >
-                      {isCheckingOut ? 'PROCESSING...' : 'SECURE CHECKOUT'}
+                      {isCheckingOut ? (
+                        'PROCESSING...'
+                      ) : paymentMethod === 'upi' ? (
+                        `PROCEED TO PAY ₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ONLINE`
+                      ) : (
+                        `PLACE CASH ON DELIVERY ORDER`
+                      )}
                       <span className="material-symbols-outlined" style={{ fontSize: '20px', transition: 'transform 0.3s' }}>arrow_forward</span>
                     </button>
 
@@ -540,7 +750,7 @@ export default function CartPage() {
                       ))}
                     </div>
                     <p className="font-caption" style={{ color: 'var(--on-surface-variant)', textAlign: 'center', opacity: 0.6, fontStyle: 'italic', maxWidth: '280px', margin: '0 auto' }}>
-                      All transactions are encrypted through our secure secure relay system.
+                      Direct merchant online payments are protected by RBI encryption standards with zero payment gateway markups.
                     </p>
                   </div>
                 </div>
@@ -602,13 +812,13 @@ export default function CartPage() {
         <div className="void-mobile-checkout-panel">
           <div className="void-mobile-checkout-content">
             <div className="void-mobile-estimate-col">
-              <span className="void-mobile-estimate-label">TOTAL ESTIMATE</span>
+              <span className="void-mobile-estimate-label">TOTAL ({paymentMethod === 'upi' ? 'ONLINE' : 'COD'})</span>
               <span className="void-mobile-estimate-amount">
                 ₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <button
-              onClick={handleCheckout}
+              onClick={handleInitiateCheckout}
               disabled={isCheckingOut}
               className="void-mobile-checkout-btn"
             >
@@ -616,11 +826,295 @@ export default function CartPage() {
                 'PROCESSING...'
               ) : (
                 <>
-                  <span>ENTER THE VOID</span>
+                  <span>{paymentMethod === 'upi' ? 'PROCEED TO PAY ONLINE' : 'CONFIRM COD'}</span>
                   <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
                 </>
               )}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── DYNAMIC INSTANT UPI PAYMENT MODAL ─── */}
+      {upiModalOpen && (
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isCheckingOut) setUpiModalOpen(false);
+          }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(16px)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            overflowY: 'auto'
+          }}
+        >
+          <div
+            style={{
+              background: '#0e0e0e',
+              border: '1px solid rgba(253, 224, 71, 0.3)',
+              borderRadius: '24px',
+              padding: '2rem',
+              maxWidth: '520px',
+              width: '100%',
+              position: 'relative',
+              margin: 'auto',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px rgba(253, 224, 71, 0.15)',
+            }}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => !isCheckingOut && setUpiModalOpen(false)}
+              disabled={isCheckingOut}
+              style={{
+                position: 'absolute',
+                top: '1.25rem',
+                right: '1.25rem',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--on-surface-variant)',
+                cursor: isCheckingOut ? 'not-allowed' : 'pointer'
+              }}
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+
+            {/* Header */}
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(253, 224, 71, 0.15)', border: '1px solid rgba(253, 224, 71, 0.3)', padding: '4px 10px', borderRadius: '100px', marginBottom: '0.75rem' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '14px', color: '#fde047' }}>bolt</span>
+                <span className="font-label-caps" style={{ color: '#fde047', fontSize: '9px', letterSpacing: '0.15em' }}>
+                  ONLINE PAYMENT GATEWAY
+                </span>
+              </div>
+              <h2 className="font-headline-md" style={{ color: '#fff', fontSize: '20px', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
+                PAY TO SOHARTH ATELIER
+              </h2>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '0.4rem', marginTop: '0.25rem' }}>
+                <span style={{ fontSize: '13px', color: 'var(--on-surface-variant)' }}>TOTAL PAYABLE:</span>
+                <span style={{ fontSize: '26px', fontWeight: 800, color: '#fde047', letterSpacing: '-0.02em' }}>
+                  ₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+
+            {/* Step 1: Scan Dynamic QR or Tap Mobile Apps */}
+            <div style={{ background: '#161515', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '1.25rem', textAlign: 'center', marginBottom: '1.5rem' }}>
+              <span className="font-label-caps" style={{ fontSize: '9px', letterSpacing: '0.2em', color: 'var(--on-surface-variant)', display: 'block', marginBottom: '0.75rem' }}>
+                STEP 1: SCAN SECURE QR CODE WITH ANY PAYMENT APP
+              </span>
+
+              {/* Dynamic QR Display */}
+              <div style={{
+                background: '#ffffff',
+                padding: '12px',
+                borderRadius: '12px',
+                display: 'inline-block',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                marginBottom: '0.75rem'
+              }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiDeepLink)}&margin=8`}
+                  alt="SOHARTH Dynamic UPI Payment QR"
+                  width={180}
+                  height={180}
+                  style={{ display: 'block', margin: '0 auto' }}
+                />
+              </div>
+
+              {/* 1-Click Mobile App Deep Links */}
+              <div style={{ marginTop: '0.5rem', marginBottom: '0.75rem' }}>
+                <span className="font-caption" style={{ color: 'var(--on-surface-variant)', fontSize: '11px', display: 'block', marginBottom: '0.5rem' }}>
+                  On phone? Tap your preferred app to pay directly:
+                </span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                  <a
+                    href={gpayLink}
+                    style={{
+                      background: '#1f1e1e',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      padding: '8px 4px',
+                      borderRadius: '8px',
+                      color: '#fff',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '2px',
+                      transition: 'border-color 0.2s',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#4285F4' }}>account_balance_wallet</span>
+                    GPay
+                  </a>
+                  <a
+                    href={phonepeLink}
+                    style={{
+                      background: '#1f1e1e',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      padding: '8px 4px',
+                      borderRadius: '8px',
+                      color: '#fff',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '2px',
+                      transition: 'border-color 0.2s',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#a855f7' }}>payments</span>
+                    PhonePe
+                  </a>
+                  <a
+                    href={paytmLink}
+                    style={{
+                      background: '#1f1e1e',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      padding: '8px 4px',
+                      borderRadius: '8px',
+                      color: '#fff',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '2px',
+                      transition: 'border-color 0.2s',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#00BAF2' }}>credit_card</span>
+                    Paytm
+                  </a>
+                  <a
+                    href={upiDeepLink}
+                    style={{
+                      background: '#1f1e1e',
+                      border: '1px solid rgba(253, 224, 71, 0.4)',
+                      padding: '8px 4px',
+                      borderRadius: '8px',
+                      color: '#fde047',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '2px',
+                      transition: 'border-color 0.2s',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#fde047' }}>qr_code_scanner</span>
+                    Any App
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2: 12-Digit UTR Input Form */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.4rem' }}>
+                <label className="font-label-caps" style={{ color: '#fff', fontSize: '10px', letterSpacing: '0.15em' }}>
+                  STEP 2: ENTER 12-DIGIT TRANSACTION REFERENCE (UTR) NO. *
+                </label>
+                <span style={{ fontSize: '10px', color: utrNumber.trim().length >= 12 ? '#34d399' : 'var(--on-surface-variant)', fontWeight: 600 }}>
+                  {utrNumber.trim().length}/12 Digits
+                </span>
+              </div>
+
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  maxLength={16}
+                  placeholder="e.g. 429182749182"
+                  value={utrNumber}
+                  onChange={e => setUtrNumber(e.target.value.toUpperCase().replace(/[^0-9A-Z]/g, ''))}
+                  style={{
+                    width: '100%',
+                    background: '#161515',
+                    border: utrNumber.trim().length >= 10 ? '1px solid #34d399' : '1px solid rgba(255,255,255,0.15)',
+                    borderRadius: '8px',
+                    padding: '0.85rem 1rem',
+                    color: '#fff',
+                    fontFamily: 'monospace',
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    letterSpacing: '0.15em',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                {utrNumber.trim().length >= 10 && (
+                  <span className="material-symbols-outlined" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#34d399', fontSize: '20px' }}>
+                    check_circle
+                  </span>
+                )}
+              </div>
+              <p className="font-caption" style={{ color: 'var(--on-surface-variant)', fontSize: '10.5px', marginTop: '0.4rem', lineHeight: 1.4 }}>
+                Find the 12-digit UTR / Transaction Reference ID in your Google Pay, PhonePe, or Paytm receipt after payment.
+              </p>
+            </div>
+
+            {/* Modal Actions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={handleConfirmUpiPayment}
+                disabled={isCheckingOut || utrNumber.trim().length < 10}
+                className="btn-primary"
+                style={{
+                  width: '100%',
+                  padding: '1.1rem',
+                  fontSize: '12px',
+                  letterSpacing: '0.2em',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  opacity: isCheckingOut || utrNumber.trim().length < 10 ? 0.45 : 1,
+                  cursor: isCheckingOut || utrNumber.trim().length < 10 ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isCheckingOut ? (
+                  'VERIFYING & REGISTERING ORDER...'
+                ) : (
+                  <>
+                    <span>I HAVE PAID · CONFIRM ORDER</span>
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => !isCheckingOut && setUpiModalOpen(false)}
+                disabled={isCheckingOut}
+                className="btn-ghost"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  fontSize: '11px',
+                  letterSpacing: '0.1em',
+                  color: 'var(--on-surface-variant)',
+                  border: 'none',
+                  cursor: isCheckingOut ? 'not-allowed' : 'pointer'
+                }}
+              >
+                Cancel / Return to Cart
+              </button>
+            </div>
           </div>
         </div>
       )}

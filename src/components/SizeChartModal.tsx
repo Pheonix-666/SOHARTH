@@ -279,7 +279,7 @@ export default function SizeChartModal({
                 }}
               >
                 <Image
-                  src="/sizr chart.jpeg"
+                  src="/size-chart.jpeg"
                   alt="Soharth Official Size Chart"
                   fill
                   style={{ objectFit: 'contain' }}

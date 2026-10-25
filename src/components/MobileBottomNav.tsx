@@ -35,10 +35,10 @@ export default function MobileBottomNav() {
   }
 
   const navItems = [
-    { href: '/', label: 'Home', icon: 'home_app_logo' },
-    { href: '/products', label: 'Explore', icon: 'grid_view' },
-    { href: '/products?category=ethnic', label: 'Ethnic', icon: 'auto_awesome' },
-    { href: '/cart', label: 'Bag', icon: 'local_mall', badge: cartCount },
+    { href: '/', label: 'Home', icon: 'home' },
+    { href: '/products', label: 'T-Shirts', icon: 'grid_view' },
+    { href: '/products?category=heroic', label: 'Oversized', icon: 'checkroom' },
+    { href: '/cart', label: 'Bag', icon: 'shopping_bag', badge: cartCount },
   ];
 
   return (

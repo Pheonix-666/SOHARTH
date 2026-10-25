@@ -8,6 +8,7 @@ import { use, useState, useEffect, useRef, useMemo } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
 import { getProductPricing } from '@/lib/pricing';
+import { products as initialProducts } from '@/lib/data';
 
 interface Product {
   id: string | number;
@@ -27,34 +28,34 @@ interface CategoryFilter {
   value: string | undefined;
 }
 
-// Category metadata for rich section branding
+// Category metadata leading with plain e-commerce product terms, with cosmic names as subtitle
 const CATEGORY_META: Record<string, { label: string; subtitle: string; description: string; badge: string; banner: string }> = {
+  heroic: {
+    label: 'OVERSIZED HEAVYWEIGHT TEES',
+    subtitle: 'Black Essentials & Drop-Shoulder Cuts · The Void Atelier',
+    description: 'Structured 240+ GSM drop-shoulder streetwear tees engineered with pure bio-washed combed cotton.',
+    badge: 'OVERSIZED TEES',
+    banner: '/WhatsApp Image 2026-05-29 at 12.50.12 PM (1).jpeg',
+  },
   ethnic: {
-    label: 'ETHNIC COLLECTION',
-    subtitle: 'Cultural Prints & Heritage Fusion Tees',
-    description: 'Traditional motifs and ethnic fusion art printed on heavy PC cotton t-shirts.',
+    label: 'ETHNIC & HERITAGE FUSION TEES',
+    subtitle: 'Cultural Prints & Traditional Motifs · Celestial Fusion',
+    description: 'Traditional Indian heritage motifs fused with modern cosmic art printed on durable heavy cotton tees.',
     badge: 'ETHNIC TEES',
     banner: '/WhatsApp Image 2026-05-29 at 12.50.11 PM.jpeg',
   },
-  heroic: {
-    label: 'HEROIC COLLECTION',
-    subtitle: 'Oversized Heavyweight & Vanguard Drops',
-    description: 'Bold, structured oversized t-shirts engineered with heavy cotton and relaxed fits.',
-    badge: 'HEROIC TEES',
-    banner: '/WhatsApp Image 2026-05-29 at 12.50.12 PM (1).jpeg',
-  },
   quotes: {
-    label: 'QUOTES & STATEMENTS',
-    subtitle: 'Minimalist Typography & Rebellious Prints',
-    description: 'Subtle yet bold graphic quote tees and minimalist statement prints.',
-    badge: 'STATEMENT TEES',
+    label: 'GRAPHIC STATEMENT & ANIME TEES',
+    subtitle: 'Minimalist Typography & Cyber Artwork · Starlight Tech Series',
+    description: 'Subtle yet bold graphic quote prints and cybernetic glitch artwork engineered on luxury tees.',
+    badge: 'GRAPHIC TEES',
     banner: '/WhatsApp Image 2026-05-29 at 12.50.13 PM.jpeg',
   },
   new: {
-    label: 'NEW ARRIVALS',
-    subtitle: 'Latest T-Shirt Transmissions',
+    label: 'NEW ARRIVALS · LATEST DROPS',
+    subtitle: 'Fresh Streetwear Drops & Limited Releases',
     description: 'The newest t-shirt releases engineered within the past 20 days.',
-    badge: 'RECENT DROP',
+    badge: 'NEW ARRIVALS',
     banner: '/hero-bg.jpeg',
   },
 };
@@ -62,28 +63,38 @@ const CATEGORY_META: Record<string, { label: string; subtitle: string; descripti
 export default function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; q?: string; search?: string }>;
+  searchParams: Promise<{ category?: string; fit?: string; style?: string; price?: string; q?: string; search?: string }>;
 }) {
   const resolvedParams = use(searchParams);
   const category = resolvedParams?.category;
   const initialQuery = resolvedParams?.q || resolvedParams?.search || '';
-  const [productsList, setProductsList] = useState<Product[]>([]);
+  const initialFit = resolvedParams?.fit === 'oversized' || resolvedParams?.fit === 'regular' ? resolvedParams.fit : 'all';
+  const initialStyle = resolvedParams?.style === 'graphic' || resolvedParams?.style === 'ethnic' || resolvedParams?.style === 'plain' ? resolvedParams.style : 'all';
+  const initialPrice = resolvedParams?.price === 'under-499' || resolvedParams?.price === '500-799' || resolvedParams?.price === '800-plus' ? resolvedParams.price : 'all';
+
+  const [productsList, setProductsList] = useState<Product[]>(initialProducts as unknown as Product[]);
   const [categories, setCategories] = useState<CategoryFilter[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [navHidden, setNavHidden] = useState(false);
   const [navHeight, setNavHeight] = useState(64);
   const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [fitFilter, setFitFilter] = useState<'all' | 'oversized' | 'regular'>(initialFit);
+  const [styleFilter, setStyleFilter] = useState<'all' | 'graphic' | 'ethnic' | 'plain'>(initialStyle);
+  const [priceFilter, setPriceFilter] = useState<'all' | 'under-499' | '500-799' | '800-plus'>(initialPrice);
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'newest' | 'name'>('featured');
   const lastScrollY = useRef(0);
+
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (resolvedParams?.q !== undefined || resolvedParams?.search !== undefined) {
       setSearchQuery(resolvedParams.q || resolvedParams.search || '');
     }
-  }, [resolvedParams?.q, resolvedParams?.search]);
-
-  const { addToCart } = useCart();
-  const { showToast } = useToast();
+    if (resolvedParams?.fit) {
+      setFitFilter(resolvedParams.fit === 'oversized' || resolvedParams.fit === 'regular' ? resolvedParams.fit : 'all');
+    }
+  }, [resolvedParams?.q, resolvedParams?.search, resolvedParams?.fit]);
 
   useEffect(() => {
     const measureNav = () => {
@@ -116,9 +127,10 @@ export default function ProductsPage({
       fetch('/api/categories').then((res) => res.json()),
     ])
       .then(([productsData, categoriesData]) => {
-        setProductsList(Array.isArray(productsData) ? productsData : []);
+        if (Array.isArray(productsData) && productsData.length > 0) {
+          setProductsList(productsData);
+        }
 
-        // Format categories list dynamically
         const formattedCats: CategoryFilter[] = Array.isArray(categoriesData)
           ? categoriesData.map((c: any) =>
             typeof c === 'string'
@@ -127,29 +139,20 @@ export default function ProductsPage({
           )
           : [];
 
-        // Ensure default key categories exist if missing
-        const defaultOrder = ['ethnic', 'heroic', 'quotes'];
-        const existingValues = new Set(formattedCats.map((c) => c.value));
-
-        defaultOrder.forEach((val) => {
-          if (!existingValues.has(val)) {
-            formattedCats.push({ label: val.toUpperCase(), value: val });
-          }
-        });
-
         setCategories(formattedCats);
-        setIsLoading(false);
       })
       .catch((err) => {
         console.error('Failed to load catalog and categories:', err);
-        setIsLoading(false);
       });
   }, []);
 
-  // Filter Bar buttons
+  // Filter Bar buttons (Leading with plain search terms)
   const filters: CategoryFilter[] = [
-    { label: 'ALL SECTIONS', value: undefined },
-    ...categories,
+    { label: 'ALL T-SHIRTS', value: undefined },
+    { label: 'OVERSIZED TEES', value: 'heroic' },
+    { label: 'ETHNIC TEES', value: 'ethnic' },
+    { label: 'GRAPHIC TEES', value: 'quotes' },
+    ...categories.filter(c => !['heroic', 'ethnic', 'quotes', 'new'].includes(c.value || '')),
     { label: 'NEW ARRIVALS', value: 'new' },
   ];
 
@@ -175,6 +178,37 @@ export default function ProductsPage({
       );
     }
 
+    // Fit filter
+    if (fitFilter !== 'all') {
+      result = result.filter((p) => {
+        const text = `${p.name} ${p.subtitle || ''} ${p.category || ''} ${p.description || ''} ${p.tag || ''}`.toLowerCase();
+        if (fitFilter === 'oversized') return text.includes('oversized') || text.includes('drop') || p.category === 'heroic';
+        if (fitFilter === 'regular') return !text.includes('oversized') || text.includes('regular');
+        return true;
+      });
+    }
+
+    // Style filter
+    if (styleFilter !== 'all') {
+      result = result.filter((p) => {
+        const text = `${p.name} ${p.subtitle || ''} ${p.category || ''} ${p.description || ''} ${p.tag || ''}`.toLowerCase();
+        if (styleFilter === 'graphic') return text.includes('graphic') || text.includes('quote') || text.includes('anime') || p.category === 'quotes';
+        if (styleFilter === 'ethnic') return text.includes('ethnic') || text.includes('heritage') || p.category === 'ethnic';
+        if (styleFilter === 'plain') return text.includes('plain') || text.includes('basic') || text.includes('solid');
+        return true;
+      });
+    }
+
+    // Price filter
+    if (priceFilter !== 'all') {
+      result = result.filter((p) => {
+        if (priceFilter === 'under-499') return p.price <= 499;
+        if (priceFilter === '500-799') return p.price > 499 && p.price <= 799;
+        if (priceFilter === '800-plus') return p.price > 799;
+        return true;
+      });
+    }
+
     // Sort order
     if (sortBy === 'price-asc') {
       result.sort((a, b) => a.price - b.price);
@@ -193,17 +227,14 @@ export default function ProductsPage({
   const categorizedSections = useMemo(() => {
     const map: Record<string, Product[]> = {};
 
-    // Grouping
     productsList.forEach((p) => {
       const catKey = p.category ? p.category.toLowerCase() : 'other';
       if (!map[catKey]) map[catKey] = [];
       map[catKey].push(p);
     });
 
-    // Ensure all defined categories have entries if products exist or default placeholders
-    const categoryOrder = ['ethnic', 'heroic', 'quotes'];
+    const categoryOrder = ['heroic', 'ethnic', 'quotes'];
 
-    // Add any other dynamic categories found in products or categories API
     categories.forEach((c) => {
       if (c.value && !categoryOrder.includes(c.value) && c.value !== 'new') {
         categoryOrder.push(c.value);
@@ -213,14 +244,13 @@ export default function ProductsPage({
     return categoryOrder.map((catKey) => {
       const rawProducts = map[catKey] || [];
       const defaultMeta = CATEGORY_META[catKey] || {
-        label: catKey.toUpperCase() + ' COLLECTION',
-        subtitle: 'Curated T-Shirt Designs',
+        label: catKey.toUpperCase() + ' TEES',
+        subtitle: 'Curated Streetwear Designs',
         description: `Explore our signature selection of ${catKey} t-shirts.`,
         badge: 'TEES',
         banner: '/hero-bg.jpeg',
       };
 
-      // Dynamically use actual product image from website catalog for section banner
       const bannerImage = rawProducts.length > 0 && rawProducts[0].image
         ? rawProducts[0].image
         : defaultMeta.banner;
@@ -235,7 +265,7 @@ export default function ProductsPage({
         totalCount: rawProducts.length,
       };
     });
-  }, [productsList, categories, searchQuery, sortBy]);
+  }, [productsList, categories, searchQuery, fitFilter, styleFilter, priceFilter, sortBy]);
 
   const totalMultiSectionResults = useMemo(() => {
     return categorizedSections.reduce((acc, sec) => acc + sec.products.length, 0);
@@ -254,28 +284,19 @@ export default function ProductsPage({
     }
 
     return filterAndSortProducts(filtered);
-  }, [category, productsList, twentyDaysAgo, searchQuery, sortBy]);
+  }, [category, productsList, twentyDaysAgo, searchQuery, fitFilter, styleFilter, priceFilter, sortBy]);
 
   const activeCategoryMeta = useMemo(() => {
     if (!category) return null;
-
     const catKey = category.toLowerCase();
-    const defaultMeta = CATEGORY_META[catKey] || {
-      label: category.toUpperCase() + ' COLLECTION',
-      subtitle: 'Curated T-Shirt Pieces',
-      description: `Browse all t-shirts in the ${category} collection.`,
+    return CATEGORY_META[catKey] || {
+      label: `${category.toUpperCase()} COLLECTION`,
+      subtitle: 'Curated T-Shirt Releases',
+      description: `Explore pieces within the ${category} collection.`,
       badge: 'COLLECTION',
       banner: '/hero-bg.jpeg',
     };
-
-    const firstProduct = singleCategoryProducts.length > 0 ? singleCategoryProducts[0] : null;
-    const bannerImage = firstProduct?.image || defaultMeta.banner;
-
-    return {
-      ...defaultMeta,
-      banner: bannerImage,
-    };
-  }, [category, singleCategoryProducts]);
+  }, [category]);
 
   const handleQuickAdd = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
@@ -289,9 +310,9 @@ export default function ProductsPage({
         price: pricing.discountedPrice,
         image: product.image,
       },
-      'OS'
+      'M'
     );
-    showToast(`Added ${product.name} to cart`, 'success');
+    showToast(`Added ${product.name} (Size M) to your bag`, 'success');
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -306,15 +327,27 @@ export default function ProductsPage({
     }
   };
 
+  const hasActiveFilters = fitFilter !== 'all' || styleFilter !== 'all' || priceFilter !== 'all' || searchQuery.trim() !== '';
+
+  const clearAllFilters = () => {
+    setSearchQuery('');
+    setFitFilter('all');
+    setStyleFilter('all');
+    setPriceFilter('all');
+  };
+
+  // Modern skeleton loader instead of slow poetic text
   if (isLoading) {
     return (
       <>
         <Navbar />
-        <main style={{ paddingTop: '8rem', paddingBottom: 'var(--section-gap, 4rem)', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center' }}>
-            <span className="material-symbols-outlined shimmer" style={{ fontSize: '3rem', opacity: 0.3, marginBottom: '1rem', display: 'block' }}>auto_awesome</span>
-            <div className="font-label-caps" style={{ letterSpacing: '0.4em', opacity: 0.4, fontSize: '11px', textTransform: 'uppercase' }}>
-              Syncing Celestial Collections...
+        <main style={{ paddingTop: '8rem', paddingBottom: '4rem', minHeight: '85vh', backgroundColor: '#0a0a0a' }}>
+          <div className="container" style={{ maxWidth: '1200px', padding: '0 1rem' }}>
+            <div className="skeleton-shimmer" style={{ height: '50px', width: '320px', marginBottom: '2.5rem' }} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '2rem' }}>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="skeleton-shimmer" style={{ height: '420px', borderRadius: '16px' }} />
+              ))}
             </div>
           </div>
         </main>
@@ -326,32 +359,38 @@ export default function ProductsPage({
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: '6rem', backgroundColor: 'var(--background, #0a0a0a)', color: 'var(--primary, #fff)', minHeight: '100vh' }}>
+      <main style={{ paddingTop: '5.5rem', backgroundColor: 'var(--background, #0a0a0a)', color: 'var(--primary, #fff)', minHeight: '100vh' }}>
 
         {/* ─── CATALOG HERO HEADER ─── */}
-        <section style={{ position: 'relative', padding: '3.5rem 1rem 2.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', backgroundColor: '#0c0c0c' }}>
+        <section style={{ position: 'relative', padding: '3.5rem 1rem 2rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', backgroundColor: '#0c0c0c' }}>
           <div className="container" style={{ maxWidth: '1200px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              
               <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: '2rem' }}>
                 <div>
-                  <span className="font-label-caps" style={{ color: 'var(--primary, #fff)', letterSpacing: '0.4em', fontSize: '11px', opacity: 0.6, marginBottom: '0.75rem', display: 'block' }}>
-                    <span className="soharth-font">SOHARTH</span> CATALOGUE · {productsList.length} PIECES
+                  <span className="font-label-caps" style={{ color: '#fde047', letterSpacing: '0.3em', fontSize: '11px', marginBottom: '0.75rem', display: 'block' }}>
+                    ✦ SOHARTH T-SHIRTS · 240+ GSM COMBED COTTON
                   </span>
                   <h1 className="font-headline-lg" style={{ fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: 300, letterSpacing: '-0.02em', margin: 0, lineHeight: 1.1 }}>
-                    {category ? (activeCategoryMeta?.label || `${category.toUpperCase()} SELECTION`) : 'EXPLORE ALL SECTIONS'}
+                    {category ? (activeCategoryMeta?.label || `${category.toUpperCase()} TEES`) : 'EXPLORE ALL T-SHIRTS'}
                   </h1>
+                  <p style={{ color: 'var(--on-surface-variant, #888)', fontSize: '14px', maxWidth: '640px', margin: '0.75rem 0 0', lineHeight: 1.6 }}>
+                    {category
+                      ? (activeCategoryMeta?.description || `Explore our ${category} t-shirts designed with precision and dark celestial elegance.`)
+                      : 'Oversized heavyweights, cultural ethnic motifs, and minimalist graphic statements. Free Express Shipping & COD across India.'}
+                  </p>
                 </div>
 
                 {/* Live Search & Sort Controls */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
                   {/* Search Bar */}
-                  <div style={{ position: 'relative', minWidth: '240px' }}>
+                  <div style={{ position: 'relative', minWidth: '220px' }}>
                     <span className="material-symbols-outlined" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px', color: 'rgba(255,255,255,0.4)' }}>
                       search
                     </span>
                     <input
                       type="text"
-                      placeholder="Search apparel, fabric..."
+                      placeholder="Search tees, fabric, color..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       style={{
@@ -399,10 +438,10 @@ export default function ProductsPage({
                         WebkitAppearance: 'none',
                       }}
                     >
-                      <option value="featured" style={{ background: '#141414', color: '#fff' }}>Featured</option>
+                      <option value="featured" style={{ background: '#141414', color: '#fff' }}>Featured Drops</option>
                       <option value="price-asc" style={{ background: '#141414', color: '#fff' }}>Price: Low to High</option>
                       <option value="price-desc" style={{ background: '#141414', color: '#fff' }}>Price: High to Low</option>
-                      <option value="newest" style={{ background: '#141414', color: '#fff' }}>Newest Releases</option>
+                      <option value="newest" style={{ background: '#141414', color: '#fff' }}>Newest Drops</option>
                       <option value="name" style={{ background: '#141414', color: '#fff' }}>Alphabetical</option>
                     </select>
                     <span className="material-symbols-outlined" style={{ position: 'absolute', right: '10px', fontSize: '16px', color: 'rgba(255,255,255,0.4)', pointerEvents: 'none' }}>
@@ -412,24 +451,119 @@ export default function ProductsPage({
                 </div>
               </div>
 
-              <p className="font-body-lg" style={{ color: 'var(--on-surface-variant, #888)', fontSize: '14px', maxWidth: '640px', margin: 0, lineHeight: 1.6 }}>
-                {category
-                  ? (activeCategoryMeta?.description || `Discover our ${category} pieces designed with precision and dark celestial elegance.`)
-                  : 'Navigate through our signature collections including Ethnic, Heroic, Quotes, and New Arrivals.'}
-              </p>
+              {/* ─── REAL CATEGORY & ATTRIBUTE FILTERS (Fit, Style, Price) ─── */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                flexWrap: 'wrap',
+                paddingTop: '1rem',
+                borderTop: '1px solid rgba(255,255,255,0.06)'
+              }}>
+                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                  Filters:
+                </span>
+
+                {/* Fit Filter */}
+                <select
+                  value={fitFilter}
+                  onChange={(e: any) => setFitFilter(e.target.value)}
+                  style={{
+                    backgroundColor: fitFilter !== 'all' ? 'rgba(253, 224, 71, 0.15)' : 'rgba(255,255,255,0.04)',
+                    borderColor: fitFilter !== 'all' ? '#fde047' : 'rgba(255,255,255,0.12)',
+                    color: fitFilter !== 'all' ? '#fde047' : '#fff',
+                    border: '1px solid',
+                    borderRadius: '20px',
+                    padding: '5px 12px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    outline: 'none',
+                  }}
+                >
+                  <option value="all" style={{ background: '#141414', color: '#fff' }}>Fit: All Silhouettes</option>
+                  <option value="oversized" style={{ background: '#141414', color: '#fff' }}>Fit: Oversized Drop-Shoulder</option>
+                  <option value="regular" style={{ background: '#141414', color: '#fff' }}>Fit: Regular Cut</option>
+                </select>
+
+                {/* Style Filter */}
+                <select
+                  value={styleFilter}
+                  onChange={(e: any) => setStyleFilter(e.target.value)}
+                  style={{
+                    backgroundColor: styleFilter !== 'all' ? 'rgba(253, 224, 71, 0.15)' : 'rgba(255,255,255,0.04)',
+                    borderColor: styleFilter !== 'all' ? '#fde047' : 'rgba(255,255,255,0.12)',
+                    color: styleFilter !== 'all' ? '#fde047' : '#fff',
+                    border: '1px solid',
+                    borderRadius: '20px',
+                    padding: '5px 12px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    outline: 'none',
+                  }}
+                >
+                  <option value="all" style={{ background: '#141414', color: '#fff' }}>Style: All Prints</option>
+                  <option value="graphic" style={{ background: '#141414', color: '#fff' }}>Style: Graphic & Quotes</option>
+                  <option value="ethnic" style={{ background: '#141414', color: '#fff' }}>Style: Ethnic & Cultural</option>
+                  <option value="plain" style={{ background: '#141414', color: '#fff' }}>Style: Plain & Minimal</option>
+                </select>
+
+                {/* Price Filter */}
+                <select
+                  value={priceFilter}
+                  onChange={(e: any) => setPriceFilter(e.target.value)}
+                  style={{
+                    backgroundColor: priceFilter !== 'all' ? 'rgba(253, 224, 71, 0.15)' : 'rgba(255,255,255,0.04)',
+                    borderColor: priceFilter !== 'all' ? '#fde047' : 'rgba(255,255,255,0.12)',
+                    color: priceFilter !== 'all' ? '#fde047' : '#fff',
+                    border: '1px solid',
+                    borderRadius: '20px',
+                    padding: '5px 12px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    outline: 'none',
+                  }}
+                >
+                  <option value="all" style={{ background: '#141414', color: '#fff' }}>Price: All Ranges</option>
+                  <option value="under-499" style={{ background: '#141414', color: '#fff' }}>Under ₹499</option>
+                  <option value="500-799" style={{ background: '#141414', color: '#fff' }}>₹500 – ₹799</option>
+                  <option value="800-plus" style={{ background: '#141414', color: '#fff' }}>₹800 and above</option>
+                </select>
+
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={clearAllFilters}
+                    style={{
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      color: 'rgba(255,255,255,0.5)',
+                      fontSize: '11px',
+                      textDecoration: 'underline',
+                      cursor: 'pointer',
+                      padding: '4px 8px',
+                    }}
+                  >
+                    Reset all filters
+                  </button>
+                )}
+              </div>
+
             </div>
           </div>
         </section>
 
-        {/* ─── STICKY FILTER BAR & SECTION JUMP ─── */}
+        {/* ─── STICKY CATEGORY NAV ─── */}
         <div style={{
           position: 'sticky',
           top: navHidden ? '0px' : `${navHeight}px`,
           zIndex: 40,
-          backgroundColor: 'rgba(10, 10, 10, 0.88)',
+          backgroundColor: 'rgba(10, 10, 10, 0.92)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
-          padding: '1rem 0',
+          padding: '0.85rem 0',
           borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
           transition: 'top 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         }}>
@@ -437,21 +571,19 @@ export default function ProductsPage({
             display: 'flex',
             justifyContent: 'flex-start',
             alignItems: 'center',
-            gap: '1rem',
+            gap: '0.75rem',
             overflowX: 'auto',
             padding: '0 1rem',
             WebkitOverflowScrolling: 'touch'
           }}>
             {filters.map((f) => {
               const isActive = category === f.value || (!category && !f.value);
-              const targetSectionId = f.value || 'all-sections';
 
               return (
                 <Link
                   key={f.label}
                   href={f.value ? `/products?category=${f.value}` : '/products'}
                   onClick={(e) => {
-                    // Smooth scroll to section anchor if in ALL view
                     if (!category && f.value && document.getElementById(f.value)) {
                       e.preventDefault();
                       scrollToSection(f.value);
@@ -464,18 +596,16 @@ export default function ProductsPage({
                     border: '1px solid',
                     borderColor: isActive ? '#fff' : 'rgba(255, 255, 255, 0.12)',
                     borderRadius: '24px',
-                    padding: '0.65rem 1.4rem',
-                    minHeight: '42px',
+                    padding: '0.6rem 1.3rem',
                     fontSize: '11px',
                     fontWeight: isActive ? 700 : 500,
-                    letterSpacing: '0.15em',
-                    transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                    letterSpacing: '0.12em',
+                    transition: 'all 0.25s',
                     whiteSpace: 'nowrap',
                     textDecoration: 'none',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '0.4rem',
-                    boxShadow: isActive ? '0 4px 14px rgba(255, 255, 255, 0.2)' : 'none'
                   }}
                 >
                   {f.value === 'ethnic' && <span>✨</span>}
@@ -491,11 +621,11 @@ export default function ProductsPage({
         {/* ─── MAIN CONTENT AREA ─── */}
         {category ? (
           /* ─── SINGLE FILTERED CATEGORY VIEW ─── */
-          <section className="container" style={{ padding: '3rem 1rem 6rem' }}>
+          <section className="container" style={{ padding: '3rem 1rem 6rem', maxWidth: '1200px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <span className="font-label-caps" style={{ color: 'var(--primary)', letterSpacing: '0.2em', fontSize: '12px' }}>
-                  SHOWING {singleCategoryProducts.length} PIECE{singleCategoryProducts.length !== 1 ? 'S' : ''}
+                  SHOWING {singleCategoryProducts.length} T-SHIRT{singleCategoryProducts.length !== 1 ? 'S' : ''}
                 </span>
                 {searchQuery && (
                   <span style={{ fontSize: '12px', color: 'var(--on-surface-variant)' }}>
@@ -504,22 +634,29 @@ export default function ProductsPage({
                 )}
               </div>
               <Link href="/products" className="font-label-caps" style={{ color: 'var(--on-surface-variant)', fontSize: '11px', textDecoration: 'underline', letterSpacing: '0.15em' }}>
-                ← View All Sections
+                ← View All T-Shirts
               </Link>
             </div>
 
             {singleCategoryProducts.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '6rem 0', opacity: 0.5 }}>
+              <div style={{ textAlign: 'center', padding: '6rem 0', opacity: 0.6 }}>
                 <span className="material-symbols-outlined" style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>search_off</span>
                 <p className="font-headline-md" style={{ marginBottom: '0.5rem' }}>No pieces found</p>
-                <p className="font-body-md" style={{ color: 'var(--on-surface-variant)' }}>Try clearing your search query or exploring other categories.</p>
+                <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '1.5rem' }}>Try clearing filters or exploring other collections.</p>
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="btn-primary"
+                >
+                  Clear All Filters
+                </button>
               </div>
             ) : (
               <div className="catalog-grid" style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
                 gap: '2rem',
-                rowGap: '4rem'
+                rowGap: '3.5rem'
               }}>
                 {singleCategoryProducts.map((product) => (
                   <ProductCard key={product.id} product={product} onQuickAdd={handleQuickAdd} />
@@ -529,21 +666,21 @@ export default function ProductsPage({
           </section>
         ) : (
           /* ─── MULTI-SECTION CATALOG VIEW (ALL SECTIONS) ─── */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '5rem', paddingBottom: '6rem' }}>
-            {searchQuery && totalMultiSectionResults === 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem', paddingBottom: '6rem' }}>
+            {hasActiveFilters && totalMultiSectionResults === 0 ? (
               <div style={{ textAlign: 'center', padding: '6rem 1rem', opacity: 0.85 }}>
                 <span className="material-symbols-outlined" style={{ fontSize: '3.5rem', display: 'block', marginBottom: '1rem', opacity: 0.4 }}>
                   search_off
                 </span>
                 <p className="font-headline-md" style={{ marginBottom: '0.5rem', fontSize: '20px' }}>
-                  No pieces found matching &ldquo;{searchQuery}&rdquo;
+                  No t-shirts match your filter criteria
                 </p>
                 <p className="font-body-md" style={{ color: 'var(--on-surface-variant)', marginBottom: '1.5rem', fontSize: '14px' }}>
-                  Try a different search term or clear the filter to browse the complete catalog.
+                  Try relaxing your price, fit, or style filters to view available garments.
                 </p>
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
+                  onClick={clearAllFilters}
                   style={{
                     padding: '10px 24px',
                     borderRadius: '24px',
@@ -557,32 +694,32 @@ export default function ProductsPage({
                     textTransform: 'uppercase',
                   }}
                 >
-                  Clear Search Filter
+                  Clear All Filters
                 </button>
               </div>
             ) : null}
 
             {categorizedSections.map((section) => {
-              if (section.products.length === 0 && searchQuery) return null;
+              if (section.products.length === 0 && hasActiveFilters) return null;
 
               return (
                 <section
                   key={section.key}
                   id={section.key}
                   style={{
-                    paddingTop: '3rem',
+                    paddingTop: '2.5rem',
                     scrollMarginTop: `${navHeight + 60}px`,
                   }}
                 >
-                  <div className="container" style={{ padding: '0 1rem' }}>
+                  <div className="container" style={{ padding: '0 1rem', maxWidth: '1200px' }}>
 
                     {/* Section Banner Header */}
                     <div style={{
                       position: 'relative',
                       borderRadius: '16px',
                       overflow: 'hidden',
-                      marginBottom: '3rem',
-                      minHeight: '220px',
+                      marginBottom: '2.5rem',
+                      minHeight: '200px',
                       display: 'flex',
                       alignItems: 'flex-end',
                       border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -594,17 +731,26 @@ export default function ProductsPage({
                         fill
                         style={{ objectFit: 'cover', opacity: 0.35 }}
                       />
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0a0a0a 0%, rgba(10,10,10,0.4) 60%, transparent 100%)' }} />
-
-                      <div style={{ position: 'relative', zIndex: 10, padding: '2rem 2.5rem', width: '100%', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1.5rem' }}>
+                      <div style={{
+                        position: 'relative',
+                        zIndex: 2,
+                        padding: '2rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-end',
+                        width: '100%',
+                        flexWrap: 'wrap',
+                        gap: '1rem',
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)'
+                      }}>
                         <div>
-                          <span className="font-label-caps" style={{ color: 'var(--primary)', letterSpacing: '0.3em', fontSize: '10px', backgroundColor: 'rgba(255,255,255,0.1)', padding: '0.25rem 0.75rem', borderRadius: '12px', display: 'inline-block', marginBottom: '0.75rem' }}>
+                          <span className="font-label-caps" style={{ color: '#fde047', letterSpacing: '0.25em', fontSize: '11px', display: 'block', marginBottom: '0.5rem' }}>
                             {section.meta.badge}
                           </span>
-                          <h2 className="font-headline-lg" style={{ color: '#fff', margin: '0 0 0.5rem 0', fontSize: '1.8rem', fontWeight: 400, letterSpacing: '0.02em' }}>
+                          <h2 className="font-headline-lg" style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', margin: 0, fontWeight: 300, color: '#fff' }}>
                             {section.meta.label}
                           </h2>
-                          <p className="font-body-md" style={{ color: 'rgba(255,255,255,0.7)', margin: 0, fontSize: '13px', maxWidth: '520px' }}>
+                          <p style={{ color: 'var(--on-surface-variant)', fontSize: '13px', margin: '4px 0 0', maxWidth: '520px' }}>
                             {section.meta.subtitle} — {section.meta.description}
                           </p>
                         </div>
@@ -615,7 +761,7 @@ export default function ProductsPage({
                           style={{
                             color: '#fff',
                             fontSize: '11px',
-                            letterSpacing: '0.2em',
+                            letterSpacing: '0.15em',
                             textDecoration: 'none',
                             borderBottom: '1px solid #fff',
                             paddingBottom: '4px',
@@ -625,7 +771,7 @@ export default function ProductsPage({
                             whiteSpace: 'nowrap'
                           }}
                         >
-                          EXPLORE {section.meta.label} ({section.totalCount}) →
+                          VIEW ALL {section.meta.badge} ({section.totalCount}) →
                         </Link>
                       </div>
                     </div>
@@ -640,7 +786,7 @@ export default function ProductsPage({
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
                         gap: '2rem',
-                        rowGap: '4rem'
+                        rowGap: '3.5rem'
                       }}>
                         {section.products.map((product) => (
                           <ProductCard key={product.id} product={product} onQuickAdd={handleQuickAdd} />
@@ -654,258 +800,131 @@ export default function ProductsPage({
           </div>
         )}
 
-        {/* ─── NEWSLETTER BENTO ─── */}
-        <section className="container" style={{ padding: '0 1rem 6rem' }}>
-          <div className="newsletter-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-            gap: '1.5rem',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
-            backgroundColor: '#0e0e0e',
-            borderRadius: '16px',
-            overflow: 'hidden'
-          }}>
-            <div className="glass-panel" style={{ padding: '4rem 3rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <h2 className="font-headline-lg" style={{ color: 'var(--primary, #fff)', marginBottom: '1rem', fontSize: '2rem', fontWeight: 300, letterSpacing: '-0.02em' }}>
-                Transmission from the Void
-              </h2>
-              <p className="font-body-lg" style={{ color: 'var(--on-surface-variant, #888)', marginBottom: '3.5rem', fontSize: '15px', lineHeight: 1.6, maxWidth: '440px' }}>
-                Receive early access to planetary collections, ethnic heritage edits, and editorial narratives directly in your inbox.
-              </p>
-
-              <form style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-end' }} onSubmit={e => e.preventDefault()}>
-                <div style={{ flex: 1, position: 'relative' }}>
-                  <input
-                    type="email"
-                    placeholder="YOUR@EMAIL.COM"
-                    style={{
-                      width: '100%',
-                      background: 'transparent',
-                      border: 'none',
-                      borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-                      padding: '0.75rem 0',
-                      color: 'var(--primary, #fff)',
-                      fontFamily: 'var(--font-body, inherit)',
-                      fontSize: '11px',
-                      fontWeight: 500,
-                      letterSpacing: '0.2em',
-                      outline: 'none',
-                      transition: 'border-color 0.3s ease'
-                    }}
-                  />
-                </div>
-                <button type="submit" className="btn-primary" style={{
-                  padding: '0.75rem 2.5rem',
-                  letterSpacing: '0.2em',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  backgroundColor: '#fff',
-                  color: '#000',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'opacity 0.2s'
-                }}>JOIN</button>
-              </form>
-            </div>
-
-            <div style={{ position: 'relative', overflow: 'hidden', minHeight: '350px' }}>
-              <Image
-                src={productsList[0]?.image || '/hero-bg.jpeg'}
-                alt="Collection"
-                fill
-                priority
-                style={{ objectFit: 'cover', opacity: 0.4 }}
-              />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0e0e0e, transparent)' }} />
-            </div>
-          </div>
-        </section>
       </main>
       <Footer />
-
-      {/* Global CSS hover animations for cards */}
-      <style jsx global>{`
-        .product-card-group:hover .product-image-hover {
-          transform: scale(1.05) !important;
-        }
-        .quick-add-btn:hover {
-          background-color: #fff !important;
-          color: #000 !important;
-        }
-      `}</style>
     </>
   );
 }
 
-// Reusable Product Card Component
-function ProductCard({
-  product,
-  onQuickAdd,
-}: {
-  product: Product;
-  onQuickAdd: (e: React.MouseEvent, p: Product) => void;
-}) {
+// Product Card Component with Indian E-Commerce pricing and quick size add
+function ProductCard({ product, onQuickAdd }: { product: Product; onQuickAdd: (e: React.MouseEvent, p: Product) => void }) {
   const pricing = getProductPricing(product);
 
   return (
     <Link
       href={`/products/${product.id}`}
-      className="product-card-group"
       style={{
         display: 'flex',
         flexDirection: 'column',
         textDecoration: 'none',
-        cursor: 'pointer',
-        position: 'relative',
+        color: '#fff',
+        position: 'relative'
       }}
     >
-      {/* Image Container */}
-      <div style={{
-        aspectRatio: '3/4',
-        position: 'relative',
-        marginBottom: '1.25rem',
-        backgroundColor: 'var(--surface-container-low, #141414)',
-        overflow: 'hidden',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        borderRadius: '16px',
-        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
-        transition: 'transform 0.4s ease, border-color 0.4s, box-shadow 0.4s',
-      }}>
-        {/* Product Image */}
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          sizes="(max-width: 768px) 50vw, 25vw"
-          className="product-image-hover"
-          style={{
-            objectFit: 'cover',
-            transition: 'transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)'
-          }}
-        />
-
-        {/* Tag Badge (Left) */}
-        {product.tag && (
-          <span style={{
-            position: 'absolute',
-            top: '12px',
-            left: '12px',
-            backgroundColor: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255,255,255,0.25)',
-            color: '#fff',
-            fontSize: '9px',
-            fontWeight: 700,
-            letterSpacing: '0.15em',
-            padding: '4px 10px',
-            borderRadius: '6px',
-            zIndex: 10,
-            textTransform: 'uppercase',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-          }}>
-            {product.tag}
+      <div
+        style={{
+          position: 'relative',
+          borderRadius: '16px',
+          overflow: 'hidden',
+          backgroundColor: '#121212',
+          minHeight: '340px',
+          display: 'block',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+        }}
+      >
+        {pricing.discountPercent > 0 && (
+          <span
+            style={{
+              position: 'absolute',
+              top: '12px',
+              left: '12px',
+              backgroundColor: '#fde047',
+              color: '#000',
+              fontWeight: 800,
+              fontSize: '10px',
+              padding: '4px 8px',
+              borderRadius: '12px',
+              zIndex: 10,
+              letterSpacing: '0.05em',
+            }}
+          >
+            {pricing.discountPercent}% OFF
           </span>
         )}
 
-        {/* Offer Discount Badge (Right - High-Visibility Radiant Gold Pill) */}
-        <span
-          className="product-discount-badge"
+        {/* Quick Add Button */}
+        <button
+          onClick={(e) => onQuickAdd(e, product)}
+          title="Quick Add to Bag"
           style={{
             position: 'absolute',
             top: '12px',
             right: '12px',
-          }}
-        >
-          <span className="material-symbols-outlined badge-fire-icon">local_fire_department</span>
-          {pricing.discountPercent}% OFF
-        </span>
-
-        {/* Quick Add Button — Finger-friendly 44px target */}
-        <button
-          onClick={(e) => onQuickAdd(e, product)}
-          className="quick-add-btn"
-          title="Quick Add to Cart"
-          style={{
-            position: 'absolute',
-            bottom: '10px',
-            right: '10px',
-            backgroundColor: 'rgba(18, 18, 18, 0.92)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.28)',
-            color: '#fff',
-            width: '44px',
-            height: '44px',
-            minWidth: '44px',
-            minHeight: '44px',
+            background: 'rgba(22, 21, 21, 0.85)',
+            backdropFilter: 'blur(8px)',
             borderRadius: '50%',
+            width: '38px',
+            height: '38px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'pointer',
-            zIndex: 10,
-            transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            boxShadow: '0 6px 18px rgba(0,0,0,0.65)',
+            zIndex: 20,
+            border: '1px solid rgba(255,255,255,0.2)',
+            transition: 'transform 0.2s',
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
-            shopping_bag
+          <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#fff' }}>
+            add_shopping_cart
           </span>
         </button>
+
+        {product.image ? (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            style={{ objectFit: 'cover', transition: 'transform 0.5s ease' }}
+          />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.3 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '48px' }}>image</span>
+          </div>
+        )}
       </div>
 
-      {/* Meta details */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-          <div>
-            <h3 className="font-headline-md" style={{
-              color: 'var(--primary, #fff)',
-              fontSize: '15px',
-              fontWeight: 600,
-              letterSpacing: '0.02em',
-              margin: 0,
-              lineHeight: 1.3
-            }}>{product.name}</h3>
-            {product.subtitle && (
-              <p className="font-label-caps" style={{
-                color: 'var(--on-surface-variant, #888)',
-                fontSize: '10px',
-                letterSpacing: '0.15em',
-                marginTop: '3px',
-                marginBottom: 0,
-                textTransform: 'uppercase'
-              }}>{product.subtitle}</p>
+      <div style={{ paddingTop: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+          <span className="font-label-caps" style={{ opacity: 0.5, fontSize: '10px' }}>
+            {product.category?.toUpperCase() || 'STREETWEAR'}
+          </span>
+          <span style={{ fontSize: '10px', color: '#4ade80', fontWeight: 600 }}>IN STOCK</span>
+        </div>
+
+        <h3 style={{ fontSize: '15px', fontWeight: 600, margin: '0 0 6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {product.name}
+        </h3>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+            <span style={{ color: '#fff', fontWeight: 700, fontSize: '15px' }}>
+              ₹{pricing.discountedPrice.toLocaleString()}
+            </span>
+            {pricing.originalPrice > pricing.discountedPrice && (
+              <span style={{ color: 'var(--on-surface-variant)', fontSize: '12px', textDecoration: 'line-through', opacity: 0.6 }}>
+                ₹{pricing.originalPrice.toLocaleString()}
+              </span>
             )}
           </div>
-          
-          {/* Price Stack */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.45rem' }}>
-              <span className="font-body-md" style={{
-                color: '#fff',
-                fontSize: '16px',
-                fontWeight: 700,
-                letterSpacing: '-0.01em',
-              }}>₹{pricing.discountedPrice.toLocaleString()}</span>
-              <span style={{
-                color: 'rgba(255,255,255,0.4)',
-                fontSize: '12px',
-                textDecoration: 'line-through',
-              }}>₹{pricing.originalPrice.toLocaleString()}</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-              <span className="product-discount-tag-inline">
-                {pricing.discountPercent}% OFF
-              </span>
-              <span style={{
-                fontSize: '9px',
-                color: '#34d399',
-                fontWeight: 600,
-                letterSpacing: '0.04em',
-              }}>
-                SAVE ₹{pricing.savings.toLocaleString()}
-              </span>
-            </div>
-          </div>
+
+          <span style={{
+            fontSize: '11px',
+            color: '#fde047',
+            fontWeight: 600,
+            letterSpacing: '0.04em'
+          }}>
+            Save ₹{pricing.savings.toLocaleString()}
+          </span>
         </div>
       </div>
     </Link>

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getProductPricing } from '@/lib/pricing';
+import { products as initialProducts } from '@/lib/data';
 
 export interface ProductItem {
   id: string | number;
@@ -36,7 +37,7 @@ const POPULAR_TAGS = [
 
 export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
-  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [products, setProducts] = useState<ProductItem[]>(initialProducts as unknown as ProductItem[]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
