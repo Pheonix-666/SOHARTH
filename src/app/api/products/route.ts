@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
+export const revalidate = 60;
+
 export async function GET() {
   const { data, error } = await supabaseAdmin
     .from('products')
@@ -11,6 +13,8 @@ export async function GET() {
   return NextResponse.json(data, {
     headers: {
       'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      'CDN-Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      'Vercel-CDN-Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
     },
   });
 }

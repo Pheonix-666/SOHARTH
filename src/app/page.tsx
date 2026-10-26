@@ -358,7 +358,8 @@ export default function Home() {
               alt={`Soharth ${selectedHeroShirt.name} Graphic Oversized Streetwear T-Shirt`}
               fill
               priority
-              quality={95}
+              quality={80}
+              sizes="100vw"
               style={{ objectFit: 'cover', objectPosition: selectedHeroShirt.position }}
             />
           </div>
@@ -698,7 +699,7 @@ export default function Home() {
                     </button>
 
                     <div className="card-image" style={{ height: '100%', borderRadius: '16px', position: 'relative' }}>
-                      <Image src={p0.image || '/logo.jpg'} alt={p0.name} fill priority style={{ objectFit: 'cover', transition: 'transform 1s ease' }} />
+                      <Image src={p0.image || '/logo.jpg'} alt={p0.name} fill priority sizes="(max-width: 768px) 100vw, 50vw" style={{ objectFit: 'cover', transition: 'transform 1s ease' }} />
                     </div>
 
                     <div style={{
@@ -764,7 +765,7 @@ export default function Home() {
                       <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--primary)' }}>add_shopping_cart</span>
                     </button>
                     <div className="card-image" style={{ flex: 1, position: 'relative', minHeight: '280px', borderRadius: '16px', overflow: 'hidden' }}>
-                      <Image src={p.image || '/logo.jpg'} alt={p.name} fill style={{ objectFit: 'cover' }} />
+                      <Image src={p.image || '/logo.jpg'} alt={p.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" style={{ objectFit: 'cover' }} />
                     </div>
                     <div style={{ paddingTop: '1.25rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
@@ -822,7 +823,7 @@ export default function Home() {
                       <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--primary)' }}>add_shopping_cart</span>
                     </button>
                     <div className="card-image" style={{ position: 'relative', height: '380px', borderRadius: '16px', overflow: 'hidden' }}>
-                      <Image src={p.image || '/logo.jpg'} alt={p.name} fill style={{ objectFit: 'cover' }} />
+                      <Image src={p.image || '/logo.jpg'} alt={p.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" style={{ objectFit: 'cover' }} />
                     </div>
                     <div style={{ paddingTop: '1.25rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>

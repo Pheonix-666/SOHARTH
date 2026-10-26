@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 export async function GET() {
   const { data, error } = await supabaseAdmin
@@ -13,6 +13,8 @@ export async function GET() {
   return NextResponse.json(data, {
     headers: {
       'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      'CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      'Vercel-CDN-Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
     },
   });
 }

@@ -8,17 +8,22 @@ import SizeChartModal from '@/components/SizeChartModal';
 import { useCart } from '@/context/CartContext';
 import { getProductPricing } from '@/lib/pricing';
 
+import { products as initialProducts } from '@/lib/data';
+
 export default function ProductDetails({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const initialMatch = initialProducts.find(p => String(p.id) === String(id));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [productsList, setProductsList] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [productsList, setProductsList] = useState<any[]>(initialProducts);
+  const [isLoading, setIsLoading] = useState(!initialMatch);
 
   useEffect(() => {
     fetch('/api/products')
       .then(res => res.json())
       .then(data => {
-        setProductsList(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setProductsList(data);
+        }
         setIsLoading(false);
       })
       .catch(err => {
