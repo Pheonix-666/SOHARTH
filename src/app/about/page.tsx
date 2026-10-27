@@ -1,12 +1,78 @@
-'use client';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import type { Metadata } from 'next';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soharth.in';
+
+export const metadata: Metadata = {
+  title: 'About SOHARTH | Celestial Luxury Streetwear & Heavyweight Philosophy',
+  description:
+    'Discover SOHARTH: Bridging editorial refinement and cosmic precision. Engineered 240+ GSM bio-washed combed cotton, architectural silhouettes, and cultural heritage.',
+  alternates: {
+    canonical: `${siteUrl}/about`,
+  },
+  openGraph: {
+    title: 'About SOHARTH | Celestial Luxury Streetwear & Heavyweight Philosophy',
+    description:
+      'Discover SOHARTH: Bridging editorial refinement and cosmic precision. Engineered 240+ GSM bio-washed combed cotton tees and cultural streetwear.',
+    url: `${siteUrl}/about`,
+    siteName: 'SOHARTH',
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'About SOHARTH | The Story & Craft Behind 240+ GSM Streetwear',
+    description: 'Bridging editorial refinement and cosmic precision in Indian luxury streetwear.',
+  },
+};
 
 export default function AboutPage() {
+  const aboutJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    name: 'About SOHARTH',
+    description: 'The story, manifesto, and fabric engineering behind SOHARTH luxury streetwear.',
+    url: `${siteUrl}/about`,
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'SOHARTH',
+      url: siteUrl,
+      description: 'Indian luxury streetwear label engineering 240+ GSM bio-washed combed cotton oversized tees.',
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'About',
+        item: `${siteUrl}/about`,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Navbar />
       <main style={{ paddingTop: '8.75rem', paddingBottom: 'var(--section-gap)' }}>
         

@@ -77,7 +77,7 @@ export default function MobileBottomNav() {
           const isActive = item.href === '/'
             ? pathname === '/'
             : item.href === '/products'
-              ? pathname === '/products' && !window?.location?.search?.includes('category=ethnic')
+              ? pathname === '/products' && (typeof window !== 'undefined' ? !window.location.search.includes('category=ethnic') : true)
               : pathname?.startsWith(item.href);
 
           return (

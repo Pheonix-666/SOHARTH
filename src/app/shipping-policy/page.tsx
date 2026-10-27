@@ -1,15 +1,53 @@
+import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 
-export const metadata = {
-  title: 'Shipping & Delivery Policy | SOHARTH',
-  description: 'Pan-India express delivery, dispatch timelines, and Cash on Delivery (COD) terms for SOHARTH heavyweight apparel.',
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soharth.in';
+
+export const metadata: Metadata = {
+  title: 'Shipping & Delivery Policy | Pan-India Express & COD | SOHARTH',
+  description:
+    'Pan-India express delivery across 19,000+ PIN codes, 24-48h dispatch timelines, and Cash on Delivery (COD) terms for SOHARTH heavyweight apparel.',
+  alternates: {
+    canonical: `${siteUrl}/shipping-policy`,
+  },
+  openGraph: {
+    title: 'Shipping & Delivery Policy | SOHARTH',
+    description: 'Free Express Shipping & Cash on Delivery across 19,000+ PIN codes in India.',
+    url: `${siteUrl}/shipping-policy`,
+    siteName: 'SOHARTH',
+    locale: 'en_IN',
+    type: 'website',
+  },
 };
 
 export default function ShippingPolicyPage() {
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Shipping Policy',
+        item: `${siteUrl}/shipping-policy`,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Navbar />
       <main style={{ paddingTop: '8rem', paddingBottom: '6rem', backgroundColor: '#080808', color: '#fff', minHeight: '90vh' }}>
         <div className="container" style={{ maxWidth: '840px', padding: '0 1.25rem' }}>

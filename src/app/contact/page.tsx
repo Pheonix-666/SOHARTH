@@ -1,14 +1,83 @@
+import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
-export const metadata = {
-  title: 'Contact Us | SOHARTH Atelier',
-  description: 'Reach SOHARTH client service via direct WhatsApp support, email concierge, or phone.',
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soharth.in';
+
+export const metadata: Metadata = {
+  title: 'Contact Us | Client Concierge & Support | SOHARTH',
+  description:
+    'Reach SOHARTH client service via direct WhatsApp concierge (+91 91377 73967), email, or order tracking desk. Fast assistance for sizing and delivery.',
+  alternates: {
+    canonical: `${siteUrl}/contact`,
+  },
+  openGraph: {
+    title: 'Contact Us | SOHARTH Client Concierge',
+    description:
+      'Direct WhatsApp concierge & support for SOHARTH luxury streetwear orders, sizing, and collaborations.',
+    url: `${siteUrl}/contact`,
+    siteName: 'SOHARTH',
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Contact SOHARTH Client Concierge',
+    description: 'Instant WhatsApp & email client concierge for SOHARTH streetwear.',
+  },
 };
 
 export default function ContactPage() {
+  const contactJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    name: 'Contact SOHARTH',
+    url: `${siteUrl}/contact`,
+    description: 'Direct contact channels for SOHARTH client support.',
+    mainEntity: {
+      '@type': 'Organization',
+      name: 'SOHARTH',
+      url: siteUrl,
+      telephone: '+91-9137773967',
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: '+91-9137773967',
+        contactType: 'Customer Support',
+        areaServed: 'IN',
+        availableLanguage: ['English', 'Hindi'],
+      },
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Contact Us',
+        item: `${siteUrl}/contact`,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Navbar />
       <main style={{ paddingTop: '8rem', paddingBottom: '6rem', backgroundColor: '#080808', color: '#fff', minHeight: '90vh' }}>
         <div className="container" style={{ maxWidth: '840px', padding: '0 1.25rem' }}>

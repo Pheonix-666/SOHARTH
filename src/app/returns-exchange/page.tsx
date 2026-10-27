@@ -1,15 +1,53 @@
+import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 
-export const metadata = {
-  title: 'Returns & Exchange Policy | SOHARTH',
-  description: '7-day seamless return, size exchange, and doorstep pickup guidelines for SOHARTH streetwear.',
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soharth.in';
+
+export const metadata: Metadata = {
+  title: '7-Day Returns & Size Exchange Policy | SOHARTH',
+  description:
+    '7-day seamless return window, easy doorstep pickup, and size exchange policy for SOHARTH heavyweight oversized apparel.',
+  alternates: {
+    canonical: `${siteUrl}/returns-exchange`,
+  },
+  openGraph: {
+    title: '7-Day Returns & Size Exchange Policy | SOHARTH',
+    description: 'Hassle-free doorstep pickup and size exchanges for SOHARTH streetwear.',
+    url: `${siteUrl}/returns-exchange`,
+    siteName: 'SOHARTH',
+    locale: 'en_IN',
+    type: 'website',
+  },
 };
 
 export default function ReturnsExchangePage() {
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Returns & Exchange Policy',
+        item: `${siteUrl}/returns-exchange`,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Navbar />
       <main style={{ paddingTop: '8rem', paddingBottom: '6rem', backgroundColor: '#080808', color: '#fff', minHeight: '90vh' }}>
         <div className="container" style={{ maxWidth: '840px', padding: '0 1.25rem' }}>

@@ -1,14 +1,52 @@
+import type { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
-export const metadata = {
-  title: 'Privacy Policy | SOHARTH',
-  description: 'How SOHARTH securely collects, uses, and protects your personal and payment details.',
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://soharth.in';
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy & Data Security | SOHARTH',
+  description:
+    'How SOHARTH securely collects, uses, and safeguards your personal, shipping, and payment information under Indian data protection standards.',
+  alternates: {
+    canonical: `${siteUrl}/privacy-policy`,
+  },
+  openGraph: {
+    title: 'Privacy Policy | SOHARTH',
+    description: 'Data security and privacy commitments for SOHARTH customers.',
+    url: `${siteUrl}/privacy-policy`,
+    siteName: 'SOHARTH',
+    locale: 'en_IN',
+    type: 'website',
+  },
 };
 
 export default function PrivacyPolicyPage() {
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Privacy Policy',
+        item: `${siteUrl}/privacy-policy`,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Navbar />
       <main style={{ paddingTop: '8rem', paddingBottom: '6rem', backgroundColor: '#080808', color: '#fff', minHeight: '90vh' }}>
         <div className="container" style={{ maxWidth: '840px', padding: '0 1.25rem' }}>
